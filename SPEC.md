@@ -1,8 +1,6 @@
-# Compiler Visualizer — Project Plan (4-Week MVP)
+# Compiler Visualizer — Project Plan
 
-> A web-base
-
-d tool that lets users write Java code and visualize the entire compilation pipeline step-by-step, then see the execution result.
+> A web-based tool that lets users write Java code and visualize the entire compilation pipeline step-by-step, then see the execution result.
 
 ---
 
@@ -21,30 +19,58 @@ Users write Java code in a browser-based editor. The system visualizes **how** t
 - Developers curious about how Java compilation works
 - Educators teaching compiler courses
 
+### Developer Profile
+The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spring Boot, and full-stack development. All explanations should connect new concepts to Java fundamentals.
+
 ---
 
-## 2. Tech Stack (MVP - 4 Weeks)
+## 2. Tech Stack (Actual)
 
-| Layer | Technology | Why |
+| Layer | Technology | Version | Why |
+|---|---|---|---|
+| **Frontend** | React + TypeScript | React 19, TS 6, Vite 8 | Modern, component-based, strong typing |
+| **Code Editor** | Monaco Editor | @monaco-editor/react ^4.7 | VS Code's editor — syntax highlighting, autocomplete |
+| **Tree Visualization** | D3.js | ^7.9 | Best library for rendering AST/parse trees (planned) |
+| **Animations** | Framer Motion | ^12.42 | Smooth phase transitions (planned) |
+| **HTTP Client** | Axios | ^1.18 | API calls with JWT interceptors |
+| **Backend** | Spring Boot | 3.2.0, Java 17 | Industry standard, matches Java EE |
+| **Java Parsing** | JavaParser | 3.25.8 | Token extraction + AST without building a compiler |
+| **Bytecode** | javac + javap | JDK built-in | Compile in-process, disassemble with `javap -c -p` |
+| **Database** | MySQL | 8+ (prod) | Production database |
+| **ORM** | Spring Data JPA | Hibernate | Standard JPA with Spring Boot |
+| **Auth** | Spring Security + JWT | jjwt 0.12.3 | Stateless authentication |
+| **Build Tool** | Maven | Spring wrapper | Standard Java build tool |
+| **Linting** | oxlint | ^1.71 | NOT ESLint — faster, Rust-based |
+
+### What's Actually Built vs Planned
+
+| Feature | Status | Notes |
 |---|---|---|
-| **Frontend** | React + TypeScript | Modern, component-based, strong typing |
-| **Code Editor** | Monaco Editor (VS Code's editor) | Syntax highlighting, autocomplete, professional feel |
-| **Tree Visualization** | D3.js | Best library for rendering AST/parse trees |
-| **Animations** | Framer Motion | Smooth phase transitions and UI animations |
-| **Backend** | Spring Boot (Java 17) | Industry standard, matches Java EE course requirements |
-| **Java Parsing** | JavaParser | Parse Java code → tokens, AST, symbol table without building a compiler from scratch |
-| **Execution** | Local Java (javac/java) | Direct execution on host machine for MVP |
-| **Database** | H2 (dev) / PostgreSQL (prod) | In-memory for dev, PostgreSQL for production |
-| **ORM** | Spring Data JPA | Standard JPA integration with Spring Boot |
-| **Build Tool** | Maven | Standard Java build tool, well-supported by Spring Boot |
-
-### Included in MVP
-- ✅ Authentication (Spring Security + JWT) — for saving code
-- ✅ Save/load code snippets
-- ✅ Compilation history
-
-### Deferred to Post-MVP
-- ❌ Docker sandboxing — use local execution for MVP
+| Spring Boot project setup | ✅ Done | Maven, Java 17, Spring Boot 3.2 |
+| React project setup | ✅ Done | Vite 8, TypeScript 6, oxlint |
+| MySQL database | ✅ Done | Configured in `application.properties` |
+| JWT authentication | ✅ Done | Register, login, token validation |
+| Save/load code snippets | ✅ Done | CRUD endpoints + frontend API |
+| Token extraction (JavaLexer) | ✅ Done | Via JavaParser AST visitors |
+| AST generation | ✅ Done | `StaticJavaParser.parse()` + JSON serialization |
+| Symbol table extraction | ✅ Done | `SymbolTableBuilder` walks AST |
+| Bytecode generation | ✅ Done | `javax.tools.JavaCompiler` + `javap -c -p` |
+| Code execution | ✅ Done | ProcessBuilder with 10s timeout, stdin support |
+| Compile & Execute button | ✅ Done | With cancel support (AbortController) |
+| Phase tabs UI | ✅ Done | Tokens, AST, Semantic, Bytecode, Execution |
+| Token list display | ✅ Done | Color-coded by type (keyword, method, class) |
+| AST JSON display | ✅ Done | Pre-formatted JSON (D3 tree planned) |
+| Symbol table display | ✅ Done | Pre-formatted JSON |
+| Bytecode display | ✅ Done | Pre-formatted monospace text |
+| Execution output display | ✅ Done | Terminal-style with error handling |
+| stdin input | ✅ Done | Textarea for Scanner input |
+| Compilation caching | ✅ Done | LRU cache, max 128 entries |
+| D3.js tree visualization | ❌ Planned | Interactive AST tree nodes |
+| Framer Motion animations | ❌ Planned | Phase transition animations |
+| Save/Load UI | ❌ Planned | Frontend for saved snippets |
+| Compilation history | ❌ Planned | Backend entity not yet created |
+| Responsive design | ❌ Planned | Desktop-first for now |
+| Dark/light theme toggle | ❌ Planned | Dark theme only for now |
 
 ---
 
@@ -57,54 +83,62 @@ Users write Java code in a browser-based editor. The system visualizes **how** t
 │  ┌──────────────┐  ┌─────────────────────────────────────┐ │
 │  │   Monaco     │  │      Visualization Panel            │ │
 │  │   Code       │  │  ┌─────┬─────┬─────┬─────┬─────┐  │ │
-│  │   Editor     │  │  │Lex  │Parse│ AST │Sema │Byte │  │ │
+│  │   Editor     │  │  │Token│ AST │Sema │Byte │Exec │  │ │
 │  │              │  │  └──┬──┴──┬──┴──┬──┴──┬──┴──┬──┘  │ │
 │  └──────┬───────┘  │     │     │     │     │     │      │ │
-│         │          │  [Animated Phase Transitions]       │ │
+│         │          │  [Tab-based Phase Switching]        │ │
 │         │          └─────────────────────────────────────┘ │
 │         │          ┌─────────────────────────────────────┐ │
-│         └─────────▶│      Output Console                 │ │
+│         └─────────▶│      Stdin Input + Output           │ │
 │                    │      (execution result)             │ │
 │                    └─────────────────────────────────────┘ │
 └────────────────────────────┬────────────────────────────────┘
-                             │ REST API (JSON)
+                             │ REST API (JSON) + JWT Header
 ┌────────────────────────────▼────────────────────────────────┐
 │                  Spring Boot Backend                        │
 │                                                             │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │  /api/auth   │  │ /api/compile │  │ /api/execute │     │
-│  │  JWT Login   │  │  JavaParser  │  │  Local Java  │     │
-│  │  Register    │  │  Phase Data  │  │  javac/java  │     │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘     │
-│         │                 │                  │              │
-│         └─────────────────┼──────────────────┘              │
-│                           │                                 │
-│                  ┌────────▼────────┐                        │
-│                  │  Spring Data    │                        │
-│                  │  JPA / Hibernate│                        │
-│                  └────────┬────────┘                        │
+│  ┌──────────────┐  ┌──────────────────────────────────┐   │
+│  │  /api/auth   │  │         /api/compile              │   │
+│  │  JWT Login   │  │  ┌────────────────────────────┐  │   │
+│  │  Register    │  │  │ CompileService              │  │   │
+│  └──────┬───────┘  │  │  1. JavaLexer (tokens)     │  │   │
+│         │          │  │  2. JavaParser (AST)        │  │   │
+│         │          │  │  3. SymbolTableBuilder      │  │   │
+│         │          │  │  4. javac + javap (bytecode)│  │   │
+│         │          │  │  5. java (execution)        │  │   │
+│         │          │  └────────────────────────────┘  │   │
+│         │          └──────────────────────────────────┘   │
+│         │          ┌──────────────────────────────────┐   │
+│         │          │         /api/code                 │   │
+│         │          │  Save, Load, Delete snippets      │   │
+│         │          └──────────────────────────────────┘   │
+│         └─────────────────┼──────────────────────────────┘
+│                           │
+│                  ┌────────▼────────┐
+│                  │  Spring Data    │
+│                  │  JPA / Hibernate│
+│                  └────────┬────────┘
 └───────────────────────────┼─────────────────────────────────┘
                             │
                  ┌──────────▼──────────┐
-                 │     PostgreSQL      │
+                 │      MySQL          │
                  │                     │
                  │  - users            │
                  │  - saved_code       │
-                 │  - compilation_log  │
                  └─────────────────────┘
 ```
 
 ---
 
-## 4. Database Schema
+## 4. Database Schema (Actual)
 
 ### users
 | Column | Type | Description |
 |---|---|---|
 | id | BIGINT (PK) | Auto-generated |
-| username | VARCHAR(50) | Unique |
-| email | VARCHAR(100) | Unique |
-| password_hash | VARCHAR(255) | BCrypt hashed |
+| username | VARCHAR | Unique |
+| email | VARCHAR | Unique |
+| password | VARCHAR | BCrypt hashed |
 | created_at | TIMESTAMP | Account creation |
 | updated_at | TIMESTAMP | Last update |
 
@@ -113,215 +147,250 @@ Users write Java code in a browser-based editor. The system visualizes **how** t
 |---|---|---|
 | id | BIGINT (PK) | Auto-generated |
 | user_id | BIGINT (FK) | References users.id |
-| title | VARCHAR(100) | Code title |
+| title | VARCHAR | Code title |
 | source_code | TEXT | Java source code |
 | created_at | TIMESTAMP | When saved |
 | updated_at | TIMESTAMP | Last modified |
 
-### compilation_log
+### compilation_log (planned — entity not yet created)
 | Column | Type | Description |
 |---|---|---|
 | id | BIGINT (PK) | Auto-generated |
 | user_id | BIGINT (FK) | References users.id |
 | code_id | BIGINT (FK) | References saved_code.id |
 | source_code | TEXT | Code that was compiled |
-| tokens_json | JSONB | Lexical analysis output |
-| ast_json | JSONB | Abstract syntax tree |
-| symbol_table_json | JSONB | Semantic analysis output |
+| tokens_json | TEXT | Lexical analysis output |
+| ast_json | TEXT | Abstract syntax tree |
+| symbol_table_json | TEXT | Semantic analysis output |
 | bytecode | TEXT | Generated bytecode |
 | execution_output | TEXT | Code execution result |
 | compiled_at | TIMESTAMP | When compiled |
 
 ---
 
-## 5. API Endpoints
+## 5. API Endpoints (Actual)
 
 ### Authentication
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login, returns JWT |
-| GET | `/api/auth/me` | Get current user info |
-
-### Code Management
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/code/save` | Save code snippet |
-| GET | `/api/code/saved` | Get all saved codes |
-| GET | `/api/code/{id}` | Get specific code |
-| DELETE | `/api/code/{id}` | Delete code |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/auth/register` | No | Register new user, returns JWT |
+| POST | `/api/auth/login` | No | Login, returns JWT |
+| GET | `/api/auth/me` | Yes | Get current user info |
 
 ### Compilation & Execution
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/compile` | Compile code, returns all phase data |
-| POST | `/api/compile/tokens` | Get lexical analysis only |
-| POST | `/api/compile/ast` | Get AST only |
-| POST | `/api/compile/semantic` | Get semantic analysis only |
-| POST | `/api/compile/bytecode` | Get bytecode only |
-| POST | `/api/execute` | Execute code in sandbox, return output |
-| GET | `/api/execute/{jobId}` | Get execution result (async) |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/compile` | No | Full pipeline (tokens + AST + symbol table + bytecode + execution) |
+| POST | `/api/compile/tokens` | No | Full pipeline (not optimized yet) |
+| POST | `/api/compile/ast` | No | Full pipeline (not optimized yet) |
+| POST | `/api/compile/semantic` | No | Full pipeline (not optimized yet) |
+| POST | `/api/compile/bytecode` | No | Full pipeline (not optimized yet) |
+| POST | `/api/execute` | No | Execute compiled code only |
+
+### Code Management
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/code/save` | Yes | Save code snippet |
+| GET | `/api/code/saved` | Yes | Get all saved codes |
+| GET | `/api/code/{id}` | Yes | Get specific code |
+| DELETE | `/api/code/{id}` | Yes | Delete code |
+
+### Request/Response Format
+```json
+// POST /api/compile
+// Request:
+{
+  "sourceCode": "public class Main { public static void main(String[] args) { System.out.println(\"Hello\"); } }",
+  "input": ""  // optional stdin
+}
+
+// Response:
+{
+  "tokens": [{"type": "KEYWORD", "value": "public", "line": 1, "column": 1, "length": 6}],
+  "astJson": "{...}",
+  "symbolTableJson": "{...}",
+  "bytecode": "public static void main(java.lang.String[]);",
+  "executionOutput": "Hello",
+  "compilationTimeMs": 342,
+  "tokenTimeMs": 45,
+  "astTimeMs": 45,
+  "symbolTableTimeMs": 23,
+  "bytecodeTimeMs": 180,
+  "executionTimeMs": 49
+}
+```
 
 ---
 
-## 6. Compilation Phases Visualization
+## 6. Compilation Phases (What Happens Inside)
 
 ### Phase 1: Lexical Analysis (Tokenization)
 ```
-Input:  "int main() { return 42; }"
+Input:  "public class Main { }"
 Output: [
-  { type: "KEYWORD",   value: "int",     line: 1, col: 1 },
-  { type: "IDENT",     value: "main",    line: 1, col: 5 },
-  { type: "LPAREN",    value: "(",       line: 1, col: 9 },
-  { type: "RPAREN",    value: ")",       line: 1, col: 10 },
-  { type: "LBRACE",    value: "{",       line: 1, col: 12 },
-  { type: "KEYWORD",   value: "return",  line: 1, col: 14 },
-  { type: "INT_LITERAL", value: "42",    line: 1, col: 21 },
-  { type: "SEMICOLON", value: ";",       line: 1, col: 23 },
-  { type: "RBRACE",    value: "}",       line: 1, col: 25 }
+  { type: "KEYWORD",  value: "public", line: 1, col: 1 },
+  { type: "KEYWORD",  value: "class",  line: 1, col: 8 },
+  { type: "CLASS",    value: "Main",   line: 1, col: 14 },
+  { type: "LBRACE",   value: "{",      line: 1, col: 19 },
+  { type: "RBRACE",   value: "}",      line: 1, col: 21 }
 ]
 ```
-**UI**: Each token highlighted in source code with color-coded categories.
+**How:** `JavaLexer` uses JavaParser's AST visitor to walk the tree and extract tokens.
 
 ### Phase 2: Syntax Analysis (Parsing)
 ```
-Output: Parse tree → Abstract Syntax Tree (AST)
+Output: JSON representation of the AST
 ```
-**UI**: Interactive tree visualization using D3.js. Nodes expand/collapse. Click a node to see its source location.
+**How:** `StaticJavaParser.parse()` builds the tree, `AstSerializer.toJson()` converts to JSON.
 
 ### Phase 3: Semantic Analysis
 ```
 Output: {
-  symbolTable: [...],
-  typeErrors: [...],
-  scopeInfo: [...]
+  "classes": [{"name": "Main", "methods": [...], "fields": [...]}]
 }
 ```
-**UI**: Symbol table displayed as a table. Type errors highlighted inline. Scope blocks visualized.
+**How:** `SymbolTableBuilder` walks the AST, extracts class/method/field declarations with types.
 
 ### Phase 4: Code Generation (Bytecode)
 ```
-Output: JVM bytecode instructions
+Output: JVM bytecode instructions (javap -c -p)
 ```
-**UI**: Side-by-side view — source code on left, bytecode on right with color mapping.
+**How:** `javax.tools.JavaCompiler` compiles in-process (no fork), then `javap` disassembles.
 
 ### Phase 5: Execution
 ```
-Output: stdout, stderr, exit code, execution time
+Output: stdout, stderr, exit code
 ```
-**UI**: Terminal-style output console below the visualization panel.
+**How:** `ProcessBuilder` runs `java -cp <tempdir> Main` with 10s timeout. Stdin piped in if provided.
+
+### Performance: Parallel Execution
+Phases 1 and 2 run in parallel via `CompletableFuture`:
+```java
+CompletableFuture<List<TokenDto>> tokensFuture = CompletableFuture.supplyAsync(() -> lexer.tokenize());
+CompletableFuture<CompilationUnit> astFuture = CompletableFuture.supplyAsync(() -> parse(sourceCode));
+// Both run simultaneously — same wall-clock time as one phase
+```
 
 ---
 
-## 7. UI Layout
+## 7. UI Layout (Actual)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  [Logo] Compiler Visualizer                    [Login] [Profile]│
+│  Compiler Visualizer              [▶ Compile & Execute] [Cancel]│
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌────────────────────────┐  ┌───────────────────────────────┐ │
-│  │                        │  │  Phase: [Lex][Parse][AST]...  │ │
-│  │    Monaco Editor       │  │                               │ │
-│  │                        │  │   [Visualization Area]        │ │
-│  │    (Java code)         │  │                               │ │
-│  │                        │  │   (Tokens / AST Tree /        │ │
-│  │                        │  │    Symbol Table / Bytecode)   │ │
-│  │                        │  │                               │ │
+│  │  Code Editor           │  │  Phase: [Token][AST][Sem][Bc] │ │
+│  │                        │  ├───────────────────────────────┤ │
+│  │  Standard Input:       │  │                               │ │
+│  │  ┌──────────────────┐  │  │   [Visualization Content]    │ │
+│  │  │ 5 10             │  │  │                               │ │
+│  │  └──────────────────┘  │  │   Tokens: colored cards       │ │
+│  │                        │  │   AST: pre-formatted JSON     │ │
+│  │  ┌──────────────────┐  │  │   Semantic: symbol table      │ │
+│  │  │ Monaco Editor    │  │  │   Bytecode: monospace text    │ │
+│  │  │ (Java syntax)    │  │  │   Exec: terminal output       │ │
+│  │  │                  │  │  │                               │ │
+│  │  └──────────────────┘  │  │                               │ │
 │  └────────────────────────┘  └───────────────────────────────┘ │
 │                                                                 │
-│  [▶ Compile & Execute]  [💾 Save]  [📂 Load]                   │
-│                                                                 │
 │  ┌───────────────────────────────────────────────────────────┐ │
-│  │  Output Console                                          │ │
-│  │  $ javac Main.java                                       │ │
-│  │  $ java Main                                             │ │
-│  │  Hello, World!                                           │ │
-│  │  Exit code: 0                                            │ │
+│  │  Error Banner (toast notification on failure)             │ │
 │  └───────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 8. Project Phases & Timeline (4-Week MVP)
+## 8. Project Timeline (Actual Progress)
 
-### Week 1: Foundation + Backend
-- [ ] Set up Spring Boot project with Maven
-- [ ] Set up React project with TypeScript
-- [ ] Set up PostgreSQL database
-- [ ] Configure Spring Data JPA + Hibernate
-- [ ] Create database schema (users, saved_code, compilation_log)
-- [ ] Set up project structure (packages, folders)
-- [ ] Implement JWT authentication (Spring Security)
-- [ ] Create `/api/auth` endpoints (register, login)
-- [ ] Integrate JavaParser for token extraction
-- [ ] Create `/api/compile` endpoint (token, AST, semantic, bytecode)
-- [ ] Create `/api/execute` endpoint (local javac/java)
+### Week 1: Foundation + Backend ✅
+- [x] Set up Spring Boot project with Maven
+- [x] Set up React project with Vite + TypeScript
+- [x] Set up MySQL database
+- [x] Configure Spring Data JPA + Hibernate
+- [x] Create database schema (users, saved_code)
+- [x] Set up project structure (packages, folders)
+- [x] Implement JWT authentication (Spring Security)
+- [x] Create `/api/auth` endpoints (register, login, me)
+- [x] Integrate JavaParser for token extraction
+- [x] Create `/api/compile` endpoint (full pipeline)
+- [x] Create `/api/execute` endpoint (local java)
 
-### Week 2: Core Visualizations
-- [ ] Token data structure (type, value, line, column)
-- [ ] UI: Color-coded token highlighting in editor
-- [ ] UI: Token list panel with categories
-- [ ] JavaParser AST extraction
-- [ ] D3.js tree visualization (interactive nodes)
-- [ ] Symbol table extraction + display
-- [ ] Bytecode extraction using `javap`
-- [ ] Side-by-side source → bytecode view
+### Week 2: Core Visualizations 🔄
+- [x] Token data structure (type, value, line, column)
+- [x] Token list panel with color-coded categories
+- [x] AST JSON display (pre-formatted)
+- [x] Symbol table extraction + display
+- [x] Bytecode extraction using `javap`
+- [ ] D3.js tree visualization (interactive nodes) — PLANNED
+- [ ] Side-by-side source → bytecode view — PLANNED
 
-### Week 3: Frontend + Editor
-- [ ] Integrate Monaco Editor in React
-- [ ] Basic code editing with Java syntax highlighting
-- [ ] Visualization panel (phase tabs: Lex → Parse → AST → Semantic → Bytecode)
-- [ ] Animated phase transitions (Framer Motion)
-- [ ] Output console UI (stdout/stderr display)
-- [ ] Compile & Execute button flow
-- [ ] Basic error handling
-- [ ] Create `/api/code` endpoints (save, load, delete)
-- [ ] Create `/api/history` endpoint (compilation history)
+### Week 3: Frontend + Editor ✅
+- [x] Integrate Monaco Editor in React
+- [x] Java syntax highlighting
+- [x] Visualization panel (phase tabs)
+- [x] Output console UI (stdout/stderr display)
+- [x] Compile & Execute button flow
+- [x] Cancel compilation support (AbortController)
+- [x] stdin input for Scanner
+- [x] Basic error handling
+- [x] Create `/api/code` endpoints (save, load, delete)
+- [ ] Framer Motion animations — PLANNED
+- [ ] Compilation history endpoint — PLANNED
 
-### Week 4: Integration + Polish
-- [ ] End-to-end compile/execute flow testing
-- [ ] Error handling and loading states
-- [ ] Save/load code snippets UI
-- [ ] Compilation history UI
-- [ ] Basic responsive design
-- [ ] Code cleanup and documentation
-- [ ] Demo preparation
+### Week 4: Integration + Polish 🔄
+- [x] End-to-end compile/execute flow working
+- [x] Error handling and loading states
+- [x] Caching (LRU, 128 entries)
+- [ ] Save/load code snippets UI — PLANNED
+- [ ] Compilation history UI — PLANNED
+- [ ] Basic responsive design — PLANNED
+- [ ] Code cleanup and documentation — IN PROGRESS
+- [ ] Demo preparation — PLANNED
 
 ---
 
 ## 9. Security Considerations
 
-| Risk | Mitigation |
-|---|---|
-| Arbitrary code execution | Local execution with timeout (10s max), no network access |
-| SQL injection | Parameterized queries via JPA/Hibernate |
-| XSS attacks | React's default escaping, input sanitization |
-| JWT theft | HTTP-only cookies, short expiry, refresh tokens |
-| DoS via heavy compilation | Rate limiting, timeout on compilation (10s max) |
-| File system access | Temporary directories, cleanup after execution |
+| Risk | Mitigation | Status |
+|---|---|---|
+| Arbitrary code execution | Local execution with timeout (10s max) | ✅ Done |
+| SQL injection | Parameterized queries via JPA/Hibernate | ✅ Done |
+| XSS attacks | React's default escaping | ✅ Done |
+| JWT theft | Token in localStorage, 24h expiry | ✅ Done |
+| DoS via heavy compilation | LRU cache (128 entries), 10s timeout | ✅ Done |
+| File system access | Temporary directories, cleanup after execution | ✅ Done |
+| Secrets in git | `.gitignore` excludes `application.properties` | ✅ Done |
 
 ---
 
 ## 10. Future Enhancements (Post-MVP)
 
+- [ ] D3.js interactive AST tree (expand/collapse nodes)
+- [ ] Framer Motion phase transition animations
+- [ ] Save/Load UI for code snippets
+- [ ] Compilation history with replay
 - [ ] Support for more languages (C, Python, JavaScript)
 - [ ] Compiler optimization visualization (-O0, -O1, -O2, -O3)
 - [ ] Side-by-side compiler comparison (like Godbolt)
 - [ ] Share compilations via URL
-- [ ] Dark/light theme
+- [ ] Dark/light theme toggle
 - [ ] Mobile-responsive design
 - [ ] Collaborative code editing
 - [ ] AI-powered compiler error explanations
+- [ ] Docker sandboxing for safer execution
 
 ---
 
 ## 11. Resources
 
 - [JavaParser](https://javaparser.org/) — Java source code parser
-- [ANTLR](https://www.antlr.org/) — Parser generator
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/) — VS Code's editor
 - [D3.js](https://d3js.org/) — Data visualization library
+- [Framer Motion](https://www.framer.com/motion/) — React animation library
 - [Spring Boot](https://spring.io/projects/spring-boot) — Backend framework
+- [Spring Security](https://spring.io/projects/spring-security) — Authentication
 - [Godbolt Compiler Explorer](https://godbolt.org/) — Inspiration
+- [oxlint](https://oxc-project.github.io/docs/oxlint/) — Fast linter (Rust-based)

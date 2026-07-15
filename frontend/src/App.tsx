@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import Editor from '@monaco-editor/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { compileAPI } from './services/api';
 import { useAuth } from './context/AuthContext';
 import LoginModal from './components/LoginModal';
@@ -82,15 +83,31 @@ function App() {
     return (
       <div className="token-panel">
         <h3>Tokens ({result.tokens.length})</h3>
-        <div className="token-list">
+        <motion.div
+          className="token-list"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { staggerChildren: 0.02 } },
+          }}
+        >
           {result.tokens.map((token: Token, index: number) => (
-            <div key={index} className={`token-item token-${token.type.toLowerCase()}`}>
+            <motion.div
+              key={index}
+              className={`token-item token-${token.type.toLowerCase()}`}
+              variants={{
+                hidden: { opacity: 0, y: 10 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+            >
               <span className="token-type">{token.type}</span>
               <span className="token-value">"{token.value}"</span>
               <span className="token-position">L{token.line}:C{token.column}</span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     );
   };
@@ -230,16 +247,34 @@ function App() {
             ))}
           </div>
           <div className="visualization-content">
-            {renderVisualizationPanel()}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activePhase}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {renderVisualizationPanel()}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </main>
 
-      {error && (
-        <div className="error-banner">
-          {error}
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            className="error-banner"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <LoginModal
         isOpen={showLoginModal}

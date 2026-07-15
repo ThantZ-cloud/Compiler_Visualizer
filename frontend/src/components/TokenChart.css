@@ -1,0 +1,41 @@
+.token-chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+.chart-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #cccccc;
+  margin: 0;
+}
+
+.chart-wrapper {
+  background-color: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.chart-wrapper svg {
+  display: block;
+}
+
+.flow-wrapper {
+  overflow-x: auto;
+}
+
+.chart-hint {
+  font-size: 11px;
+  color: #808080;
+  text-align: right;
+}

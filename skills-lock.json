@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "java-spring-boot": {
+      "source": "pluginagentmarketplace/custom-plugin-java",
+      "sourceType": "github",
+      "skillPath": "skills/java-spring-boot/SKILL.md",
+      "computedHash": "93e5a124d8d5f29e0b19692d431452f8b6c2a2e1c3e05c0f93f07fb2473ab32a"
+    },
+    "mysql": {
+      "source": "planetscale/database-skills",
+      "sourceType": "github",
+      "skillPath": "skills/mysql/SKILL.md",
+      "computedHash": "6cb0725d61db4940f9eab79436753fe4ecb261f57ae8a08b2ac28676f82cbecc"
+    }
+  }
+}

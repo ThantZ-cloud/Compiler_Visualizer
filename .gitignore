@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build output
+frontend/dist/
+backend/target/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / Secrets (NEVER commit these)
+.env
+.env.local
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-mysql.properties
+
+# Maven
+backend/.mvn/repository/
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+
+# Claude Code
+.claude/settings.local.json

@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "env": {}
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ]
+    },
+    "mysql-mcp": {
+      "type": "stdio",
+      "command": "C:\\Users\\yelin\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "args": [
+        "-m",
+        "mysql_mcp_server"
+      ],
+      "env": {
+        "MYSQL_USER": "root",
+        "MYSQL_PASSWORD": "000000",
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "3306",
+        "MYSQL_USE_PURE": "true"
+      }
+    }
+  }
+}

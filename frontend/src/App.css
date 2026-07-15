@@ -284,3 +284,37 @@ body {
   font-size: 14px;
   z-index: 1000;
 }
+
+/* Auth buttons in header */
+.auth-button-secondary {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #cccccc;
+  background-color: transparent;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-button-secondary:hover {
+  color: #ffffff;
+  background-color: #3c3c3c;
+}
+
+.auth-button-primary {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #0e639c;
+  border: 1px solid #0e639c;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-button-primary:hover {
+  background-color: #1177bb;
+}

@@ -1,6 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import { compileAPI } from './services/api';
+import { useAuth } from './context/AuthContext';
+import LoginModal from './components/LoginModal';
+import RegisterModal from './components/RegisterModal';
+import UserMenu from './components/UserMenu';
 import './App.css';
 
 interface Token {
@@ -24,6 +28,9 @@ interface CompileResponse {
 type CompilationPhase = 'tokens' | 'ast' | 'semantic' | 'bytecode' | 'execution';
 
 function App() {
+  const { isAuthenticated } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [code, setCode] = useState<string>(`public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
@@ -170,6 +177,18 @@ function App() {
               ✕ Cancel
             </button>
           )}
+          {isAuthenticated ? (
+            <UserMenu />
+          ) : (
+            <>
+              <button className="auth-button-secondary" onClick={() => setShowLoginModal(true)}>
+                Sign In
+              </button>
+              <button className="auth-button-primary" onClick={() => setShowRegisterModal(true)}>
+                Register
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -225,6 +244,17 @@ function App() {
           {error}
         </div>
       )}
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToRegister={() => { setShowLoginModal(false); setShowRegisterModal(true); }}
+      />
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onSwitchToLogin={() => { setShowRegisterModal(false); setShowLoginModal(true); }}
+      />
     </div>
   );
 }

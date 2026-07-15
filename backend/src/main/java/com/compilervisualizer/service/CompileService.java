@@ -117,6 +117,7 @@ public class CompileService {
                 symbolTableJson = "{\"error\": \"" + escapeJson(e.getMessage()) + "\"}";
                 symbolTableError = e.getMessage();
             }
+            long symbolTableTime = System.currentTimeMillis() - t1;
 
             long parallelTime = System.currentTimeMillis() - t0;
             long tokenTime = parallelTime; // both ran in parallel, same wall-clock

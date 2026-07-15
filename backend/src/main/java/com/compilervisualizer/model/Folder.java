@@ -11,12 +11,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "saved_code")
+@Table(name = "folder")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SavedCode {
+public class Folder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,15 +26,8 @@ public class SavedCode {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "folder_id")
-    private Folder folder;
-
     @Column(nullable = false, length = 100)
-    private String title;
-
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String sourceCode;
+    private String name;
 
     @CreationTimestamp
     @Column(updatable = false)

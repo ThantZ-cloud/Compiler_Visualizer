@@ -11,12 +11,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SavedCodeResponse {
+public class FolderResponse {
 
     private Long id;
-    private String title;
-    private String sourceCode;
-    private Long folderId;
+    private String name;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

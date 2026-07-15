@@ -27,8 +27,15 @@ public class CodeController {
     }
 
     @GetMapping("/saved")
-    public ResponseEntity<List<SavedCodeResponse>> getSavedCodes(Authentication authentication) {
-        List<SavedCodeResponse> response = codeService.getSavedCodes(authentication.getName());
+    public ResponseEntity<List<SavedCodeResponse>> getSavedCodes(
+            Authentication authentication,
+            @RequestParam(required = false) Long folderId) {
+        List<SavedCodeResponse> response;
+        if (folderId != null) {
+            response = codeService.getSavedCodesByFolder(authentication.getName(), folderId);
+        } else {
+            response = codeService.getSavedCodes(authentication.getName());
+        }
         return ResponseEntity.ok(response);
     }
 
@@ -37,6 +44,15 @@ public class CodeController {
             Authentication authentication,
             @PathVariable Long id) {
         SavedCodeResponse response = codeService.getSavedCode(authentication.getName(), id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SavedCodeResponse> updateSavedCode(
+            Authentication authentication,
+            @PathVariable Long id,
+            @Valid @RequestBody SaveCodeRequest request) {
+        SavedCodeResponse response = codeService.updateSavedCode(authentication.getName(), id, request);
         return ResponseEntity.ok(response);
     }
 

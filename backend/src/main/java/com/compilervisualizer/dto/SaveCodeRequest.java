@@ -19,4 +19,6 @@ public class SaveCodeRequest {
 
     @NotBlank(message = "Source code is required")
     private String sourceCode;
+
+    private Long folderId;
 }

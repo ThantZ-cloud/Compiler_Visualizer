@@ -5,6 +5,7 @@ import { useCompile } from '../context/CompileContext';
 import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 import UserMenu from './UserMenu';
+import FileBrowser from './FileBrowser';
 import './Layout.css';
 
 const Layout: React.FC = () => {
@@ -35,7 +36,7 @@ const Layout: React.FC = () => {
           </button>
           {loading && (
             <button className="cancel-button" onClick={handleCancel}>
-              ✕
+              ✕ Cancel
             </button>
           )}
           <button
@@ -59,7 +60,12 @@ const Layout: React.FC = () => {
         </div>
       </header>
 
-      <Outlet />
+      <div className="layout-body">
+        {isAuthenticated && <FileBrowser />}
+        <div className="layout-content">
+          <Outlet />
+        </div>
+      </div>
 
       <LoginModal
         isOpen={showLoginModal}

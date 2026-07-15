@@ -25,41 +25,88 @@
   letter-spacing: 0.5px;
 }
 
-.file-browser-actions {
-  display: flex;
-  gap: 2px;
-}
-
-.fb-action {
-  background: none;
-  border: none;
-  padding: 4px 6px;
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: background-color 0.15s;
-}
-
-.fb-action:hover {
-  background-color: #3c3c3c;
-}
-
 .file-browser-content {
   flex: 1;
   overflow-y: auto;
   padding: 4px 0;
 }
 
-/* Folder section */
-.folder-section {
+/* Root section */
+.root-section {
   margin-bottom: 4px;
+}
+
+.root-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  user-select: none;
+}
+
+.root-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #808080;
+  letter-spacing: 0.5px;
+  flex: 1;
+}
+
+.root-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.root-header:hover .root-actions {
+  opacity: 1;
+}
+
+.root-action {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 12px;
+  transition: background-color 0.1s;
+}
+
+.root-action:hover {
+  background-color: #3c3c3c;
+}
+
+/* Inline input */
+.inline-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 24px;
+}
+
+.inline-input-field {
+  flex: 1;
+  padding: 3px 8px;
+  font-size: 13px;
+  color: #d4d4d4;
+  background-color: #3c3c3c;
+  border: 1px solid #007acc;
+  border-radius: 3px;
+  outline: none;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* Folder */
+.folder-item {
+  margin-bottom: 2px;
 }
 
 .folder-header {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
+  padding: 3px 8px;
   cursor: pointer;
   user-select: none;
   transition: background-color 0.1s;
@@ -78,12 +125,12 @@
 
 .folder-icon {
   font-size: 14px;
+  flex-shrink: 0;
 }
 
 .folder-name {
   font-size: 13px;
   color: #cccccc;
-  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -98,7 +145,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
+  padding: 3px 8px;
   cursor: pointer;
   border-radius: 4px;
   margin: 1px 4px;
@@ -133,28 +180,8 @@
 .empty-folder {
   font-size: 12px;
   color: #808080;
-  padding: 4px 8px;
+  padding: 3px 8px;
   font-style: italic;
-}
-
-/* New folder input */
-.new-folder-input {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  margin: 4px 4px;
-}
-
-.new-folder-input input {
-  flex: 1;
-  padding: 4px 8px;
-  font-size: 13px;
-  color: #d4d4d4;
-  background-color: #1e1e1e;
-  border: 1px solid #007acc;
-  border-radius: 3px;
-  outline: none;
 }
 
 /* Rename input */
@@ -163,7 +190,7 @@
   padding: 2px 6px;
   font-size: 13px;
   color: #d4d4d4;
-  background-color: #1e1e1e;
+  background-color: #3c3c3c;
   border: 1px solid #007acc;
   border-radius: 3px;
   outline: none;

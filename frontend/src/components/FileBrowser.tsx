@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCompile } from '../context/CompileContext';
 import { folderAPI, codeAPI } from '../services/api';
 import type { Folder, SavedCode } from '../types';
@@ -10,14 +10,18 @@ interface FolderWithFiles extends Folder {
 }
 
 const FileBrowser: React.FC = () => {
-  const { loadFile, saveFile, newFile, currentFileId, currentFileName } = useCompile();
+  const { loadFile, saveFile, newFile, currentFileId } = useCompile();
   const [folders, setFolders] = useState<FolderWithFiles[]>([]);
   const [unfiledFiles, setUnfiledFiles] = useState<SavedCode[]>([]);
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [newFileName, setNewFileName] = useState('');
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [renamingId, setRenamingId] = useState<number | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const [contextMenu, setContextMenu] = useState<{ type: 'folder' | 'file'; id: number; x: number; y: number } | null>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadData = async () => {
     try {
@@ -28,7 +32,6 @@ const FileBrowser: React.FC = () => {
       const folderList = foldersRes.data.map((f: Folder) => ({ ...f, files: [], expanded: true }));
       const allFiles: SavedCode[] = filesRes.data;
 
-      // Distribute files into folders
       const unfiled: SavedCode[] = [];
       allFiles.forEach((file: SavedCode) => {
         if (file.folderId) {
@@ -50,12 +53,25 @@ const FileBrowser: React.FC = () => {
     }
   };
 
+  useEffect(() => { loadData(); }, []);
+
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isCreatingFolder && folderInputRef.current) {
+      folderInputRef.current.focus();
+    }
+  }, [isCreatingFolder]);
+
+  useEffect(() => {
+    if (isCreatingFile && fileInputRef.current) {
+      fileInputRef.current.focus();
+    }
+  }, [isCreatingFile]);
 
   const handleCreateFolder = async () => {
-    if (!newFolderName.trim()) return;
+    if (!newFolderName.trim()) {
+      setIsCreatingFolder(false);
+      return;
+    }
     try {
       await folderAPI.create(newFolderName.trim());
       setNewFolderName('');
@@ -66,8 +82,27 @@ const FileBrowser: React.FC = () => {
     }
   };
 
+  const handleCreateFile = async () => {
+    if (!newFileName.trim()) {
+      setIsCreatingFile(false);
+      return;
+    }
+    try {
+      const title = newFileName.endsWith('.java') ? newFileName : newFileName + '.java';
+      await saveFile(title);
+      setNewFileName('');
+      setIsCreatingFile(false);
+      loadData();
+    } catch (err) {
+      console.error('Failed to create file:', err);
+    }
+  };
+
   const handleRenameFolder = async (id: number) => {
-    if (!renameValue.trim()) return;
+    if (!renameValue.trim()) {
+      setRenamingId(null);
+      return;
+    }
     try {
       await folderAPI.rename(id, renameValue.trim());
       setRenamingId(null);
@@ -89,21 +124,10 @@ const FileBrowser: React.FC = () => {
   const handleDeleteFile = async (id: number) => {
     try {
       await codeAPI.delete(id);
-      if (currentFileId === id) {
-        newFile();
-      }
+      if (currentFileId === id) newFile();
       loadData();
     } catch (err) {
       console.error('Failed to delete file:', err);
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      await saveFile(currentFileName);
-      loadData();
-    } catch (err) {
-      console.error('Failed to save:', err);
     }
   };
 
@@ -112,12 +136,10 @@ const FileBrowser: React.FC = () => {
     setContextMenu({ type, id, x: e.clientX, y: e.clientY });
   };
 
-  const closeContextMenu = () => setContextMenu(null);
-
   useEffect(() => {
-    const handleClick = () => closeContextMenu();
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+    const handler = () => setContextMenu(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
   }, []);
 
   const toggleFolder = (id: number) => {
@@ -128,26 +150,52 @@ const FileBrowser: React.FC = () => {
     <div className="file-browser">
       <div className="file-browser-header">
         <span className="file-browser-title">EXPLORER</span>
-        <div className="file-browser-actions">
-          <button className="fb-action" onClick={handleSave} title="Save file">
-            💾
-          </button>
-          <button className="fb-action" onClick={newFile} title="New file">
-            📄
-          </button>
-          <button className="fb-action" onClick={() => setIsCreatingFolder(true)} title="New folder">
-            📁
-          </button>
-        </div>
       </div>
 
       <div className="file-browser-content">
-        {/* Unfiled files section */}
-        <div className="folder-section">
-          <div className="folder-header" onClick={() => {}}>
+        {/* Root section with action buttons */}
+        <div className="root-section">
+          <div className="root-header">
             <span className="folder-icon">📂</span>
-            <span className="folder-name">My Snippets</span>
+            <span className="folder-name root-name">MY SNIPPETS</span>
+            <div className="root-actions">
+              <button
+                className="root-action"
+                onClick={() => { setIsCreatingFile(true); setIsCreatingFolder(false); }}
+                title="New File"
+              >
+                📄
+              </button>
+              <button
+                className="root-action"
+                onClick={() => { setIsCreatingFolder(true); setIsCreatingFile(false); }}
+                title="New Folder"
+              >
+                📁
+              </button>
+            </div>
           </div>
+
+          {/* New file input (inline) */}
+          {isCreatingFile && (
+            <div className="inline-input">
+              <span className="file-icon">☕</span>
+              <input
+                ref={fileInputRef}
+                className="inline-input-field"
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCreateFile();
+                  if (e.key === 'Escape') { setIsCreatingFile(false); setNewFileName(''); }
+                }}
+                onBlur={() => { if (!newFileName.trim()) setIsCreatingFile(false); }}
+                placeholder="FileName.java"
+              />
+            </div>
+          )}
+
+          {/* Unfiled files */}
           <div className="file-list">
             {unfiledFiles.map(file => (
               <div
@@ -161,72 +209,74 @@ const FileBrowser: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Custom folders */}
-        {folders.map(folder => (
-          <div key={folder.id} className="folder-section">
-            <div
-              className="folder-header"
-              onClick={() => toggleFolder(folder.id)}
-              onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id)}
-            >
-              <span className="folder-arrow">{folder.expanded ? '▾' : '▸'}</span>
+          {/* New folder input (inline) */}
+          {isCreatingFolder && (
+            <div className="inline-input">
               <span className="folder-icon">📁</span>
-              {renamingId === folder.id ? (
-                <input
-                  className="rename-input"
-                  value={renameValue}
-                  onChange={(e) => setRenameValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleRenameFolder(folder.id);
-                    if (e.key === 'Escape') setRenamingId(null);
-                  }}
-                  onBlur={() => handleRenameFolder(folder.id)}
-                  autoFocus
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <span className="folder-name">{folder.name}</span>
-              )}
+              <input
+                ref={folderInputRef}
+                className="inline-input-field"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCreateFolder();
+                  if (e.key === 'Escape') { setIsCreatingFolder(false); setNewFolderName(''); }
+                }}
+                onBlur={() => { if (!newFolderName.trim()) setIsCreatingFolder(false); }}
+                placeholder="Folder name"
+              />
             </div>
-            {folder.expanded && (
-              <div className="file-list">
-                {folder.files.map(file => (
-                  <div
-                    key={file.id}
-                    className={`file-item ${currentFileId === file.id ? 'active' : ''}`}
-                    onClick={() => loadFile(file.id)}
-                    onContextMenu={(e) => handleContextMenu(e, 'file', file.id)}
-                  >
-                    <span className="file-icon">☕</span>
-                    <span className="file-name">{file.title}</span>
-                  </div>
-                ))}
-                {folder.files.length === 0 && (
-                  <div className="empty-folder">No files</div>
+          )}
+
+          {/* Custom folders */}
+          {folders.map(folder => (
+            <div key={folder.id} className="folder-item">
+              <div
+                className="folder-header"
+                onClick={() => toggleFolder(folder.id)}
+                onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id)}
+              >
+                <span className="folder-arrow">{folder.expanded ? '▾' : '▸'}</span>
+                <span className="folder-icon">📁</span>
+                {renamingId === folder.id ? (
+                  <input
+                    className="rename-input"
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRenameFolder(folder.id);
+                      if (e.key === 'Escape') setRenamingId(null);
+                    }}
+                    onBlur={() => handleRenameFolder(folder.id)}
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <span className="folder-name">{folder.name}</span>
                 )}
               </div>
-            )}
-          </div>
-        ))}
-
-        {/* New folder input */}
-        {isCreatingFolder && (
-          <div className="new-folder-input">
-            <span className="folder-icon">📁</span>
-            <input
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateFolder();
-                if (e.key === 'Escape') { setIsCreatingFolder(false); setNewFolderName(''); }
-              }}
-              placeholder="Folder name..."
-              autoFocus
-            />
-          </div>
-        )}
+              {folder.expanded && (
+                <div className="file-list">
+                  {folder.files.map(file => (
+                    <div
+                      key={file.id}
+                      className={`file-item ${currentFileId === file.id ? 'active' : ''}`}
+                      onClick={() => loadFile(file.id)}
+                      onContextMenu={(e) => handleContextMenu(e, 'file', file.id)}
+                    >
+                      <span className="file-icon">☕</span>
+                      <span className="file-name">{file.title}</span>
+                    </div>
+                  ))}
+                  {folder.files.length === 0 && (
+                    <div className="empty-folder">No files</div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Context menu */}
@@ -240,13 +290,10 @@ const FileBrowser: React.FC = () => {
             <>
               <button onClick={() => {
                 const folder = folders.find(f => f.id === contextMenu.id);
-                if (folder) {
-                  setRenamingId(folder.id);
-                  setRenameValue(folder.name);
-                }
-                closeContextMenu();
+                if (folder) { setRenamingId(folder.id); setRenameValue(folder.name); }
+                setContextMenu(null);
               }}>Rename</button>
-              <button onClick={() => { handleDeleteFolder(contextMenu.id); closeContextMenu(); }}>Delete</button>
+              <button onClick={() => { handleDeleteFolder(contextMenu.id); setContextMenu(null); }}>Delete</button>
             </>
           )}
           {contextMenu.type === 'file' && (
@@ -254,9 +301,9 @@ const FileBrowser: React.FC = () => {
               <button onClick={() => {
                 const file = [...unfiledFiles, ...folders.flatMap(f => f.files)].find(f => f.id === contextMenu.id);
                 if (file) loadFile(file.id);
-                closeContextMenu();
+                setContextMenu(null);
               }}>Open</button>
-              <button onClick={() => { handleDeleteFile(contextMenu.id); closeContextMenu(); }}>Delete</button>
+              <button onClick={() => { handleDeleteFile(contextMenu.id); setContextMenu(null); }}>Delete</button>
             </>
           )}
         </div>

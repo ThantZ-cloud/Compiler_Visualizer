@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext';
 import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal';
 import UserMenu from './components/UserMenu';
+import AstTree from './components/AstTree';
 import './App.css';
 
 interface Token {
@@ -97,12 +98,7 @@ function App() {
   const renderAstPanel = () => {
     if (!result?.astJson) return <div className="panel-placeholder">No AST generated</div>;
 
-    return (
-      <div className="ast-panel">
-        <h3>Abstract Syntax Tree</h3>
-        <pre className="ast-json">{result.astJson}</pre>
-      </div>
-    );
+    return <AstTree astJson={result.astJson} />;
   };
 
   const renderSemanticPanel = () => {

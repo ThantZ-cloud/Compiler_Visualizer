@@ -1,0 +1,108 @@
+.ast-tree-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 8px;
+}
+
+.ast-tree-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ast-tree-header h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #cccccc;
+}
+
+.ast-tree-hint {
+  font-size: 11px;
+  color: #808080;
+}
+
+.ast-tree-wrapper {
+  flex: 1;
+  min-height: 350px;
+  background-color: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ast-tree-wrapper svg {
+  display: block;
+  cursor: grab;
+}
+
+.ast-tree-wrapper svg:active {
+  cursor: grabbing;
+}
+
+/* Links */
+.link {
+  fill: none;
+  stroke: #3c3c3c;
+  stroke-width: 1.5;
+  stroke-opacity: 0.6;
+}
+
+/* Nodes */
+.node circle {
+  cursor: pointer;
+  transition: r 0.15s ease;
+}
+
+.node circle:hover {
+  r: 8;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+}
+
+.node text {
+  font-family: 'Consolas', 'Monaco', monospace;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Node detail panel */
+.ast-node-detail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background-color: #252526;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+}
+
+.detail-label {
+  font-size: 11px;
+  color: #808080;
+  text-transform: uppercase;
+}
+
+.detail-name {
+  font-size: 13px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.detail-type {
+  font-size: 12px;
+  color: #569cd6;
+  padding: 2px 6px;
+  background-color: rgba(86, 156, 214, 0.15);
+  border-radius: 3px;
+}
+
+.detail-pos {
+  font-size: 11px;
+  color: #808080;
+}
+
+.detail-value {
+  font-size: 12px;
+  color: #ce9178;
+  font-family: 'Consolas', 'Monaco', monospace;
+}

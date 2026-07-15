@@ -1,0 +1,134 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.layout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #252526;
+  border-bottom: 1px solid #3c3c3c;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.header-logo:hover {
+  color: #4ec9b0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compile-button {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #0e639c;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.compile-button:hover:not(:disabled) {
+  background-color: #1177bb;
+}
+
+.compile-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #a1260d;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancel-button:hover {
+  background-color: #c4261c;
+}
+
+.visualize-button {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #cccccc;
+  background-color: transparent;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.visualize-button:hover {
+  color: #ffffff;
+  background-color: #3c3c3c;
+  border-color: #4ec9b0;
+}
+
+.visualize-button.active {
+  color: #4ec9b0;
+  border-color: #4ec9b0;
+  background-color: rgba(78, 201, 176, 0.1);
+}
+
+.auth-button-secondary {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #cccccc;
+  background-color: transparent;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-button-secondary:hover {
+  color: #ffffff;
+  background-color: #3c3c3c;
+}
+
+.auth-button-primary {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #0e639c;
+  border: 1px solid #0e639c;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-button-primary:hover {
+  background-color: #1177bb;
+}

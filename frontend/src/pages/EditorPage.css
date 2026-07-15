@@ -1,0 +1,172 @@
+.editor-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-top {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.editor-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #252526;
+  border-bottom: 1px solid #3c3c3c;
+  flex-shrink: 0;
+}
+
+.editor-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #cccccc;
+}
+
+.stdin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stdin-label {
+  font-size: 12px;
+  color: #808080;
+}
+
+.stdin-input-inline {
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #d4d4d4;
+  background-color: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  width: 300px;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.stdin-input-inline::placeholder {
+  color: #808080;
+}
+
+.stdin-input-inline:focus {
+  outline: none;
+  border-color: #007acc;
+}
+
+.editor-container {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid #3c3c3c;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Terminal / Output panel (bottom) */
+.editor-bottom {
+  height: 200px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  border-top: 2px solid #3c3c3c;
+  flex-shrink: 0;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 16px;
+  background-color: #1e1e1e;
+  border-bottom: 1px solid #3c3c3c;
+  flex-shrink: 0;
+}
+
+.terminal-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cccccc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.visualize-link {
+  font-size: 12px;
+  color: #4ec9b0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.visualize-link:hover {
+  background-color: rgba(78, 201, 176, 0.15);
+}
+
+.terminal-content {
+  flex: 1;
+  padding: 12px 16px;
+  background-color: #1e1e1e;
+  overflow: auto;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+}
+
+.terminal-loading {
+  color: #dcdcaa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.terminal-output {
+  color: #d4d4d4;
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.terminal-error {
+  color: #f44747;
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.terminal-placeholder {
+  color: #808080;
+  font-style: italic;
+}
+
+.terminal-meta {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #3c3c3c;
+  color: #808080;
+  font-size: 11px;
+}

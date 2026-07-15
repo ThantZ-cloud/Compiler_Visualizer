@@ -1,0 +1,20 @@
+import React from 'react';
+import { useCompile } from '../context/CompileContext';
+import AstTree from '../components/AstTree';
+import './PanelPage.css';
+
+const AstPanel: React.FC = () => {
+  const { result } = useCompile();
+
+  if (!result?.astJson) {
+    return <div className="panel-placeholder">No AST generated</div>;
+  }
+
+  return (
+    <div className="panel-page">
+      <AstTree astJson={result.astJson} />
+    </div>
+  );
+};
+
+export default AstPanel;

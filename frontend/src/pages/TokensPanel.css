@@ -1,0 +1,112 @@
+.tokens-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+}
+
+.tokens-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tokens-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.token-filter {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #d4d4d4;
+  background-color: #252526;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  width: 250px;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.token-filter::placeholder {
+  color: #808080;
+}
+
+.token-filter:focus {
+  outline: none;
+  border-color: #007acc;
+}
+
+.tokens-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.token-badge {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.token-badge-keyword { background-color: rgba(197, 134, 192, 0.2); color: #c586c0; }
+.token-badge-type { background-color: rgba(78, 201, 176, 0.2); color: #4ec9b0; }
+.token-badge-identifier { background-color: rgba(156, 220, 254, 0.2); color: #9cdcfe; }
+.token-badge-literal { background-color: rgba(206, 145, 120, 0.2); color: #ce9178; }
+.token-badge-whitespace { background-color: rgba(128, 128, 128, 0.2); color: #808080; }
+.token-badge-separator { background-color: rgba(212, 212, 212, 0.2); color: #d4d4d4; }
+
+.tokens-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  overflow: auto;
+}
+
+.token-card {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  background-color: #252526;
+  border-radius: 6px;
+  border-left: 3px solid #0e639c;
+  min-width: 120px;
+  transition: transform 0.15s ease;
+}
+
+.token-card:hover {
+  transform: translateY(-2px);
+}
+
+.token-type {
+  font-size: 10px;
+  font-weight: 700;
+  color: #569cd6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.token-value {
+  font-size: 13px;
+  color: #ce9178;
+  font-family: 'Consolas', 'Monaco', monospace;
+  word-break: break-all;
+}
+
+.token-pos {
+  font-size: 10px;
+  color: #808080;
+  margin-top: 4px;
+}
+
+/* Token type colors */
+.token-keyword { border-left-color: #c586c0; }
+.token-type { border-left-color: #4ec9b0; }
+.token-identifier { border-left-color: #9cdcfe; }
+.token-literal { border-left-color: #ce9178; }
+.token-whitespace { border-left-color: #808080; }
+.token-separator { border-left-color: #d4d4d4; }
+.token-operator { border-left-color: #d4d4d4; }

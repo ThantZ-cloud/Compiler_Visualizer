@@ -1,6 +1,30 @@
 {
   "version": 1,
   "skills": {
+    "d3js-visualization": {
+      "source": "bbeierle12/skill-mcp-claude",
+      "sourceType": "github",
+      "skillPath": "skills/d3js-visualization/SKILL.md",
+      "computedHash": "e917ab41055fdd7c3633f8d2c632ae78c1aae89f689db2882a69506fdd26a106"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "781bd6d3f9b19f8c9af6b53d8d0e4876d0183841b565db34ca7092ffa412d111"
+    },
+    "framer-motion-animator": {
+      "source": "patricio0312rev/skills",
+      "sourceType": "github",
+      "skillPath": "frontend/framer-motion-animator/SKILL.md",
+      "computedHash": "22a8401fab0cdf32d5c153b98aba5e95435a479810896879535dc7ac3710efbe"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "93f53fd1c0352d3d7ec17b8f73d7351bf76f4821e55d123c9d2abc2c53ba48e4"
+    },
     "java-spring-boot": {
       "source": "pluginagentmarketplace/custom-plugin-java",
       "sourceType": "github",

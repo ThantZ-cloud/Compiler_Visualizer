@@ -218,20 +218,22 @@ function App() {
               rows={2}
             />
           </div>
-          <Editor
-            height="400px"
-            defaultLanguage="java"
-            theme="vs-dark"
-            value={code}
-            onChange={(value) => setCode(value || '')}
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              lineNumbers: 'on',
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-            }}
-          />
+          <div className="editor-wrapper">
+            <Editor
+              height="100%"
+              defaultLanguage="java"
+              theme="vs-dark"
+              value={code}
+              onChange={(value) => setCode(value || '')}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+              }}
+            />
+          </div>
         </div>
 
         <div className="visualization-panel">

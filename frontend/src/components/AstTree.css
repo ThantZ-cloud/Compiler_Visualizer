@@ -1,7 +1,8 @@
 .ast-tree-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   gap: 8px;
 }
 
@@ -25,7 +26,7 @@
 
 .ast-tree-wrapper {
   flex: 1;
-  min-height: 400px;
+  min-height: 0;
   background-color: #1e1e1e;
   border: 1px solid #3c3c3c;
   border-radius: 4px;

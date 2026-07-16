@@ -17,7 +17,6 @@ public class SaveCodeRequest {
     @Size(max = 100, message = "Title must be less than 100 characters")
     private String title;
 
-    @NotBlank(message = "Source code is required")
     private String sourceCode;
 
     private Long folderId;

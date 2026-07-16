@@ -184,18 +184,18 @@ function getColor(kind: string): string {
 
 function getIcon(kind: string): string {
   switch (kind) {
-    case 'package': return '📦';
-    case 'imports': return '📋';
-    case 'import': return '📄';
-    case 'class': return '🏛️';
-    case 'interface': return '📐';
-    case 'enum': return '📊';
-    case 'method': return '⚡';
-    case 'constructor': return '🔧';
-    case 'field': return '📦';
-    case 'parameter': return '📎';
-    case 'inheritance': return '🔗';
-    case 'enum-constant': return '🔹';
+    case 'package': return '⌂';
+    case 'imports': return '≡';
+    case 'import': return '→';
+    case 'class': return '◆';
+    case 'interface': return '◇';
+    case 'enum': return '▥';
+    case 'method': return 'ƒ';
+    case 'constructor': return '⊕';
+    case 'field': return '□';
+    case 'parameter': return '·';
+    case 'inheritance': return '△';
+    case 'enum-constant': return '▪';
     default: return '•';
   }
 }
@@ -338,7 +338,13 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
         <span className="semantic-tree-hint">Click nodes to expand/collapse • Scroll to zoom • Drag to pan</span>
       </div>
       <div className="semantic-tree-wrapper" ref={containerRef}>
-        <svg ref={svgRef} width="100%" height="100%" />
+        <svg
+          ref={svgRef}
+          width="100%"
+          height="100%"
+          role="img"
+          aria-label="Symbol Table tree visualization. Use mouse wheel to zoom, drag to pan, click nodes to expand or collapse."
+        />
       </div>
       {selectedNode && (
         <div className="semantic-node-detail">

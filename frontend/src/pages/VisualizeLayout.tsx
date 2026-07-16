@@ -8,18 +8,19 @@ const VisualizeLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const phases = [
-    { path: '/visualize/tokens', label: 'Tokens', icon: '📋' },
-    { path: '/visualize/ast', label: 'AST', icon: '🌳' },
-    { path: '/visualize/semantic', label: 'Semantic', icon: '📚' },
-    { path: '/visualize/bytecode', label: 'Bytecode', icon: '⚙️' },
+    { path: '/visualize/tokens', label: 'Tokens', icon: '⟐' },
+    { path: '/visualize/ast', label: 'AST', icon: '⌬' },
+    { path: '/visualize/semantic', label: 'Semantic', icon: '◈' },
+    { path: '/visualize/bytecode', label: 'Bytecode', icon: '⏣' },
   ];
 
   return (
     <div className="visualize-layout">
       <nav className="visualize-nav">
-        <button className="back-button" onClick={() => navigate('/')}>
-          ← Editor
+        <button className="back-button" onClick={() => navigate('/compiler')}>
+          ← EDITOR
         </button>
+        <div className="w-px h-5 bg-[var(--color-border)]" />
         <div className="nav-phases">
           {phases.map((phase) => (
             <NavLink
@@ -45,10 +46,10 @@ const VisualizeLayout: React.FC = () => {
         ) : (
           <div className="no-results">
             <div className="no-results-icon">◎</div>
-            <h3>No compilation results</h3>
-            <p>Write some Java code and click "Compile" to see the visualization.</p>
-            <button className="back-to-editor" onClick={() => navigate('/')}>
-              ← Back to Editor
+            <h3>No Compilation Results</h3>
+            <p>{'// '}Write some Java code and click COMPILE to see the visualization.</p>
+            <button className="back-to-editor" onClick={() => navigate('/compiler')}>
+              ← BACK TO EDITOR
             </button>
           </div>
         )}

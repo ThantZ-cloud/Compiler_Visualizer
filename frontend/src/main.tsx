@@ -5,6 +5,7 @@ import './index.css'
 import { AuthProvider } from './context/AuthContext'
 import { CompileProvider } from './context/CompileContext'
 import Layout from './components/Layout'
+import LandingPage from './pages/LandingPage'
 import EditorPage from './pages/EditorPage'
 import VisualizeLayout from './pages/VisualizeLayout'
 import TokensPanel from './pages/TokensPanel'
@@ -19,7 +20,8 @@ createRoot(document.getElementById('root')!).render(
         <CompileProvider>
           <Routes>
             <Route element={<Layout />}>
-              <Route path="/" element={<EditorPage />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/compiler" element={<EditorPage />} />
               <Route path="/visualize" element={<VisualizeLayout />}>
                 <Route path="tokens" element={<TokensPanel />} />
                 <Route path="ast" element={<AstPanel />} />

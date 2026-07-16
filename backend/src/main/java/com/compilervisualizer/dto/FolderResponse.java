@@ -15,6 +15,7 @@ public class FolderResponse {
 
     private Long id;
     private String name;
+    private Long parentId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

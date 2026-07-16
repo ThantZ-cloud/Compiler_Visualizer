@@ -259,7 +259,13 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
         <span className="ast-tree-hint">Double-click to expand/collapse • Scroll to zoom • Drag to pan</span>
       </div>
       <div className="ast-tree-wrapper" ref={containerRef}>
-        <svg ref={svgRef} width="100%" height="100%" />
+        <svg
+          ref={svgRef}
+          width="100%"
+          height="100%"
+          role="img"
+          aria-label="Abstract Syntax Tree visualization. Use mouse wheel to zoom, drag to pan, double-click nodes to expand or collapse."
+        />
       </div>
       {selectedNode && (
         <div className="ast-node-detail">

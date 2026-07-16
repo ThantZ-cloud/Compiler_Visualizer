@@ -1,8 +1,8 @@
-/* Auth Modal Styles */
+/* Auth Modal — Cyberpunk Terminal Style */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(10, 10, 15, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,13 +11,12 @@
 }
 
 .modal {
-  background-color: #252526;
-  border: 1px solid #3c3c3c;
-  border-radius: 8px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-neon);
   width: 100%;
   max-width: 400px;
   padding: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 30px var(--color-neon-dim), inset 0 0 30px var(--color-neon-dim);
 }
 
 .modal-header {
@@ -28,24 +27,29 @@
 }
 
 .modal-header h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-neon);
+  font-family: var(--font-display);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
 .modal-close {
   background: none;
-  border: none;
-  color: #808080;
-  font-size: 24px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 16px;
   cursor: pointer;
-  padding: 0;
+  padding: 2px 6px;
   line-height: 1;
-  transition: color 0.2s;
+  transition: all 0.2s;
+  font-family: var(--font-mono);
 }
 
 .modal-close:hover {
-  color: #ffffff;
+  color: var(--color-rose);
+  border-color: var(--color-rose);
 }
 
 .auth-form {
@@ -56,11 +60,11 @@
 
 .auth-error {
   padding: 10px 12px;
-  background-color: rgba(244, 71, 71, 0.15);
-  border: 1px solid #f44747;
-  border-radius: 4px;
-  color: #f44747;
-  font-size: 13px;
+  background-color: rgba(255, 51, 102, 0.1);
+  border: 1px solid var(--color-rose);
+  color: var(--color-rose);
+  font-size: 11px;
+  font-family: var(--font-mono);
 }
 
 .form-group {
@@ -70,69 +74,77 @@
 }
 
 .form-group label {
-  font-size: 13px;
-  font-weight: 500;
-  color: #cccccc;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-dim);
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .form-group input {
   padding: 10px 12px;
-  background-color: #1e1e1e;
-  color: #d4d4d4;
-  border: 1px solid #3c3c3c;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: border-color 0.2s;
+  background-color: var(--color-void);
+  color: var(--color-neon);
+  border: 1px solid var(--color-border);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  transition: all 0.2s;
 }
 
 .form-group input::placeholder {
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #007acc;
+  border-color: var(--color-neon);
+  box-shadow: 0 0 10px var(--color-neon-dim);
 }
 
 .auth-button {
   padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
-  background-color: #0e639c;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-void);
+  background-color: var(--color-neon);
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   margin-top: 4px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
 }
 
 .auth-button:hover:not(:disabled) {
-  background-color: #1177bb;
+  box-shadow: 0 0 20px var(--color-neon-dim);
 }
 
 .auth-button:disabled {
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .auth-switch {
   text-align: center;
-  font-size: 13px;
-  color: #808080;
+  font-size: 11px;
+  color: var(--color-text-muted);
   margin-top: 8px;
+  font-family: var(--font-mono);
 }
 
 .switch-button {
   background: none;
   border: none;
-  color: #007acc;
+  color: var(--color-neon);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 11px;
   padding: 0;
+  font-family: var(--font-mono);
   text-decoration: underline;
 }
 
 .switch-button:hover {
-  color: #1a9fff;
+  color: var(--color-cyan);
 }

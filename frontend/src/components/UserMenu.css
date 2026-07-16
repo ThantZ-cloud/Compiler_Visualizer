@@ -1,4 +1,4 @@
-/* User Menu Styles */
+/* User Menu — Cyberpunk Terminal Style */
 .user-menu {
   position: relative;
 }
@@ -7,45 +7,47 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  background-color: #333333;
-  border: 1px solid #3c3c3c;
-  border-radius: 4px;
+  padding: 5px 10px;
+  background-color: transparent;
+  border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .user-menu-trigger:hover {
-  background-color: #3c3c3c;
+  border-color: var(--color-neon);
 }
 
 .user-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #0e639c;
-  color: #ffffff;
+  width: 22px;
+  height: 22px;
+  background-color: var(--color-neon);
+  color: var(--color-void);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-display);
 }
 
 .user-name {
-  font-size: 13px;
-  color: #cccccc;
-  font-weight: 500;
+  font-size: 10px;
+  color: var(--color-text);
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .dropdown-arrow {
   font-size: 10px;
-  color: #808080;
+  color: var(--color-text-muted);
   transition: transform 0.2s;
 }
 
 .user-menu-trigger:hover .dropdown-arrow {
-  color: #cccccc;
+  color: var(--color-neon);
 }
 
 .user-menu-dropdown {
@@ -54,10 +56,9 @@
   right: 0;
   margin-top: 4px;
   min-width: 180px;
-  background-color: #252526;
-  border: 1px solid #3c3c3c;
-  border-radius: 4px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
   z-index: 100;
   overflow: hidden;
 }
@@ -67,45 +68,56 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .dropdown-username {
-  font-size: 13px;
-  font-weight: 600;
-  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-neon);
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .dropdown-email {
-  font-size: 12px;
-  color: #808080;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
 }
 
 .dropdown-divider {
   height: 1px;
-  background-color: #3c3c3c;
+  background-color: var(--color-border);
 }
 
 .dropdown-item {
   display: block;
   width: 100%;
   padding: 10px 12px;
-  font-size: 13px;
-  color: #cccccc;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-text-dim);
   background: none;
   border: none;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  font-family: var(--font-display);
+  text-transform: uppercase;
 }
 
 .dropdown-item:hover {
-  background-color: #333333;
+  background-color: var(--color-surface);
+  color: var(--color-text);
 }
 
 .dropdown-item.logout {
-  color: #f44747;
+  color: var(--color-rose);
 }
 
 .dropdown-item.logout:hover {
-  background-color: rgba(244, 71, 71, 0.1);
+  background-color: rgba(255, 51, 102, 0.1);
+  border-left: 2px solid var(--color-rose);
 }

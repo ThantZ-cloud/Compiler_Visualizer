@@ -12,5 +12,9 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
 
     List<Folder> findByUserIdOrderByCreatedAtDesc(Long userId);
 
+    List<Folder> findByUserIdAndParentIdOrderByCreatedAtDesc(Long userId, Long parentId);
+
+    List<Folder> findByUserIdAndParentIsNullOrderByCreatedAtDesc(Long userId);
+
     Optional<Folder> findByIdAndUserId(Long id, Long userId);
 }

@@ -1,11 +1,26 @@
 import React, { useState } from 'react';
 import { useCompile } from '../context/CompileContext';
 import SemanticTree from '../components/SemanticTree';
+import Skeleton from '../components/Skeleton';
 import './PanelPage.css';
 
 const SemanticPanel: React.FC = () => {
-  const { result } = useCompile();
+  const { result, loading } = useCompile();
   const [view, setView] = useState<'tree' | 'json'>('tree');
+
+  if (loading) {
+    return (
+      <div className="panel-page">
+        <div className="panel-header">
+          <Skeleton width="150px" height="20px" />
+          <Skeleton width="120px" height="32px" />
+        </div>
+        <div className="tree-skeleton">
+          <Skeleton count={12} height="16px" />
+        </div>
+      </div>
+    );
+  }
 
   if (!result?.symbolTableJson) {
     return <div className="panel-placeholder">No symbol table generated</div>;
@@ -27,13 +42,13 @@ const SemanticPanel: React.FC = () => {
             className={`toggle-btn ${view === 'tree' ? 'active' : ''}`}
             onClick={() => setView('tree')}
           >
-            🌳 Tree
+            ⌬ Tree
           </button>
           <button
             className={`toggle-btn ${view === 'json' ? 'active' : ''}`}
             onClick={() => setView('json')}
           >
-            { }
+            {'{ }'} JSON
           </button>
         </div>
       </div>

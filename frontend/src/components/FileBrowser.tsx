@@ -1,139 +1,102 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCompile } from '../context/CompileContext';
-import { folderAPI, codeAPI } from '../services/api';
-import type { Folder, SavedCode } from '../types';
-import './FileBrowser.css';
-
-interface FolderWithFiles extends Folder {
-  files: SavedCode[];
-  expanded: boolean;
-}
+import { codeAPI } from '../services/api';
+import type { SavedCode } from '../types';
 
 const FileBrowser: React.FC = () => {
-  const { loadFile, saveFile, newFile, currentFileId } = useCompile();
-  const [folders, setFolders] = useState<FolderWithFiles[]>([]);
-  const [unfiledFiles, setUnfiledFiles] = useState<SavedCode[]>([]);
-  const [newFolderName, setNewFolderName] = useState('');
+  const { loadFile, saveFile, newFile, currentFileId, setCurrentFileId, setCurrentFileName, isDirty, confirmDiscard } = useCompile();
+  const [files, setFiles] = useState<SavedCode[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
   const [newFileName, setNewFileName] = useState('');
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
-  const [isCreatingFile, setIsCreatingFile] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [renamingId, setRenamingId] = useState<number | null>(null);
   const [renameValue, setRenameValue] = useState('');
-  const [contextMenu, setContextMenu] = useState<{ type: 'folder' | 'file'; id: number; x: number; y: number } | null>(null);
-  const folderInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [contextMenu, setContextMenu] = useState<{ id: number; x: number; y: number } | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const renameRef = useRef<HTMLInputElement>(null);
 
-  const loadData = async () => {
+  const loadFiles = async () => {
     try {
-      const [foldersRes, filesRes] = await Promise.all([
-        folderAPI.list(),
-        codeAPI.getSaved(),
-      ]);
-      const folderList = foldersRes.data.map((f: Folder) => ({ ...f, files: [], expanded: true }));
-      const allFiles: SavedCode[] = filesRes.data;
-
-      const unfiled: SavedCode[] = [];
-      allFiles.forEach((file: SavedCode) => {
-        if (file.folderId) {
-          const folder = folderList.find((f: FolderWithFiles) => f.id === file.folderId);
-          if (folder) {
-            folder.files.push(file);
-          } else {
-            unfiled.push(file);
-          }
-        } else {
-          unfiled.push(file);
-        }
-      });
-
-      setFolders(folderList);
-      setUnfiledFiles(unfiled);
+      const res = await codeAPI.getSaved();
+      setFiles(res.data);
     } catch (err) {
       console.error('Failed to load files:', err);
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadFiles(); }, []);
 
   useEffect(() => {
-    if (isCreatingFolder && folderInputRef.current) {
-      folderInputRef.current.focus();
-    }
-  }, [isCreatingFolder]);
+    if (isCreating && inputRef.current) inputRef.current.focus();
+  }, [isCreating]);
 
   useEffect(() => {
-    if (isCreatingFile && fileInputRef.current) {
-      fileInputRef.current.focus();
-    }
-  }, [isCreatingFile]);
-
-  const handleCreateFolder = async () => {
-    if (!newFolderName.trim()) {
-      setIsCreatingFolder(false);
-      return;
-    }
-    try {
-      await folderAPI.create(newFolderName.trim());
-      setNewFolderName('');
-      setIsCreatingFolder(false);
-      loadData();
-    } catch (err) {
-      console.error('Failed to create folder:', err);
-    }
-  };
+    if (renamingId && renameRef.current) renameRef.current.focus();
+  }, [renamingId]);
 
   const handleCreateFile = async () => {
     if (!newFileName.trim()) {
-      setIsCreatingFile(false);
+      setIsCreating(false);
       return;
     }
     try {
       const title = newFileName.endsWith('.java') ? newFileName : newFileName + '.java';
-      await saveFile(title);
+      await saveFile(title, undefined, '');
+      setCurrentFileId(null);
       setNewFileName('');
-      setIsCreatingFile(false);
-      loadData();
+      setIsCreating(false);
+      loadFiles();
     } catch (err) {
       console.error('Failed to create file:', err);
     }
   };
 
-  const handleRenameFolder = async (id: number) => {
-    if (!renameValue.trim()) {
-      setRenamingId(null);
-      return;
-    }
-    try {
-      await folderAPI.rename(id, renameValue.trim());
-      setRenamingId(null);
-      loadData();
-    } catch (err) {
-      console.error('Failed to rename folder:', err);
-    }
-  };
-
-  const handleDeleteFolder = async (id: number) => {
-    try {
-      await folderAPI.delete(id);
-      loadData();
-    } catch (err) {
-      console.error('Failed to delete folder:', err);
-    }
-  };
-
   const handleDeleteFile = async (id: number) => {
+    if (!window.confirm('Delete this file?')) return;
     try {
       await codeAPI.delete(id);
       if (currentFileId === id) newFile();
-      loadData();
+      if (selectedId === id) setSelectedId(null);
+      loadFiles();
     } catch (err) {
       console.error('Failed to delete file:', err);
     }
   };
 
-  const handleContextMenu = (e: React.MouseEvent, type: 'folder' | 'file', id: number) => {
-    e.preventDefault();
-    setContextMenu({ type, id, x: e.clientX, y: e.clientY });
+  const handleRenameFile = async (id: number) => {
+    if (!renameValue.trim()) {
+      setRenamingId(null);
+      return;
+    }
+    try {
+      const file = files.find(f => f.id === id);
+      if (!file) return;
+      const newTitle = renameValue.endsWith('.java') ? renameValue : renameValue + '.java';
+      await codeAPI.update(id, newTitle, file.sourceCode);
+      if (currentFileId === id) setCurrentFileName(newTitle);
+      setRenamingId(null);
+      loadFiles();
+    } catch (err) {
+      console.error('Failed to rename file:', err);
+    }
+  };
+
+  const handleSelectFile = async (file: SavedCode) => {
+    if (currentFileId === file.id) return;
+    if (!confirmDiscard()) return;
+    try {
+      await loadFile(file.id);
+      setSelectedId(file.id);
+    } catch (err) {
+      console.error('Failed to load file:', err);
+    }
+  };
+
+  const handleStartCreate = () => {
+    if (!confirmDiscard()) return;
+    newFile();
+    setIsCreating(true);
+    setNewFileName('');
   };
 
   useEffect(() => {
@@ -142,170 +105,136 @@ const FileBrowser: React.FC = () => {
     return () => document.removeEventListener('click', handler);
   }, []);
 
-  const toggleFolder = (id: number) => {
-    setFolders(prev => prev.map(f => f.id === id ? { ...f, expanded: !f.expanded } : f));
-  };
-
   return (
-    <div className="file-browser">
-      <div className="file-browser-header">
-        <span className="file-browser-title">EXPLORER</span>
+    <div className="w-56 min-w-[200px] bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col shrink-0">
+      {/* Header */}
+      <div className="px-4 py-2.5 border-b border-[var(--color-border)]">
+        <span className="text-[10px] font-bold text-[var(--color-neon)] tracking-[0.2em] uppercase"
+          style={{ fontFamily: 'var(--font-display)' }}>
+          {'< '}EXPLORER{' />'}
+        </span>
       </div>
 
-      <div className="file-browser-content">
-        {/* Root section with action buttons */}
-        <div className="root-section">
-          <div className="root-header">
-            <span className="folder-icon">📂</span>
-            <span className="folder-name root-name">MY SNIPPETS</span>
-            <div className="root-actions">
-              <button
-                className="root-action"
-                onClick={() => { setIsCreatingFile(true); setIsCreatingFolder(false); }}
-                title="New File"
-              >
-                📄
-              </button>
-              <button
-                className="root-action"
-                onClick={() => { setIsCreatingFolder(true); setIsCreatingFile(false); }}
-                title="New Folder"
-              >
-                📁
-              </button>
-            </div>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto py-2">
+        {/* Root */}
+        <div className="mb-1">
+          <div className="flex items-center gap-2 px-3 py-1.5 select-none">
+            <span className="text-[var(--color-neon)] text-xs" style={{ fontFamily: 'var(--font-mono)' }}>⌬</span>
+            <span className="text-[10px] font-bold text-[var(--color-text-dim)] tracking-[0.12em] flex-1"
+              style={{ fontFamily: 'var(--font-display)' }}>
+              SNIPPETS
+            </span>
+            <button
+              className="bg-transparent border-none p-1 text-xs cursor-pointer text-[var(--color-text-muted)] hover:text-[var(--color-neon)] transition-colors opacity-60 hover:opacity-100"
+              onClick={handleStartCreate}
+              title="New File"
+              aria-label="Create new file"
+            >+</button>
           </div>
 
-          {/* New file input (inline) */}
-          {isCreatingFile && (
-            <div className="inline-input">
-              <span className="file-icon">☕</span>
+          {/* Create input */}
+          {isCreating && (
+            <div className="flex items-center gap-2 pl-8 pr-3 py-1">
+              <span className="text-[var(--color-neon)] text-xs shrink-0" style={{ fontFamily: 'var(--font-mono)' }}>☕</span>
               <input
-                ref={fileInputRef}
-                className="inline-input-field"
+                ref={inputRef}
+                className="h-7 flex-1 text-[11px] px-2 bg-[var(--color-void)] border border-[var(--color-neon)] text-[var(--color-neon)] outline-none"
+                style={{ fontFamily: 'var(--font-mono)' }}
                 value={newFileName}
                 onChange={(e) => setNewFileName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleCreateFile();
-                  if (e.key === 'Escape') { setIsCreatingFile(false); setNewFileName(''); }
+                  if (e.key === 'Escape') { setIsCreating(false); setNewFileName(''); }
                 }}
-                onBlur={() => { if (!newFileName.trim()) setIsCreatingFile(false); }}
+                onBlur={() => { if (!newFileName.trim()) setIsCreating(false); }}
                 placeholder="FileName.java"
               />
             </div>
           )}
 
-          {/* Unfiled files */}
-          <div className="file-list">
-            {unfiledFiles.map(file => (
+          {/* File list */}
+          <div className="px-1.5">
+            {files.map(file => (
               <div
                 key={file.id}
-                className={`file-item ${currentFileId === file.id ? 'active' : ''}`}
-                onClick={() => loadFile(file.id)}
-                onContextMenu={(e) => handleContextMenu(e, 'file', file.id)}
-              >
-                <span className="file-icon">☕</span>
-                <span className="file-name">{file.title}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* New folder input (inline) */}
-          {isCreatingFolder && (
-            <div className="inline-input">
-              <span className="folder-icon">📁</span>
-              <input
-                ref={folderInputRef}
-                className="inline-input-field"
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleCreateFolder();
-                  if (e.key === 'Escape') { setIsCreatingFolder(false); setNewFolderName(''); }
+                className={`flex items-center gap-2 px-2.5 py-[5px] mx-1 cursor-pointer transition-all duration-150
+                  ${selectedId === file.id
+                    ? 'bg-[var(--color-neon)]/5 text-[var(--color-neon)] border-l-2 border-[var(--color-neon)]'
+                    : 'text-[var(--color-text-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border-l-2 border-transparent'}`}
+                onClick={() => handleSelectFile(file)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setContextMenu({ id: file.id, x: e.clientX, y: e.clientY });
                 }}
-                onBlur={() => { if (!newFolderName.trim()) setIsCreatingFolder(false); }}
-                placeholder="Folder name"
-              />
-            </div>
-          )}
-
-          {/* Custom folders */}
-          {folders.map(folder => (
-            <div key={folder.id} className="folder-item">
-              <div
-                className="folder-header"
-                onClick={() => toggleFolder(folder.id)}
-                onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id)}
               >
-                <span className="folder-arrow">{folder.expanded ? '▾' : '▸'}</span>
-                <span className="folder-icon">📁</span>
-                {renamingId === folder.id ? (
+                <span className="text-[var(--color-neon)] text-[10px] shrink-0" style={{ fontFamily: 'var(--font-mono)' }}>☕</span>
+                {renamingId === file.id ? (
                   <input
-                    className="rename-input"
+                    ref={renameRef}
+                    className="h-6 flex-1 text-[11px] px-1 bg-[var(--color-void)] border border-[var(--color-neon)] text-[var(--color-neon)] outline-none"
+                    style={{ fontFamily: 'var(--font-mono)' }}
                     value={renameValue}
                     onChange={(e) => setRenameValue(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleRenameFolder(folder.id);
+                      if (e.key === 'Enter') handleRenameFile(file.id);
                       if (e.key === 'Escape') setRenamingId(null);
                     }}
-                    onBlur={() => handleRenameFolder(folder.id)}
-                    autoFocus
+                    onBlur={() => handleRenameFile(file.id)}
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span className="folder-name">{folder.name}</span>
+                  <span className="text-[11px] flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
+                    style={{ fontFamily: 'var(--font-mono)' }}>
+                    {file.title}
+                    {currentFileId === file.id && isDirty && (
+                      <span className="text-[var(--color-amber)] text-[10px] ml-1">●</span>
+                    )}
+                  </span>
                 )}
+                <button
+                  className="bg-transparent border-none p-0.5 px-1 text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-rose)] transition-all shrink-0 opacity-0 hover:opacity-100"
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
+                  onClick={(e) => { e.stopPropagation(); handleDeleteFile(file.id); }}
+                  title="Delete File"
+                  aria-label={`Delete ${file.title}`}
+                >✕</button>
               </div>
-              {folder.expanded && (
-                <div className="file-list">
-                  {folder.files.map(file => (
-                    <div
-                      key={file.id}
-                      className={`file-item ${currentFileId === file.id ? 'active' : ''}`}
-                      onClick={() => loadFile(file.id)}
-                      onContextMenu={(e) => handleContextMenu(e, 'file', file.id)}
-                    >
-                      <span className="file-icon">☕</span>
-                      <span className="file-name">{file.title}</span>
-                    </div>
-                  ))}
-                  {folder.files.length === 0 && (
-                    <div className="empty-folder">No files</div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
+            ))}
+            {files.length === 0 && !isCreating && (
+              <div className="text-[10px] text-[var(--color-text-muted)] px-2.5 py-2" style={{ fontFamily: 'var(--font-mono)' }}>
+                {'// '}No files yet
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Context menu */}
       {contextMenu && (
         <div
-          className="context-menu"
+          className="fixed bg-[var(--color-card)] border border-[var(--color-border)] shadow-2xl z-50 min-w-[140px] py-1"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >
-          {contextMenu.type === 'folder' && (
-            <>
-              <button onClick={() => {
-                const folder = folders.find(f => f.id === contextMenu.id);
-                if (folder) { setRenamingId(folder.id); setRenameValue(folder.name); }
-                setContextMenu(null);
-              }}>Rename</button>
-              <button onClick={() => { handleDeleteFolder(contextMenu.id); setContextMenu(null); }}>Delete</button>
-            </>
-          )}
-          {contextMenu.type === 'file' && (
-            <>
-              <button onClick={() => {
-                const file = [...unfiledFiles, ...folders.flatMap(f => f.files)].find(f => f.id === contextMenu.id);
-                if (file) loadFile(file.id);
-                setContextMenu(null);
-              }}>Open</button>
-              <button onClick={() => { handleDeleteFile(contextMenu.id); setContextMenu(null); }}>Delete</button>
-            </>
-          )}
+          <button
+            className="block w-full px-4 py-2 text-[11px] text-[var(--color-text-dim)] bg-transparent border-none text-left hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] transition-colors"
+            style={{ fontFamily: 'var(--font-mono)' }}
+            onClick={() => {
+              const file = files.find(f => f.id === contextMenu.id);
+              if (file) {
+                setRenamingId(file.id);
+                setRenameValue(file.title.replace('.java', ''));
+              }
+              setContextMenu(null);
+            }}
+          > Rename</button>
+          <button
+            className="block w-full px-4 py-2 text-[11px] text-[var(--color-rose)] bg-transparent border-none text-left hover:bg-[var(--color-rose)]/10 transition-colors"
+            style={{ fontFamily: 'var(--font-mono)' }}
+            onClick={() => { handleDeleteFile(contextMenu.id); setContextMenu(null); }}
+          > Delete</button>
         </div>
       )}
     </div>

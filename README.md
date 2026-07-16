@@ -7,8 +7,9 @@ A web application for visualizing the Java compilation pipeline. Write Java code
 ### Frontend
 
 - **React 19** + **TypeScript 6** + **Vite 8**
+- **React Router v7** — multi-page navigation (editor vs visualizations)
 - **Monaco Editor** (`@monaco-editor/react`) — VS Code-like code editing with Java syntax highlighting
-- **D3.js** — AST tree rendering (planned)
+- **D3.js** — data visualization (AST tree, token charts, symbol table tree)
 - **Framer Motion** — animations
 - **Axios** — API client with JWT interceptors
 - **oxlint** — linting (not ESLint)
@@ -94,23 +95,40 @@ Phases 1 and 2 run in parallel via `CompletableFuture`. Results are cached (LRU,
 | POST | `/api/compile/bytecode` | No | Bytecode generation only |
 | POST | `/api/execute` | No | Execute compiled code |
 | POST | `/api/code/save` | Yes | Save code snippet |
-| GET | `/api/code/saved` | Yes | List saved snippets |
-| GET | `/api/code/:id` | Yes | Get a saved snippet |
+| GET | `/api/code/saved` | Yes | List saved snippets (supports `?folderId=` filter) |
+| PUT | `/api/code/:id` | Yes | Update a saved snippet |
 | DELETE | `/api/code/:id` | Yes | Delete a saved snippet |
+| POST | `/api/folders` | Yes | Create a folder |
+| GET | `/api/folders` | Yes | List all folders |
+| PUT | `/api/folders/:id` | Yes | Rename a folder |
+| DELETE | `/api/folders/:id` | Yes | Delete a folder |
 
 ### Frontend Structure
 
 ```
 frontend/src/
-├── App.tsx              # Main app: editor + visualization panels
-├── App.css              # Dark theme styling (VS Code-inspired)
-├── main.tsx             # React entry point
+├── main.tsx                 # Entry point with BrowserRouter, Routes, CompileProvider
+├── index.css                # Dark theme reset (VS Code-inspired)
 ├── context/
-│   └── AuthContext.tsx   # Auth state (login, register, logout)
+│   ├── AuthContext.tsx      # Auth state (login, register, logout, JWT token)
+│   └── CompileContext.tsx   # Shared compile state (code, results, file management)
+├── components/
+│   ├── Layout.tsx           # Shared layout: header + sidebar + Outlet for routes
+│   ├── FileBrowser.tsx      # VS Code-like sidebar (folders, files, context menu)
+│   ├── AstTree.tsx          # D3.js AST tree visualization (collapsible)
+│   ├── TokenChart.tsx       # D3.js token bar chart + token flow visualization
+│   └── SemanticTree.tsx     # D3.js collapsible tree for symbol table
+├── pages/
+│   ├── EditorPage.tsx       # Code editor (Monaco) + terminal output
+│   ├── VisualizeLayout.tsx  # Nav bar with phase links + Outlet
+│   ├── TokensPanel.tsx      # Token visualization with chart/grid toggle
+│   ├── AstPanel.tsx         # Full-screen AST tree
+│   ├── SemanticPanel.tsx    # Symbol table with tree/JSON toggle
+│   └── BytecodePanel.tsx    # Full-screen bytecode display
 ├── services/
-│   └── api.ts           # Axios client: authAPI, compileAPI, executeAPI, codeAPI
+│   └── api.ts               # Axios client: authAPI, compileAPI, codeAPI, folderAPI
 └── types/
-    └── index.ts         # TypeScript interfaces (Token, CompileResponse, etc.)
+    └── index.ts             # TypeScript interfaces (Token, CompileResponse, Folder, etc.)
 ```
 
 ### Backend Structure
@@ -119,16 +137,20 @@ frontend/src/
 backend/src/main/java/com/compilervisualizer/
 ├── CompilerVisualizerApplication.java   # Spring Boot entry point
 ├── config/
-│   ├── CorsConfig.java                  # CORS (localhost:5173 ↔ :8080)
-│   ├── SecurityConfig.java              # Spring Security + JWT filter chain
+│   ├── SecurityConfig.java              # Spring Security + JWT + CORS config
 │   └── GlobalExceptionHandler.java      # Global error handling
 ├── controller/
 │   ├── AuthController.java              # /api/auth/**
 │   ├── CompileController.java           # /api/compile/**
 │   ├── ExecuteController.java           # /api/execute/**
-│   └── CodeController.java              # /api/code/**
+│   ├── CodeController.java              # /api/code/**
+│   └── FolderController.java            # /api/folders/**
 ├── dto/                                 # Request/response DTOs (Lombok @Builder)
-├── model/                               # JPA entities (User, SavedCode)
+├── model/
+│   ├── User.java                        # User entity
+│   ├── SavedCode.java                   # Saved code with folder FK
+│   ├── Folder.java                      # Folder entity (user-owned)
+│   └── CompilationLog.java              # Compilation history
 ├── repository/                          # Spring Data JPA repositories
 ├── security/
 │   ├── JwtTokenProvider.java            # JWT generation and validation
@@ -140,19 +162,30 @@ backend/src/main/java/com/compilervisualizer/
     ├── AstSerializer.java               # AST → JSON conversion
     ├── SymbolTableBuilder.java          # Symbol table extraction
     ├── AuthService.java                 # Registration and login logic
-    └── CodeService.java                 # Saved code CRUD
+    ├── CodeService.java                 # Saved code CRUD (with folder support)
+    └── FolderService.java               # Folder CRUD
 ```
 
 ## UI
 
-The app uses a split-panel layout:
+The app uses a VS Code-inspired layout with React Router for multi-page navigation:
 
-- **Left panel**: Monaco Editor with Java syntax highlighting + stdin input textarea
-- **Right panel**: Tabbed visualization (Tokens | AST | Semantic | Bytecode | Execution)
-- **Header**: "Compile & Execute" button with cancel support
-- **Error banner**: Toast-style errors at the bottom
+### Routes
+- **`/`** — Code editor (Monaco) with terminal output at bottom
+- **`/visualize/tokens`** — D3.js bar chart + token flow visualization
+- **`/visualize/ast`** — D3.js collapsible AST tree
+- **`/visualize/semantic`** — D3.js collapsible symbol table tree
+- **`/visualize/bytecode`** — Raw bytecode display
 
-The theme is dark (VS Code-inspired) with color-coded token types (keywords, methods, classes).
+### Components
+- **Header**: Logo, "Compile & Execute" button with cancel support, "Visualize" button, auth buttons
+- **Sidebar** (when logged in): VS Code-like FileBrowser with folders and files
+- **Editor**: Monaco Editor with Java syntax highlighting
+- **Terminal**: Output panel at bottom (like VS Code terminal)
+- **Visualizations**: Full-screen D3.js charts/trees for each compilation phase
+
+### Theme
+Dark theme (VS Code-inspired) with color-coded token types (keywords, methods, classes).
 
 ## Configuration
 

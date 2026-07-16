@@ -254,13 +254,21 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       <div className="chart-section">
         <h3 className="chart-title">Token Distribution by Type</h3>
         <div className="chart-wrapper">
-          <svg ref={barChartRef} />
+          <svg
+            ref={barChartRef}
+            role="img"
+            aria-label="Bar chart showing token count distribution by type"
+          />
         </div>
       </div>
       <div className="chart-section">
         <h3 className="chart-title">Token Flow (source code sequence)</h3>
         <div className="chart-wrapper flow-wrapper">
-          <svg ref={flowChartRef} />
+          <svg
+            ref={flowChartRef}
+            role="img"
+            aria-label="Token flow visualization showing tokens as colored blocks in source code sequence. Hover over blocks to see details."
+          />
         </div>
         <div className="chart-hint">Hover over tokens to see details</div>
       </div>

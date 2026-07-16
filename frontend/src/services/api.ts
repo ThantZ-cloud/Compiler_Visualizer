@@ -61,7 +61,7 @@ export const codeAPI = {
 
 // Folder API
 export const folderAPI = {
-  create: (name: string) => api.post('/folders', { name }),
+  create: (name: string, parentId?: number) => api.post('/folders', { name, parentId }),
   list: () => api.get('/folders'),
   rename: (id: number, name: string) => api.put(`/folders/${id}`, { name }),
   delete: (id: number) => api.delete(`/folders/${id}`),

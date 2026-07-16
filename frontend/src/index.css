@@ -1,7 +1,41 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@theme {
+  --color-void: #0A0A0F;
+  --color-void-light: #0E0E18;
+  --color-card: #12121A;
+  --color-card-hover: #1A1A28;
+  --color-surface: #16161F;
+  --color-surface-2: #1E1E2E;
+  --color-surface-3: #262638;
+  --color-border: #1E1E30;
+  --color-border-bright: #2A2A42;
+  --color-neon: #00FF88;
+  --color-neon-dim: #00FF8833;
+  --color-neon-glow: #00FF8866;
+  --color-cyan: #00D4FF;
+  --color-cyan-dim: #00D4FF22;
+  --color-magenta: #FF00FF;
+  --color-magenta-dim: #FF00FF22;
+  --color-amber: #FFB000;
+  --color-amber-dim: #FFB00022;
+  --color-rose: #FF3366;
+  --color-rose-dim: #FF336622;
+  --color-text: #E0E0F0;
+  --color-text-dim: #8888AA;
+  --color-text-muted: #555570;
+  --color-binary: #00FF8844;
+  --font-display: 'Orbitron', monospace;
+  --font-body: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  border-radius: 0 !important;
 }
 
 html, body {
@@ -10,9 +44,9 @@ html, body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  background-color: #1e1e1e;
-  color: #d4d4d4;
+  font-family: var(--font-body);
+  background-color: var(--color-void);
+  color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -24,4 +58,345 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Scrollbar — cyberpunk style */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neon-dim);
+  border: 1px solid var(--color-neon);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neon-glow);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-neon-dim);
+  color: var(--color-neon);
+}
+
+/* ── Scanline overlay ── */
+.scanlines::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 136, 0.015) 2px,
+    rgba(0, 255, 136, 0.015) 4px
+  );
+}
+
+/* ── Glitch animation ── */
+@keyframes glitch {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, -2px); }
+  80% { transform: translate(1px, 2px); }
+}
+
+@keyframes glitch-skew {
+  0%, 100% { transform: skew(0deg); }
+  20% { transform: skew(-0.5deg); }
+  40% { transform: skew(0.5deg); }
+  60% { transform: skew(-0.3deg); }
+  80% { transform: skew(0.3deg); }
+}
+
+@keyframes text-glitch {
+  0%, 100% {
+    text-shadow:
+      2px 0 var(--color-cyan),
+      -2px 0 var(--color-magenta);
+    clip-path: inset(0 0 0 0);
+  }
+  5% {
+    text-shadow:
+      -2px 0 var(--color-cyan),
+      2px 0 var(--color-magenta);
+    clip-path: inset(20% 0 30% 0);
+  }
+  10% {
+    text-shadow:
+      2px 0 var(--color-cyan),
+      -2px 0 var(--color-magenta);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.glitch-hover:hover {
+  animation: glitch 0.3s ease-in-out;
+}
+
+.text-glitch {
+  animation: text-glitch 4s infinite;
+}
+
+/* ── Neon glow utilities ── */
+.neon-text {
+  color: var(--color-neon);
+  text-shadow:
+    0 0 7px var(--color-neon),
+    0 0 20px var(--color-neon-dim),
+    0 0 40px var(--color-neon-dim);
+}
+
+.neon-text-cyan {
+  color: var(--color-cyan);
+  text-shadow:
+    0 0 7px var(--color-cyan),
+    0 0 20px var(--color-cyan-dim);
+}
+
+.neon-text-magenta {
+  color: var(--color-magenta);
+  text-shadow:
+    0 0 7px var(--color-magenta),
+    0 0 20px var(--color-magenta-dim);
+}
+
+.neon-border {
+  border: 1px solid var(--color-neon);
+  box-shadow:
+    0 0 5px var(--color-neon-dim),
+    inset 0 0 5px var(--color-neon-dim);
+}
+
+.neon-border-cyan {
+  border: 1px solid var(--color-cyan);
+  box-shadow:
+    0 0 5px var(--color-cyan-dim),
+    inset 0 0 5px var(--color-cyan-dim);
+}
+
+.neon-glow {
+  box-shadow:
+    0 0 15px var(--color-neon-dim),
+    0 0 30px var(--color-neon-dim);
+}
+
+/* ── Blink cursor ── */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink::after {
+  content: '█';
+  color: var(--color-neon);
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+
+/* ── Typewriter ── */
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* ── Pulse ring ── */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 var(--color-neon-glow); }
+  70% { box-shadow: 0 0 0 12px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.pulse-ring {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* ── CRT flicker ── */
+@keyframes crt-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.8; }
+  94% { opacity: 1; }
+}
+
+/* ── Terminal prompt ── */
+.terminal-prompt::before {
+  content: '> ';
+  color: var(--color-neon);
+  font-weight: 700;
+}
+
+/* ── Binary float keyframes ── */
+@keyframes float-up {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-10vh) rotate(180deg); opacity: 0; }
+}
+
+/* ── ASCII box styles ── */
+.ascii-box {
+  border: 1px solid var(--color-neon);
+  position: relative;
+}
+
+.ascii-box::before {
+  content: '+';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  color: var(--color-neon);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.ascii-box::after {
+  content: '+';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  color: var(--color-neon);
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* ── Phase card hover ── */
+.phase-card {
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+}
+
+.phase-card:hover {
+  border-color: var(--color-neon);
+  box-shadow: 0 0 20px var(--color-neon-dim), inset 0 0 20px var(--color-neon-dim);
+  transform: translateY(-2px);
+}
+
+/* ── Button styles ── */
+.btn-neon {
+  background: transparent;
+  border: 1px solid var(--color-neon);
+  color: var(--color-neon);
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-neon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-neon);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.btn-neon:hover {
+  color: var(--color-void);
+  box-shadow: 0 0 20px var(--color-neon-dim), 0 0 40px var(--color-neon-dim);
+}
+
+.btn-neon:hover::before {
+  opacity: 1;
+}
+
+.btn-neon span {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-neon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-neon:disabled:hover {
+  box-shadow: none;
+  color: var(--color-neon);
+}
+
+.btn-neon:disabled:hover::before {
+  opacity: 0;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .glitch-hover:hover,
+  .text-glitch,
+  .cursor-blink::after {
+    animation: none;
+  }
+
+  .scanlines::after {
+    display: none;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Focus states for accessibility ── */
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-neon);
+  outline-offset: 2px;
+}
+
+.btn-neon:focus-visible {
+  outline: 2px solid var(--color-neon);
+  outline-offset: 2px;
+  box-shadow: 0 0 10px var(--color-neon-dim);
+}
+
+/* ── Skip link for keyboard navigation ── */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-neon);
+  color: var(--color-void);
+  padding: 8px 16px;
+  z-index: 10000;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ── Skeleton loading animation ── */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
 }

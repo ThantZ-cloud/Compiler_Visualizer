@@ -24,53 +24,42 @@ The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spri
 
 ---
 
-## 2. Tech Stack (Actual)
+## 2. Tech Stack
 
 | Layer | Technology | Version | Why |
 |---|---|---|---|
 | **Frontend** | React + TypeScript | React 19, TS 6, Vite 8 | Modern, component-based, strong typing |
+| **UI Framework** | Tailwind CSS v4 | ^4.0 | Utility-first CSS, rapid styling |
+| **Component Library** | shadcn/ui | latest | Pre-built accessible components |
 | **Code Editor** | Monaco Editor | @monaco-editor/react ^4.7 | VS Code's editor — syntax highlighting, autocomplete |
-| **Tree Visualization** | D3.js | ^7.9 | Best library for rendering AST/parse trees (planned) |
-| **Animations** | Framer Motion | ^12.42 | Smooth phase transitions (planned) |
+| **Tree Visualization** | D3.js | ^7.9 | Best library for rendering AST/parse trees |
+| **Animations** | Framer Motion | ^12.42 | Smooth phase transitions |
 | **HTTP Client** | Axios | ^1.18 | API calls with JWT interceptors |
 | **Backend** | Spring Boot | 3.2.0, Java 17 | Industry standard, matches Java EE |
 | **Java Parsing** | JavaParser | 3.25.8 | Token extraction + AST without building a compiler |
 | **Bytecode** | javac + javap | JDK built-in | Compile in-process, disassemble with `javap -c -p` |
-| **Database** | MySQL | 8+ (prod) | Production database |
+| **Database (Dev)** | SQLite | via Hibernate | Simple local development, no server needed |
+| **Database (Prod)** | MySQL | 8+ | Production database |
 | **ORM** | Spring Data JPA | Hibernate | Standard JPA with Spring Boot |
 | **Auth** | Spring Security + JWT | jjwt 0.12.3 | Stateless authentication |
 | **Build Tool** | Maven | Spring wrapper | Standard Java build tool |
 | **Linting** | oxlint | ^1.71 | NOT ESLint — faster, Rust-based |
 
-### What's Actually Built vs Planned
+### Design System
 
-| Feature | Status | Notes |
+| Token | Value | Usage |
 |---|---|---|
-| Spring Boot project setup | ✅ Done | Maven, Java 17, Spring Boot 3.2 |
-| React project setup | ✅ Done | Vite 8, TypeScript 6, oxlint |
-| MySQL database | ✅ Done | Configured in `application.properties` |
-| JWT authentication | ✅ Done | Register, login, token validation |
-| Save/load code snippets | ✅ Done | CRUD endpoints + frontend API |
-| Token extraction (JavaLexer) | ✅ Done | Via JavaParser AST visitors |
-| AST generation | ✅ Done | `StaticJavaParser.parse()` + JSON serialization |
-| Symbol table extraction | ✅ Done | `SymbolTableBuilder` walks AST |
-| Bytecode generation | ✅ Done | `javax.tools.JavaCompiler` + `javap -c -p` |
-| Code execution | ✅ Done | ProcessBuilder with 10s timeout, stdin support |
-| Compile & Execute button | ✅ Done | With cancel support (AbortController) |
-| Phase tabs UI | ✅ Done | Tokens, AST, Semantic, Bytecode, Execution |
-| Token list display | ✅ Done | Color-coded by type (keyword, method, class) |
-| AST JSON display | ✅ Done | Pre-formatted JSON (D3 tree planned) |
-| Symbol table display | ✅ Done | Pre-formatted JSON |
-| Bytecode display | ✅ Done | Pre-formatted monospace text |
-| Execution output display | ✅ Done | Terminal-style with error handling |
-| stdin input | ✅ Done | Textarea for Scanner input |
-| Compilation caching | ✅ Done | LRU cache, max 128 entries |
-| D3.js tree visualization | ❌ Planned | Interactive AST tree nodes |
-| Framer Motion animations | ❌ Planned | Phase transition animations |
-| Save/Load UI | ❌ Planned | Frontend for saved snippets |
-| Compilation history | ❌ Planned | Backend entity not yet created |
-| Responsive design | ❌ Planned | Desktop-first for now |
-| Dark/light theme toggle | ❌ Planned | Dark theme only for now |
+| `--color-midnight` | `#0a0e1a` | Page background |
+| `--color-surface` | `#111827` | Card/panel background |
+| `--color-surface-2` | `#1a2234` | Elevated surfaces |
+| `--color-cyan` | `#00d4ff` | Primary accent |
+| `--color-amber` | `#f59e0b` | Secondary accent |
+| `--color-violet` | `#a78bfa` | Tertiary accent |
+| `--color-emerald` | `#34d399` | Success states |
+| `--color-rose` | `#fb7185` | Error/delete states |
+| `--font-display` | Space Grotesk | Headings |
+| `--font-body` | Inter | Body text |
+| `--font-mono` | JetBrains Mono | Code/data |
 
 ---
 
@@ -79,19 +68,24 @@ The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spri
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    React Frontend                           │
+│  (React Router: / = landing, /compiler = editor)            │
 │                                                             │
 │  ┌──────────────┐  ┌─────────────────────────────────────┐ │
-│  │   Monaco     │  │      Visualization Panel            │ │
-│  │   Code       │  │  ┌─────┬─────┬─────┬─────┬─────┐  │ │
-│  │   Editor     │  │  │Token│ AST │Sema │Byte │Exec │  │ │
-│  │              │  │  └──┬──┴──┬──┴──┬──┴──┬──┴──┬──┘  │ │
-│  └──────┬───────┘  │     │     │     │     │     │      │ │
-│         │          │  [Tab-based Phase Switching]        │ │
-│         │          └─────────────────────────────────────┘ │
-│         │          ┌─────────────────────────────────────┐ │
-│         └─────────▶│      Stdin Input + Output           │ │
-│                    │      (execution result)             │ │
+│  │   Sidebar    │  │      Route Content                  │ │
+│  │ (FileBrowser)│  │                                     │ │
+│  │  - Files     │  │  / → LandingPage                    │ │
+│  │  (flat list) │  │  /compiler → EditorPage             │ │
+│  │              │  │  /visualize/tokens → TokenChart     │ │
+│  └──────────────┘  │  /visualize/ast → AstTree (D3.js)   │ │
+│                    │  /visualize/semantic → SemanticTree │ │
+│                    │  /visualize/bytecode → BytecodePanel │ │
 │                    └─────────────────────────────────────┘ │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  CompileContext (shared state)                      │   │
+│  │  - code, results, currentFileId, isDirty            │   │
+│  │  - save/load, confirmDiscard                        │   │
+│  └─────────────────────────────────────────────────────┘   │
 └────────────────────────────┬────────────────────────────────┘
                              │ REST API (JSON) + JWT Header
 ┌────────────────────────────▼────────────────────────────────┐
@@ -110,7 +104,7 @@ The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spri
 │         │          └──────────────────────────────────┘   │
 │         │          ┌──────────────────────────────────┐   │
 │         │          │         /api/code                 │   │
-│         │          │  Save, Load, Delete snippets      │   │
+│         │          │  Save, Load, Update, Delete       │   │
 │         │          └──────────────────────────────────┘   │
 │         └─────────────────┼──────────────────────────────┘
 │                           │
@@ -121,16 +115,31 @@ The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spri
 └───────────────────────────┼─────────────────────────────────┘
                             │
                  ┌──────────▼──────────┐
-                 │      MySQL          │
+                 │  SQLite (dev)       │
+                 │  MySQL (prod)       │
                  │                     │
                  │  - users            │
                  │  - saved_code       │
+                 │  - folder           │
                  └─────────────────────┘
 ```
 
 ---
 
-## 4. Database Schema (Actual)
+## 4. Route Structure
+
+| Route | Component | Description |
+|---|---|---|
+| `/` | LandingPage | Hero section, pipeline overview, code preview |
+| `/compiler` | EditorPage | Monaco editor, file sidebar, output terminal |
+| `/visualize/tokens` | TokensPanel | D3.js bar chart + token flow |
+| `/visualize/ast` | AstPanel | D3.js collapsible tree |
+| `/visualize/semantic` | SemanticPanel | D3.js collapsible symbol table |
+| `/visualize/bytecode` | BytecodePanel | Raw bytecode display |
+
+---
+
+## 5. Database Schema
 
 ### users
 | Column | Type | Description |
@@ -147,28 +156,36 @@ The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spri
 |---|---|---|
 | id | BIGINT (PK) | Auto-generated |
 | user_id | BIGINT (FK) | References users.id |
+| folder_id | BIGINT (FK, nullable) | References folder.id (unused in UI) |
 | title | VARCHAR | Code title |
 | source_code | TEXT | Java source code |
 | created_at | TIMESTAMP | When saved |
 | updated_at | TIMESTAMP | Last modified |
 
-### compilation_log (planned — entity not yet created)
+### folder
 | Column | Type | Description |
 |---|---|---|
 | id | BIGINT (PK) | Auto-generated |
 | user_id | BIGINT (FK) | References users.id |
-| code_id | BIGINT (FK) | References saved_code.id |
-| source_code | TEXT | Code that was compiled |
-| tokens_json | TEXT | Lexical analysis output |
-| ast_json | TEXT | Abstract syntax tree |
-| symbol_table_json | TEXT | Semantic analysis output |
-| bytecode | TEXT | Generated bytecode |
-| execution_output | TEXT | Code execution result |
-| compiled_at | TIMESTAMP | When compiled |
+| name | VARCHAR | Folder name |
+| parent_id | BIGINT (FK, nullable) | Self-referencing for nesting |
+| created_at | TIMESTAMP | When created |
+| updated_at | TIMESTAMP | Last modified |
+
+> **Note**: Folder management exists in the backend but the frontend uses flat file listing only. Folders are not exposed in the current UI.
+
+### Database Profiles
+
+| Profile | Database | Config File |
+|---|---|---|
+| `dev` (default) | SQLite (`dev.db`) | `application-dev.properties` |
+| `prod` | MySQL | `application-prod.properties` |
+
+Switch profiles: `./mvnw spring-boot:run -Dspring-boot.run.profiles=prod`
 
 ---
 
-## 5. API Endpoints (Actual)
+## 6. API Endpoints
 
 ### Authentication
 | Method | Endpoint | Auth | Description |
@@ -181,11 +198,6 @@ The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spri
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | POST | `/api/compile` | No | Full pipeline (tokens + AST + symbol table + bytecode + execution) |
-| POST | `/api/compile/tokens` | No | Full pipeline (not optimized yet) |
-| POST | `/api/compile/ast` | No | Full pipeline (not optimized yet) |
-| POST | `/api/compile/semantic` | No | Full pipeline (not optimized yet) |
-| POST | `/api/compile/bytecode` | No | Full pipeline (not optimized yet) |
-| POST | `/api/execute` | No | Execute compiled code only |
 
 ### Code Management
 | Method | Endpoint | Auth | Description |
@@ -193,36 +205,20 @@ The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spri
 | POST | `/api/code/save` | Yes | Save code snippet |
 | GET | `/api/code/saved` | Yes | Get all saved codes |
 | GET | `/api/code/{id}` | Yes | Get specific code |
+| PUT | `/api/code/{id}` | Yes | Update code title/source |
 | DELETE | `/api/code/{id}` | Yes | Delete code |
 
-### Request/Response Format
-```json
-// POST /api/compile
-// Request:
-{
-  "sourceCode": "public class Main { public static void main(String[] args) { System.out.println(\"Hello\"); } }",
-  "input": ""  // optional stdin
-}
-
-// Response:
-{
-  "tokens": [{"type": "KEYWORD", "value": "public", "line": 1, "column": 1, "length": 6}],
-  "astJson": "{...}",
-  "symbolTableJson": "{...}",
-  "bytecode": "public static void main(java.lang.String[]);",
-  "executionOutput": "Hello",
-  "compilationTimeMs": 342,
-  "tokenTimeMs": 45,
-  "astTimeMs": 45,
-  "symbolTableTimeMs": 23,
-  "bytecodeTimeMs": 180,
-  "executionTimeMs": 49
-}
-```
+### Folder Management (backend exists, not used in UI)
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/folders` | Yes | Create a folder |
+| GET | `/api/folders` | Yes | List all folders |
+| PUT | `/api/folders/{id}` | Yes | Rename a folder |
+| DELETE | `/api/folders/{id}` | Yes | Delete a folder |
 
 ---
 
-## 6. Compilation Phases (What Happens Inside)
+## 7. Compilation Phases
 
 ### Phase 1: Lexical Analysis (Tokenization)
 ```
@@ -238,72 +234,120 @@ Output: [
 **How:** `JavaLexer` uses JavaParser's AST visitor to walk the tree and extract tokens.
 
 ### Phase 2: Syntax Analysis (Parsing)
-```
-Output: JSON representation of the AST
-```
 **How:** `StaticJavaParser.parse()` builds the tree, `AstSerializer.toJson()` converts to JSON.
 
 ### Phase 3: Semantic Analysis
-```
-Output: {
-  "classes": [{"name": "Main", "methods": [...], "fields": [...]}]
-}
-```
 **How:** `SymbolTableBuilder` walks the AST, extracts class/method/field declarations with types.
 
 ### Phase 4: Code Generation (Bytecode)
-```
-Output: JVM bytecode instructions (javap -c -p)
-```
 **How:** `javax.tools.JavaCompiler` compiles in-process (no fork), then `javap` disassembles.
 
 ### Phase 5: Execution
-```
-Output: stdout, stderr, exit code
-```
 **How:** `ProcessBuilder` runs `java -cp <tempdir> Main` with 10s timeout. Stdin piped in if provided.
 
 ### Performance: Parallel Execution
-Phases 1 and 2 run in parallel via `CompletableFuture`:
-```java
-CompletableFuture<List<TokenDto>> tokensFuture = CompletableFuture.supplyAsync(() -> lexer.tokenize());
-CompletableFuture<CompilationUnit> astFuture = CompletableFuture.supplyAsync(() -> parse(sourceCode));
-// Both run simultaneously — same wall-clock time as one phase
+Phases 1 and 2 run in parallel via `CompletableFuture`.
+
+---
+
+## 8. File Management
+
+### Current Implementation
+- **Flat file list** under "MY SNIPPETS" root
+- No folder navigation in the UI (backend folder endpoints exist but unused)
+- Each file stores: title, source code, timestamps
+
+### Features
+| Feature | Status | Description |
+|---|---|---|
+| Create file | ✅ | Click 📄 → type name → Enter |
+| Load file | ✅ | Click file in sidebar → loads in editor |
+| Save file | ✅ | 💾 button or Ctrl+S |
+| Delete file | ✅ | ✕ button on hover, with confirmation |
+| Rename file | ✅ | Right-click → Rename |
+| Dirty tracking | ✅ | Amber dot (●) when unsaved changes |
+| Unsaved warning | ✅ | Confirm dialog before switching files |
+
+### Save Flow
+1. **New file** (no `currentFileId`): Prompts for filename, creates record, sets `currentFileId`
+2. **Existing file** (`currentFileId` set): Updates record with current code
+3. **Dirty state**: `isDirty` tracks if code differs from last saved state
+4. **Confirm discard**: `confirmDiscard()` checks `isDirty` and shows `window.confirm()`
+
+---
+
+## 9. UI Layout
+
+### Landing Page (`/`)
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [CV] Compiler Visualizer                    [ThantZ44 ▾]  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│              ● INTERACTIVE COMPILER EDUCATION               │
+│                                                             │
+│                 See Your Code                               │
+│                Come Alive                                   │
+│   Write Java code and watch the compiler transform it       │
+│                                                             │
+│          [Open Editor →]  [See How It Works ↓]              │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                    THE PIPELINE                             │
+│              Five Phases. One Journey.                      │
+│                                                             │
+│  ┌──────┐ ─→ ┌──────┐ ─→ ┌──────┐ ─→ ┌──────┐ ─→ ┌──────┐│
+│  │ 01   │    │ 02   │    │ 03   │    │ 04   │    │ 05   ││
+│  │Lexing│    │Parsing│   │ AST  │    │Seman.│    │Bytec.││
+│  └──────┘    └──────┘    └──────┘    └──────┘    └──────┘│
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│  WRITE CODE                                                │
+│  A Real Editor. Real Compilation.          ┌──────────────┐│
+│                                            │ Main.java    ││
+│  ✓ Monaco editor                           │ public class ││
+│  ✓ Real-time compilation                   │   Main { ... ││
+│  ✓ Ctrl+S to save                          └──────────────┘│
+├─────────────────────────────────────────────────────────────┤
+│         Ready to See Compilation in Action?                 │
+│                 [Open Editor →]                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Editor Page (`/compiler`)
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [CV] Compiler Visualizer [Editor]  [▶ Compile] [◎ Visual] │
+├──────────┬──────────────────────────────────────────────────┤
+│ EXPLORER │  Main.java ●                        💾 Save     │
+│ MY SNIP. │──────────────────────────────────────────────────│
+│  file1   │  1  public class Main {                          │
+│  file2   │  2      public static void main(String[] args) { │
+│  file3   │  3          System.out.println("Hello, World!"); │
+│          │  4      }                                        │
+│          │  5  }                                            │
+│          │──────────────────────────────────────────────────│
+│          │  ● OUTPUT                                        │
+│          │  Click ▶ Compile to run your code.               │
+└──────────┴──────────────────────────────────────────────────┘
+```
+
+### Visualize Pages (`/visualize/*`)
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [CV] Compiler Visualizer [Editor]  [▶ Compile] [◎ Visual] │
+├─────────────────────────────────────────────────────────────┤
+│  [← Editor] [Tokens] [AST] [Semantic] [Bytecode]           │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  [Full-screen D3.js visualization]                          │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 7. UI Layout (Actual)
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  Compiler Visualizer              [▶ Compile & Execute] [Cancel]│
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌────────────────────────┐  ┌───────────────────────────────┐ │
-│  │  Code Editor           │  │  Phase: [Token][AST][Sem][Bc] │ │
-│  │                        │  ├───────────────────────────────┤ │
-│  │  Standard Input:       │  │                               │ │
-│  │  ┌──────────────────┐  │  │   [Visualization Content]    │ │
-│  │  │ 5 10             │  │  │                               │ │
-│  │  └──────────────────┘  │  │   Tokens: colored cards       │ │
-│  │                        │  │   AST: pre-formatted JSON     │ │
-│  │  ┌──────────────────┐  │  │   Semantic: symbol table      │ │
-│  │  │ Monaco Editor    │  │  │   Bytecode: monospace text    │ │
-│  │  │ (Java syntax)    │  │  │   Exec: terminal output       │ │
-│  │  │                  │  │  │                               │ │
-│  │  └──────────────────┘  │  │                               │ │
-│  └────────────────────────┘  └───────────────────────────────┘ │
-│                                                                 │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  Error Banner (toast notification on failure)             │ │
-│  └───────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 8. Project Timeline (Actual Progress)
+## 10. Project Timeline
 
 ### Week 1: Foundation + Backend ✅
 - [x] Set up Spring Boot project with Maven
@@ -311,86 +355,72 @@ CompletableFuture<CompilationUnit> astFuture = CompletableFuture.supplyAsync(() 
 - [x] Set up MySQL database
 - [x] Configure Spring Data JPA + Hibernate
 - [x] Create database schema (users, saved_code)
-- [x] Set up project structure (packages, folders)
-- [x] Implement JWT authentication (Spring Security)
-- [x] Create `/api/auth` endpoints (register, login, me)
+- [x] Implement JWT authentication
+- [x] Create `/api/auth` endpoints
 - [x] Integrate JavaParser for token extraction
-- [x] Create `/api/compile` endpoint (full pipeline)
-- [x] Create `/api/execute` endpoint (local java)
+- [x] Create `/api/compile` endpoint
+- [x] Create `/api/execute` endpoint
 
-### Week 2: Core Visualizations 🔄
-- [x] Token data structure (type, value, line, column)
-- [x] Token list panel with color-coded categories
-- [x] AST JSON display (pre-formatted)
-- [x] Symbol table extraction + display
+### Week 2: Core Visualizations ✅
+- [x] Token data structure + list panel
+- [x] AST JSON display + D3.js tree
+- [x] Symbol table extraction + D3.js tree
 - [x] Bytecode extraction using `javap`
-- [ ] D3.js tree visualization (interactive nodes) — PLANNED
-- [ ] Side-by-side source → bytecode view — PLANNED
+- [x] D3.js token visualization (bar chart + flow)
 
 ### Week 3: Frontend + Editor ✅
-- [x] Integrate Monaco Editor in React
-- [x] Java syntax highlighting
-- [x] Visualization panel (phase tabs)
-- [x] Output console UI (stdout/stderr display)
-- [x] Compile & Execute button flow
-- [x] Cancel compilation support (AbortController)
-- [x] stdin input for Scanner
-- [x] Basic error handling
-- [x] Create `/api/code` endpoints (save, load, delete)
-- [ ] Framer Motion animations — PLANNED
-- [ ] Compilation history endpoint — PLANNED
+- [x] Monaco Editor integration
+- [x] React Router navigation
+- [x] CompileContext for shared state
+- [x] FileBrowser sidebar (flat files)
+- [x] Output console UI
+- [x] Compile & Execute flow
+- [x] Cancel compilation support
+- [x] stdin input
+- [x] Create `/api/code` endpoints
+- [x] Framer Motion animations
 
-### Week 4: Integration + Polish 🔄
-- [x] End-to-end compile/execute flow working
-- [x] Error handling and loading states
-- [x] Caching (LRU, 128 entries)
-- [ ] Save/load code snippets UI — PLANNED
-- [ ] Compilation history UI — PLANNED
-- [ ] Basic responsive design — PLANNED
-- [ ] Code cleanup and documentation — IN PROGRESS
-- [ ] Demo preparation — PLANNED
+### Week 4: UI Redesign + Polish ✅
+- [x] Tailwind CSS v4 integration
+- [x] shadcn/ui component library
+- [x] Landing page (`/`) with hero + pipeline
+- [x] Editor moved to `/compiler`
+- [x] Design system (CSS variables, typography)
+- [x] Dirty tracking + unsaved changes warning
+- [x] File rename support
+- [x] SQLite for development, MySQL for production
+- [x] Delete confirmation dialogs
+
+### Future Work
+- [ ] Compilation history backend + UI
+- [ ] Side-by-side source → bytecode view
+- [ ] Responsive design
+- [ ] Dark/light theme toggle
 
 ---
 
-## 9. Security Considerations
+## 11. Security Considerations
 
 | Risk | Mitigation | Status |
 |---|---|---|
-| Arbitrary code execution | Local execution with timeout (10s max) | ✅ Done |
-| SQL injection | Parameterized queries via JPA/Hibernate | ✅ Done |
-| XSS attacks | React's default escaping | ✅ Done |
-| JWT theft | Token in localStorage, 24h expiry | ✅ Done |
-| DoS via heavy compilation | LRU cache (128 entries), 10s timeout | ✅ Done |
-| File system access | Temporary directories, cleanup after execution | ✅ Done |
-| Secrets in git | `.gitignore` excludes `application.properties` | ✅ Done |
+| Arbitrary code execution | Local execution with timeout (10s max) | ✅ |
+| SQL injection | Parameterized queries via JPA/Hibernate | ✅ |
+| XSS attacks | React's default escaping | ✅ |
+| JWT theft | Token in localStorage, 24h expiry | ✅ |
+| DoS via heavy compilation | LRU cache (128 entries), 10s timeout | ✅ |
+| File system access | Temporary directories, cleanup after execution | ✅ |
+| Secrets in git | `.gitignore` excludes `application.properties` | ✅ |
 
 ---
 
-## 10. Future Enhancements (Post-MVP)
-
-- [ ] D3.js interactive AST tree (expand/collapse nodes)
-- [ ] Framer Motion phase transition animations
-- [ ] Save/Load UI for code snippets
-- [ ] Compilation history with replay
-- [ ] Support for more languages (C, Python, JavaScript)
-- [ ] Compiler optimization visualization (-O0, -O1, -O2, -O3)
-- [ ] Side-by-side compiler comparison (like Godbolt)
-- [ ] Share compilations via URL
-- [ ] Dark/light theme toggle
-- [ ] Mobile-responsive design
-- [ ] Collaborative code editing
-- [ ] AI-powered compiler error explanations
-- [ ] Docker sandboxing for safer execution
-
----
-
-## 11. Resources
+## 12. Resources
 
 - [JavaParser](https://javaparser.org/) — Java source code parser
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/) — VS Code's editor
 - [D3.js](https://d3js.org/) — Data visualization library
+- [Tailwind CSS](https://tailwindcss.com/) — Utility-first CSS framework
+- [shadcn/ui](https://ui.shadcn.com/) — React component library
 - [Framer Motion](https://www.framer.com/motion/) — React animation library
+- [React Router](https://reactrouter.com/) — Multi-page navigation
 - [Spring Boot](https://spring.io/projects/spring-boot) — Backend framework
-- [Spring Security](https://spring.io/projects/spring-security) — Authentication
 - [Godbolt Compiler Explorer](https://godbolt.org/) — Inspiration
-- [oxlint](https://oxc-project.github.io/docs/oxlint/) — Fast linter (Rust-based)

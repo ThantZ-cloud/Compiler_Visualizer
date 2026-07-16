@@ -30,5 +30,8 @@ backend/.mvn/repository/
 # Temp files
 *.tmp
 
+# SQLite databases
+*.db
+
 # Claude Code
 .claude/settings.local.json

@@ -13,12 +13,14 @@ interface CompileContextType {
   handleCompile: () => Promise<void>;
   handleCancel: () => void;
   currentFileId: number | null;
+  setCurrentFileId: (id: number | null) => void;
   currentFileName: string;
   setCurrentFileName: (name: string) => void;
-  saveFile: (title: string, folderId?: number) => Promise<number>;
+  isDirty: boolean;
+  saveFile: (title: string, folderId?: number, codeOverride?: string) => Promise<number>;
   loadFile: (id: number) => Promise<void>;
-  updateFile: (folderId?: number) => Promise<void>;
   newFile: () => void;
+  confirmDiscard: () => boolean;
 }
 
 const CompileContext = createContext<CompileContextType | undefined>(undefined);
@@ -42,14 +44,28 @@ const DEFAULT_CODE = `public class Main {
 }`;
 
 export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) => {
-  const [code, setCode] = useState<string>(DEFAULT_CODE);
+  const [code, setCodeState] = useState<string>(DEFAULT_CODE);
   const [result, setResult] = useState<CompileResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stdinInput, setStdinInput] = useState<string>('');
   const [currentFileId, setCurrentFileId] = useState<number | null>(null);
   const [currentFileName, setCurrentFileName] = useState<string>('Main.java');
+  const [isDirty, setIsDirty] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const lastSavedCodeRef = useRef<string>(DEFAULT_CODE);
+
+  // Track dirty state: compare current code to last saved code
+  const setCode = useCallback((newCode: string) => {
+    setCodeState(newCode);
+    setIsDirty(newCode !== lastSavedCodeRef.current);
+  }, []);
+
+  // Check if there are unsaved changes — show confirmation dialog
+  const confirmDiscard = useCallback((): boolean => {
+    if (!isDirty) return true;
+    return window.confirm('You have unsaved changes. Discard them?');
+  }, [isDirty]);
 
   const handleCompile = useCallback(async () => {
     if (abortControllerRef.current) {
@@ -81,35 +97,38 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
     setLoading(false);
   }, []);
 
-  const saveFile = useCallback(async (title: string, folderId?: number): Promise<number> => {
+  const saveFile = useCallback(async (title: string, folderId?: number, codeOverride?: string): Promise<number> => {
+    const codeToSave = codeOverride !== undefined ? codeOverride : code;
     if (currentFileId) {
-      const response = await codeAPI.update(currentFileId, title, code, folderId);
+      const response = await codeAPI.update(currentFileId, title, codeToSave, folderId);
+      lastSavedCodeRef.current = codeToSave;
+      setIsDirty(false);
       return response.data.id;
     } else {
-      const response = await codeAPI.save(title, code, folderId);
+      const response = await codeAPI.save(title, codeToSave, folderId);
       setCurrentFileId(response.data.id);
       setCurrentFileName(title);
+      lastSavedCodeRef.current = codeToSave;
+      setIsDirty(false);
       return response.data.id;
     }
   }, [currentFileId, code]);
 
   const loadFile = useCallback(async (id: number) => {
     const response = await codeAPI.getById(id);
-    setCode(response.data.sourceCode);
+    setCodeState(response.data.sourceCode);
+    lastSavedCodeRef.current = response.data.sourceCode;
+    setIsDirty(false);
     setCurrentFileId(response.data.id);
     setCurrentFileName(response.data.title);
     setResult(null);
     setError(null);
   }, []);
 
-  const updateFile = useCallback(async (folderId?: number) => {
-    if (currentFileId) {
-      await codeAPI.update(currentFileId, currentFileName, code, folderId);
-    }
-  }, [currentFileId, currentFileName, code]);
-
   const newFile = useCallback(() => {
-    setCode(DEFAULT_CODE);
+    setCodeState('');
+    lastSavedCodeRef.current = '';
+    setIsDirty(false);
     setCurrentFileId(null);
     setCurrentFileName('Main.java');
     setResult(null);
@@ -124,8 +143,8 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
       error,
       stdinInput, setStdinInput,
       handleCompile, handleCancel,
-      currentFileId, currentFileName, setCurrentFileName,
-      saveFile, loadFile, updateFile, newFile,
+      currentFileId, setCurrentFileId, currentFileName, setCurrentFileName,
+      isDirty, saveFile, loadFile, newFile, confirmDiscard,
     }}>
       {children}
     </CompileContext.Provider>

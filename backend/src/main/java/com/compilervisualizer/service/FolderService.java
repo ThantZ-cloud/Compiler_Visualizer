@@ -23,12 +23,17 @@ public class FolderService {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Folder folder = Folder.builder()
+        Folder.FolderBuilder builder = Folder.builder()
             .user(user)
-            .name(request.getName())
-            .build();
+            .name(request.getName());
 
-        folder = folderRepository.save(folder);
+        if (request.getParentId() != null) {
+            Folder parent = folderRepository.findByIdAndUserId(request.getParentId(), user.getId())
+                .orElseThrow(() -> new RuntimeException("Parent folder not found"));
+            builder.parent(parent);
+        }
+
+        Folder folder = folderRepository.save(builder.build());
         return mapToResponse(folder);
     }
 
@@ -68,6 +73,7 @@ public class FolderService {
         return FolderResponse.builder()
             .id(folder.getId())
             .name(folder.getName())
+            .parentId(folder.getParent() != null ? folder.getParent().getId() : null)
             .createdAt(folder.getCreatedAt())
             .updatedAt(folder.getUpdatedAt())
             .build();

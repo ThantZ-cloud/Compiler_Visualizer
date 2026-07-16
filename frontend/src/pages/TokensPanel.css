@@ -12,9 +12,12 @@
 }
 
 .tokens-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .tokens-controls {
@@ -25,124 +28,137 @@
 
 .view-toggle {
   display: flex;
-  gap: 4px;
-  background-color: #252526;
-  border-radius: 6px;
-  padding: 3px;
+  gap: 2px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  padding: 2px;
 }
 
 .toggle-btn {
   padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #cccccc;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
   background-color: transparent;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
+  font-family: var(--font-display);
+  text-transform: uppercase;
 }
 
 .toggle-btn:hover {
-  color: #ffffff;
-  background-color: #3c3c3c;
+  color: var(--color-text);
 }
 
 .toggle-btn.active {
-  color: #ffffff;
-  background-color: #0e639c;
+  color: var(--color-neon);
+  background-color: rgba(0, 255, 136, 0.1);
 }
 
 .token-filter {
-  padding: 6px 12px;
-  font-size: 13px;
-  color: #d4d4d4;
-  background-color: #252526;
-  border: 1px solid #3c3c3c;
-  border-radius: 4px;
+  padding: 5px 12px;
+  font-size: 11px;
+  color: var(--color-neon);
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
   width: 250px;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 .token-filter::placeholder {
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .token-filter:focus {
   outline: none;
-  border-color: #007acc;
+  border-color: var(--color-neon);
+  box-shadow: 0 0 8px var(--color-neon-dim);
 }
 
 .tokens-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .token-badge {
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  font-family: var(--font-display);
 }
 
-.token-badge-keyword { background-color: rgba(197, 134, 192, 0.2); color: #c586c0; }
-.token-badge-type { background-color: rgba(78, 201, 176, 0.2); color: #4ec9b0; }
-.token-badge-identifier { background-color: rgba(156, 220, 254, 0.2); color: #9cdcfe; }
-.token-badge-literal { background-color: rgba(206, 145, 120, 0.2); color: #ce9178; }
-.token-badge-whitespace { background-color: rgba(128, 128, 128, 0.2); color: #808080; }
-.token-badge-separator { background-color: rgba(212, 212, 212, 0.2); color: #d4d4d4; }
+.token-badge-keyword { background-color: rgba(255, 0, 255, 0.1); color: var(--color-magenta); border: 1px solid var(--color-magenta); }
+.token-badge-type { background-color: rgba(0, 212, 255, 0.1); color: var(--color-cyan); border: 1px solid var(--color-cyan); }
+.token-badge-identifier { background-color: rgba(0, 255, 136, 0.1); color: var(--color-neon); border: 1px solid var(--color-neon); }
+.token-badge-literal { background-color: rgba(255, 176, 0, 0.1); color: var(--color-amber); border: 1px solid var(--color-amber); }
+.token-badge-whitespace { background-color: rgba(85, 85, 112, 0.1); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+.token-badge-separator { background-color: rgba(224, 224, 240, 0.1); color: var(--color-text-dim); border: 1px solid var(--color-border-bright); }
 
 .tokens-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   overflow: auto;
 }
 
 .token-card {
   display: flex;
   flex-direction: column;
-  padding: 10px 14px;
-  background-color: #252526;
-  border-radius: 6px;
-  border-left: 3px solid #0e639c;
+  padding: 8px 12px;
+  background-color: var(--color-card);
+  border-left: 2px solid var(--color-neon);
   min-width: 120px;
-  transition: transform 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .token-card:hover {
-  transform: translateY(-2px);
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 10px var(--color-cyan-dim);
 }
 
 .token-type {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  color: #569cd6;
+  color: var(--color-cyan);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  letter-spacing: 0.1em;
+  margin-bottom: 3px;
+  font-family: var(--font-display);
 }
 
 .token-value {
-  font-size: 13px;
-  color: #ce9178;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  color: var(--color-amber);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
   word-break: break-all;
 }
 
 .token-pos {
-  font-size: 10px;
-  color: #808080;
-  margin-top: 4px;
+  font-size: 9px;
+  color: var(--color-text-muted);
+  margin-top: 3px;
+  font-family: var(--font-mono);
 }
 
-/* Token type colors */
-.token-keyword { border-left-color: #c586c0; }
-.token-type { border-left-color: #4ec9b0; }
-.token-identifier { border-left-color: #9cdcfe; }
-.token-literal { border-left-color: #ce9178; }
-.token-whitespace { border-left-color: #808080; }
-.token-separator { border-left-color: #d4d4d4; }
-.token-operator { border-left-color: #d4d4d4; }
+/* Token type border colors — cyberpunk palette */
+.token-keyword { border-left-color: var(--color-magenta); }
+.token-type { border-left-color: var(--color-cyan); }
+.token-identifier { border-left-color: var(--color-neon); }
+.token-literal { border-left-color: var(--color-amber); }
+.token-whitespace { border-left-color: var(--color-text-muted); }
+.token-separator { border-left-color: var(--color-text-dim); }
+.token-operator { border-left-color: var(--color-text-dim); }
+
+.chart-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+}

@@ -2,12 +2,33 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useCompile } from '../context/CompileContext';
 import TokenChart from '../components/TokenChart';
+import Skeleton from '../components/Skeleton';
 import './TokensPanel.css';
 
 const TokensPanel: React.FC = () => {
-  const { result } = useCompile();
+  const { result, loading } = useCompile();
   const [filter, setFilter] = useState('');
   const [view, setView] = useState<'chart' | 'grid'>('chart');
+
+  if (loading) {
+    return (
+      <div className="tokens-panel">
+        <div className="tokens-header">
+          <Skeleton width="200px" height="20px" />
+          <div className="tokens-controls">
+            <Skeleton width="120px" height="32px" />
+            <Skeleton width="250px" height="32px" />
+          </div>
+        </div>
+        <div className="tokens-summary">
+          <Skeleton count={5} width="80px" height="24px" />
+        </div>
+        <div className="chart-skeleton">
+          <Skeleton count={8} height="26px" />
+        </div>
+      </div>
+    );
+  }
 
   if (!result?.tokens) {
     return <div className="panel-placeholder">No tokens generated</div>;
@@ -27,26 +48,26 @@ const TokensPanel: React.FC = () => {
   return (
     <div className="tokens-panel">
       <div className="tokens-header">
-        <h2>Tokens ({tokens.length} total, {filtered.length} shown)</h2>
+        <h2>Tokens — {tokens.length} total, {filtered.length} shown</h2>
         <div className="tokens-controls">
           <div className="view-toggle">
             <button
               className={`toggle-btn ${view === 'chart' ? 'active' : ''}`}
               onClick={() => setView('chart')}
             >
-              📊 Chart
+              ◎ Chart
             </button>
             <button
               className={`toggle-btn ${view === 'grid' ? 'active' : ''}`}
               onClick={() => setView('grid')}
             >
-              📋 Grid
+              ⊞ Grid
             </button>
           </div>
           <input
             type="text"
             className="token-filter"
-            placeholder="Filter tokens..."
+            placeholder="$ filter tokens..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />

@@ -65,31 +65,68 @@ function App() {
 **File structure:**
 ```
 frontend/src/
-├── App.tsx              # Main component — the root of the app
-├── App.css              # Styling (like CSS for your HTML)
-├── main.tsx             # Entry point — like public static void main()
+├── App.tsx              # Root component (unused after React Router migration)
+├── main.tsx             # Entry point with BrowserRouter, Routes, CompileProvider
+├── index.css            # Dark theme reset (VS Code-inspired)
 ├── context/
-│   └── AuthContext.tsx   # Shared state for login/user info (like a global variable)
+│   ├── AuthContext.tsx   # Auth state (login, register, logout, JWT token)
+│   └── CompileContext.tsx # Shared compile state (code, results, file management)
+├── components/
+│   ├── Layout.tsx       # Shared layout: header + sidebar + Outlet for routes
+│   ├── Layout.css       # Layout styling
+│   ├── FileBrowser.tsx  # VS Code-like sidebar (folders, files, context menu)
+│   ├── FileBrowser.css  # Sidebar styling
+│   ├── AstTree.tsx      # D3.js AST tree visualization (collapsible)
+│   ├── AstTree.css      # AST tree styling
+│   ├── TokenChart.tsx   # D3.js token bar chart + token flow visualization
+│   ├── TokenChart.css   # Token chart styling
+│   ├── SemanticTree.tsx # D3.js collapsible tree for symbol table
+│   └── SemanticTree.css # Semantic tree styling
+├── pages/
+│   ├── EditorPage.tsx   # Code editor (Monaco) + terminal output
+│   ├── EditorPage.css   # Editor + terminal styles
+│   ├── VisualizeLayout.tsx # Nav bar with phase links + Outlet
+│   ├── VisualizeLayout.css # Nav styling
+│   ├── TokensPanel.tsx  # Token visualization with chart/grid toggle
+│   ├── TokensPanel.css  # Token panel styles
+│   ├── AstPanel.tsx     # Full-screen AST tree
+│   ├── SemanticPanel.tsx # Symbol table with tree/JSON toggle
+│   ├── BytecodePanel.tsx # Full-screen bytecode display
+│   └── PanelPage.css    # Shared panel styles
 ├── services/
-│   └── api.ts           # API calls — like your HTTP client in Java
+│   └── api.ts           # Axios client: authAPI, compileAPI, codeAPI, folderAPI
 └── types/
-    └── index.ts         # TypeScript interfaces — like Java classes for data shapes
+    └── index.ts         # TypeScript interfaces (Token, CompileResponse, Folder, etc.)
 ```
 
 **How the frontend works:**
-1. `main.tsx` starts the app (like `main()` in Java)
-2. `App.tsx` renders two panels: code editor (Monaco Editor) and visualization tabs
-3. User writes Java code, clicks "Compile & Execute"
-4. `api.ts` sends the code to the backend via HTTP POST
-5. Backend returns compilation results (tokens, AST, bytecode, output)
-6. Results are displayed in tabs (Tokens, AST, Semantic, Bytecode, Execution)
+1. `main.tsx` starts the app (like `main()` in Java) with React Router and CompileProvider
+2. `Layout.tsx` renders the header, sidebar (when logged in), and route content via `<Outlet />`
+3. User writes Java code on `/` (EditorPage), clicks "Compile & Execute"
+4. `CompileContext.tsx` manages shared state (code, results, current file, save/load)
+5. `api.ts` sends the code to the backend via HTTP POST
+6. Backend returns compilation results (tokens, AST, bytecode, output)
+7. User clicks "Visualize" → navigates to `/visualize/tokens` (or ast/semantic/bytecode)
+8. Each visualization page shows D3.js charts/trees for that phase
+
+**Route structure:**
+```
+/                      → EditorPage (code editor + terminal)
+/visualize             → VisualizeLayout (nav bar)
+/visualize/tokens      → TokensPanel (D3.js bar chart + token flow)
+/visualize/ast         → AstPanel (D3.js collapsible tree)
+/visualize/semantic    → SemanticPanel (D3.js collapsible tree)
+/visualize/bytecode    → BytecodePanel (raw bytecode display)
+```
 
 **Key React concepts in this project:**
 - **`useState`** — like declaring a variable that React watches. When it changes, the UI re-renders.
 - **`useCallback`** — like memoizing a method so it doesn't get recreated every render.
 - **`useRef`** — like a instance variable that doesn't trigger re-renders.
+- **`useContext`** — like accessing a global variable (AuthContext, CompileContext).
 - **Props** — like method parameters. Parent components pass data to children.
 - **Components** — like Java classes, but for UI. Each returns JSX.
+- **React Router** — like URL mapping in Spring Boot (`@GetMapping`). Routes map URLs to components.
 
 ### Backend (Spring Boot 3.2 + Java 17)
 
@@ -144,9 +181,16 @@ Source Code
 |------|-----|--------------|
 | Register | `POST /api/auth/register` | `authService.register(username, email, password)` |
 | Login | `POST /api/auth/login` | `authService.login(username, password)` → returns JWT token |
+| Current user | `GET /api/auth/me` | `authService.getCurrentUser(token)` → returns user info |
 | Compile code | `POST /api/compile` | `compileService.compileAndExecute(sourceCode, stdin)` → returns full results |
-| Save code | `POST /api/code/save` | `codeService.saveCode(userId, title, sourceCode)` |
-| Get saved code | `GET /api/code/saved` | `codeService.getSavedCodes(userId)` → returns list |
+| Save code | `POST /api/code/save` | `codeService.saveCode(userId, title, sourceCode, folderId)` |
+| Get saved code | `GET /api/code/saved` | `codeService.getSavedCodes(userId, folderId)` → returns list |
+| Update code | `PUT /api/code/{id}` | `codeService.updateSavedCode(id, title, sourceCode)` |
+| Delete code | `DELETE /api/code/{id}` | `codeService.deleteSavedCode(id)` |
+| Create folder | `POST /api/folders` | `folderService.createFolder(userId, name)` → returns folder |
+| Get folders | `GET /api/folders` | `folderService.getFolders(userId)` → returns list |
+| Rename folder | `PUT /api/folders/{id}` | `folderService.renameFolder(id, name)` |
+| Delete folder | `DELETE /api/folders/{id}` | `folderService.deleteFolder(id)` |
 
 **JWT Authentication (like a session token):**
 1. User logs in → server generates a JWT token (a signed string)
@@ -156,11 +200,16 @@ Source Code
 
 ### Key Design Decisions
 
-- All `/api/compile/**` endpoints return the full response (tokens + AST + symbol table + bytecode + output) — the individual phase endpoints aren't optimized yet
+- **React Router** separates editor (`/`) from visualizations (`/visualize/*`) — each phase gets full screen
+- **CompileContext** shares code/results across routes — compile once, visualize anywhere
+- **FileBrowser** provides VS Code-like sidebar with folders and files, saved to MySQL per user
+- **D3.js** visualizations: bar chart + token flow for tokens, collapsible trees for AST and semantic
+- All `/api/compile/**` endpoints return the full response (tokens + AST + symbol table + bytecode + output)
 - Tokenization and AST run in parallel (via `CompletableFuture`) — like running two threads simultaneously
 - Results are cached (LRU, max 128 entries) — if you compile the same code twice, the second time is instant
 - Compile timeout: 10 seconds per phase — prevents infinite loops from freezing the server
 - Temp files are cleaned up after each compilation run
+- CORS is configured in Spring Security filter chain (not separate CorsFilter bean)
 
 ## When Modifying
 
@@ -168,6 +217,9 @@ Source Code
 - Backend DTOs use Lombok builders — add fields with `@Builder` pattern, not constructors
 - All compilation output is ephemeral (temp files cleaned up after each run)
 - The project uses oxlint, NOT ESLint — do not add `.eslintrc` or ESLint dependencies
+- D3.js visualizations use `useRef` for SVG containers and `useEffect` for rendering
+- CORS is configured in `SecurityConfig.java` — update `corsConfigurationSource()` bean if ports change
+- React Router routes are defined in `main.tsx` — add new routes there
 - **Always commit changes** with a clear message explaining what was done and why
 
 ## MCP Tools

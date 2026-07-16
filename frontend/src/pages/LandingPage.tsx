@@ -1,15 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import BinaryRain from '../components/BinaryRain';
 
-const PHASES = [
-  { num: '01', label: 'LEXING', desc: 'Break source into tokens', icon: '⟐', color: 'var(--color-neon)' },
-  { num: '02', label: 'PARSING', desc: 'Build syntax tree', icon: '⌬', color: 'var(--color-cyan)' },
-  { num: '03', label: 'AST', desc: 'Abstract syntax tree', icon: '⬡', color: 'var(--color-magenta)' },
-  { num: '04', label: 'SEMANTIC', desc: 'Analyze symbol table', icon: '◈', color: 'var(--color-amber)' },
-  { num: '05', label: 'BYTECODE', desc: 'JVM instructions', icon: '⏣', color: 'var(--color-rose)' },
-];
+const PipelineScene = lazy(() => import('../components/PipelineScene'));
 
 const FEATURES = [
   { label: 'MONACO EDITOR', desc: 'Full Java syntax highlighting with JetBrains Mono' },
@@ -144,6 +138,8 @@ const LandingPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [booted, setBooted] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const pipelineRef = useRef<HTMLDivElement>(null);
 
   const typed = useTypewriter([
     'javac Main.java',
@@ -153,6 +149,15 @@ const LandingPage: React.FC = () => {
     'System.out.println("0101")',
     'tokenize → parse → compile',
   ], 70, 35, 1800);
+
+  const scrollToPipeline = () => {
+    if (scrollContainerRef.current && pipelineRef.current) {
+      const container = scrollContainerRef.current;
+      const target = pipelineRef.current;
+      const targetTop = target.offsetTop - container.offsetTop;
+      container.scrollTo({ top: targetTop, behavior: 'smooth' });
+    }
+  };
 
   // Boot sequence on mount
   useEffect(() => {
@@ -176,11 +181,14 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="scanlines">
+    <div className="scanlines flex flex-col h-full">
       {/* Boot sequence */}
       {!booted && <BootSequence onComplete={handleBootComplete} />}
 
-      <div className={`flex-1 overflow-y-auto bg-[var(--color-void)] transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
+      <div
+        ref={scrollContainerRef}
+        className={`flex-1 overflow-y-auto bg-[var(--color-void)] transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
+      >
         {/* ═══════ HERO ═══════ */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <BinaryRain />
@@ -247,7 +255,7 @@ const LandingPage: React.FC = () => {
               <button
                 className="px-8 py-4 text-sm text-[var(--color-text-dim)] border border-[var(--color-border)] hover:border-[var(--color-text-muted)] transition-colors tracking-[0.1em]"
                 style={{ fontFamily: 'var(--font-display)' }}
-                onClick={() => document.getElementById('pipeline')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={scrollToPipeline}
               >
                 <span>VIEW PIPELINE ↓</span>
               </button>
@@ -265,10 +273,10 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* ═══════ PIPELINE ═══════ */}
-        <section id="pipeline" className="py-24 px-6 relative border-t border-[var(--color-border)]">
+        <section ref={pipelineRef} id="pipeline" className="py-16 px-6 relative border-t border-[var(--color-border)]">
           <div className="max-w-6xl mx-auto">
             {/* Section header */}
-            <div className="text-center mb-16">
+            <div className="text-center mb-8">
               <span className="text-[10px] font-bold text-[var(--color-neon)] tracking-[0.3em] uppercase mb-4 block"
                 style={{ fontFamily: 'var(--font-display)' }}>
                 {'< '}PIPELINE {' />'}
@@ -284,55 +292,30 @@ const LandingPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Pipeline flow — terminal style */}
-            <div className="relative">
-              {/* Connecting line */}
-              <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-px -translate-y-1/2 z-0"
-                style={{
-                  background: 'linear-gradient(90deg, var(--color-neon), var(--color-cyan), var(--color-magenta), var(--color-amber), var(--color-rose))',
-                  opacity: 0.2,
-                }}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 relative z-10">
-                {PHASES.map((phase, i) => (
-                  <div
-                    key={phase.num}
-                    className="phase-card p-5 text-center group cursor-pointer"
-                    onClick={() => navigate('/compiler')}
-                  >
-                    {/* Phase number */}
-                    <span className="text-[9px] font-bold tracking-[0.2em] block mb-3"
-                      style={{ color: phase.color, fontFamily: 'var(--font-display)' }}>
-                      PHASE {phase.num}
-                    </span>
-
-                    {/* Icon */}
-                    <div className="text-2xl mb-3 transition-all group-hover:scale-110"
-                      style={{ color: phase.color }}>
-                      {phase.icon}
-                    </div>
-
-                    {/* Label */}
-                    <h3 className="text-xs font-bold text-[var(--color-text)] mb-1 tracking-[0.15em]"
+            {/* Three.js 3D Pipeline */}
+            <div className="w-full h-[400px] md:h-[450px] bg-[var(--color-void)] border border-[var(--color-border)] overflow-hidden">
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-[var(--color-neon)] text-xs font-bold tracking-[0.2em] animate-pulse"
                       style={{ fontFamily: 'var(--font-display)' }}>
-                      {phase.label}
-                    </h3>
-                    <p className="text-[10px] text-[var(--color-text-muted)] leading-relaxed"
-                      style={{ fontFamily: 'var(--font-mono)' }}>
-                      {phase.desc}
-                    </p>
-
-                    {/* Arrow between cards */}
-                    {i < PHASES.length - 1 && (
-                      <div className="hidden lg:block absolute -right-2 top-1/2 -translate-y-1/2 text-[var(--color-neon)] text-xs z-20 opacity-40"
-                        style={{ fontFamily: 'var(--font-mono)' }}>
-                        →
-                      </div>
-                    )}
+                      LOADING 3D SCENE...
+                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              }>
+                <PipelineScene />
+              </Suspense>
+            </div>
+
+            {/* CTA below 3D scene */}
+            <div className="text-center mt-8">
+              <button
+                className="btn-neon px-10 py-4 text-sm tracking-[0.15em] glitch-hover"
+                onClick={() => navigate('/compiler')}
+              >
+                <span>[ TRY IT YOURSELF ]</span>
+              </button>
             </div>
           </div>
         </section>

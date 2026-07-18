@@ -11,9 +11,5 @@ public interface SavedCodeRepository extends JpaRepository<SavedCode, Long> {
 
     List<SavedCode> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    List<SavedCode> findByUserIdAndFolderIdOrderByCreatedAtDesc(Long userId, Long folderId);
-
-    List<SavedCode> findByUserIdAndFolderIsNullOrderByCreatedAtDesc(Long userId);
-
     List<SavedCode> findByUserIdAndTitleContainingIgnoreCase(Long userId, String title);
 }

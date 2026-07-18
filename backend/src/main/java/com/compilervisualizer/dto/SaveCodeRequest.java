@@ -18,6 +18,4 @@ public class SaveCodeRequest {
     private String title;
 
     private String sourceCode;
-
-    private Long folderId;
 }

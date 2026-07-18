@@ -28,15 +28,8 @@ public class CodeController {
 
     @GetMapping("/saved")
     public ResponseEntity<List<SavedCodeResponse>> getSavedCodes(
-            Authentication authentication,
-            @RequestParam(required = false) Long folderId) {
-        List<SavedCodeResponse> response;
-        if (folderId != null) {
-            response = codeService.getSavedCodesByFolder(authentication.getName(), folderId);
-        } else {
-            response = codeService.getSavedCodes(authentication.getName());
-        }
-        return ResponseEntity.ok(response);
+            Authentication authentication) {
+        return ResponseEntity.ok(codeService.getSavedCodes(authentication.getName()));
     }
 
     @GetMapping("/{id}")

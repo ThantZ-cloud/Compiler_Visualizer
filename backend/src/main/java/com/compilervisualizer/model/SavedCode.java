@@ -29,10 +29,6 @@ public class SavedCode {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "folder_id")
-    private Folder folder;
-
     @Column(nullable = false, length = 100)
     private String title;
 

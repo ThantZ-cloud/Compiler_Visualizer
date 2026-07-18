@@ -28,15 +28,6 @@ export interface SavedCode {
   id: number;
   title: string;
   sourceCode: string;
-  folderId?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Folder {
-  id: number;
-  name: string;
-  parentId?: number;
   createdAt: string;
   updatedAt: string;
 }

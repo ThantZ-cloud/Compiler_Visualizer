@@ -17,7 +17,7 @@ interface CompileContextType {
   currentFileName: string;
   setCurrentFileName: (name: string) => void;
   isDirty: boolean;
-  saveFile: (title: string, folderId?: number, codeOverride?: string) => Promise<number>;
+  saveFile: (title: string, codeOverride?: string) => Promise<number>;
   loadFile: (id: number) => Promise<void>;
   newFile: () => void;
   confirmDiscard: () => boolean;
@@ -97,15 +97,15 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
     setLoading(false);
   }, []);
 
-  const saveFile = useCallback(async (title: string, folderId?: number, codeOverride?: string): Promise<number> => {
+  const saveFile = useCallback(async (title: string, codeOverride?: string): Promise<number> => {
     const codeToSave = codeOverride !== undefined ? codeOverride : code;
     if (currentFileId) {
-      const response = await codeAPI.update(currentFileId, title, codeToSave, folderId);
+      const response = await codeAPI.update(currentFileId, title, codeToSave);
       lastSavedCodeRef.current = codeToSave;
       setIsDirty(false);
       return response.data.id ?? currentFileId;
     } else {
-      const response = await codeAPI.save(title, codeToSave, folderId);
+      const response = await codeAPI.save(title, codeToSave);
       const newId = response.data.id;
       setCurrentFileId(newId);
       setCurrentFileName(title);

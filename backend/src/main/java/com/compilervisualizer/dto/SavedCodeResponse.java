@@ -16,7 +16,6 @@ public class SavedCodeResponse {
     private Long id;
     private String title;
     private String sourceCode;
-    private Long folderId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

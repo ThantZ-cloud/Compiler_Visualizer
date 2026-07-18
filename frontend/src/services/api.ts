@@ -49,22 +49,13 @@ export const executeAPI = {
 
 // Code Management API
 export const codeAPI = {
-  save: (title: string, sourceCode: string, folderId?: number) =>
-    api.post('/code', { title, sourceCode, folderId }),
-  getSaved: (folderId?: number) =>
-    folderId ? api.get(`/code/saved?folderId=${folderId}`) : api.get('/code/saved'),
+  save: (title: string, sourceCode: string) =>
+    api.post('/code', { title, sourceCode }),
+  getSaved: () => api.get('/code/saved'),
   getById: (id: number) => api.get(`/code/${id}`),
-  update: (id: number, title: string, sourceCode: string, folderId?: number) =>
-    api.put(`/code/${id}`, { title, sourceCode, folderId }),
+  update: (id: number, title: string, sourceCode: string) =>
+    api.put(`/code/${id}`, { title, sourceCode }),
   delete: (id: number) => api.delete(`/code/${id}`),
-};
-
-// Folder API
-export const folderAPI = {
-  create: (name: string, parentId?: number) => api.post('/folders', { name, parentId }),
-  list: () => api.get('/folders'),
-  rename: (id: number, name: string) => api.put(`/folders/${id}`, { name }),
-  delete: (id: number) => api.delete(`/folders/${id}`),
 };
 
 export default api;

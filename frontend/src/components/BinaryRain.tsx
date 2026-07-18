@@ -85,9 +85,20 @@ const BinaryRain: React.FC = () => {
     draw();
     window.addEventListener('resize', resize);
 
+    // Pause animation when tab is hidden
+    const handleVisibility = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animId);
+      } else {
+        draw();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 

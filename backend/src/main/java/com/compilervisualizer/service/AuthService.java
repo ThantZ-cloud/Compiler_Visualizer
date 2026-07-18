@@ -23,12 +23,9 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
 
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
-        }
-
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+        if (userRepository.existsByUsername(request.getUsername()) ||
+            userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Registration failed. The username or email may already be in use.");
         }
 
         User user = User.builder()

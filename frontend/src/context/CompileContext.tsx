@@ -103,14 +103,15 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
       const response = await codeAPI.update(currentFileId, title, codeToSave, folderId);
       lastSavedCodeRef.current = codeToSave;
       setIsDirty(false);
-      return response.data.id;
+      return response.data.id ?? currentFileId;
     } else {
       const response = await codeAPI.save(title, codeToSave, folderId);
-      setCurrentFileId(response.data.id);
+      const newId = response.data.id;
+      setCurrentFileId(newId);
       setCurrentFileName(title);
       lastSavedCodeRef.current = codeToSave;
       setIsDirty(false);
-      return response.data.id;
+      return newId;
     }
   }, [currentFileId, code]);
 

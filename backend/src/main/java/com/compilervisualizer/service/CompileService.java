@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 
 import javax.tools.*;
 import java.io.*;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +28,8 @@ public class CompileService {
     private static final int MAX_CACHE_SIZE = 128;
     private static final Pattern PUBLIC_CLASS_PATTERN =
         Pattern.compile("public\\s+class\\s+(\\w+)");
+
+    private final ExecutorService compileExecutor = Executors.newFixedThreadPool(4);
 
     // Simple LRU-style cache: sourceCode+input → response
     private final ConcurrentHashMap<String, CompileResponse> cache = new ConcurrentHashMap<>();
@@ -54,22 +56,18 @@ public class CompileService {
             long t0 = System.currentTimeMillis();
 
             CompletableFuture<List<TokenDto>> tokensFuture = CompletableFuture.supplyAsync(() -> {
-                try {
-                    JavaLexer lexer = new JavaLexer(sourceCode);
-                    return lexer.tokenize();
-                } catch (Exception e) {
-                    log.error("Token extraction failed", e);
-                    return (List<TokenDto>) List.<TokenDto>of();
-                }
+                JavaLexer lexer = new JavaLexer(sourceCode);
+                return lexer.tokenize();
+            }, compileExecutor).exceptionally(ex -> {
+                log.error("Token extraction failed", ex);
+                return List.of();
             });
 
             CompletableFuture<CompilationUnit> astFuture = CompletableFuture.supplyAsync(() -> {
-                try {
-                    return StaticJavaParser.parse(sourceCode);
-                } catch (Exception e) {
-                    log.error("AST generation failed", e);
-                    return null;
-                }
+                return StaticJavaParser.parse(sourceCode);
+            }, compileExecutor).exceptionally(ex -> {
+                log.error("AST generation failed", ex);
+                return null;
             });
 
             // Wait for both to complete
@@ -81,13 +79,13 @@ public class CompileService {
                 tokens = tokensFuture.get();
             } catch (Exception e) {
                 tokens = List.of();
-                tokenError = e.getMessage();
+                tokenError = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
             }
             try {
                 cu = astFuture.get();
             } catch (Exception e) {
                 cu = null;
-                astError = e.getMessage();
+                astError = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
             }
 
             // Phase 2: Serialize AST (depends on AST parse)
@@ -109,9 +107,10 @@ public class CompileService {
             String symbolTableError = null;
             try {
                 if (cu == null) {
-                    cu = StaticJavaParser.parse(sourceCode);
+                    symbolTableJson = "{\"error\": \"Skipped — AST parse failed\"}";
+                } else {
+                    symbolTableJson = SymbolTableBuilder.toJson(cu);
                 }
-                symbolTableJson = SymbolTableBuilder.toJson(cu);
             } catch (Exception e) {
                 log.error("Symbol table generation failed", e);
                 symbolTableJson = "{\"error\": \"" + escapeJson(e.getMessage()) + "\"}";
@@ -180,7 +179,9 @@ public class CompileService {
 
             // Cache the result (evict oldest if at capacity)
             if (cache.size() >= MAX_CACHE_SIZE) {
-                cache.clear();
+                // Evict the oldest entry by insertion order
+                String oldestKey = cache.keySet().iterator().next();
+                cache.remove(oldestKey);
             }
             cache.put(cacheKey, response);
 

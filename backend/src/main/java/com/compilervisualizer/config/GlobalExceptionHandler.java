@@ -1,5 +1,7 @@
 package com.compilervisualizer.config;
 
+import com.compilervisualizer.exception.CompilationException;
+import com.compilervisualizer.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -15,22 +17,31 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
+    private Map<String, Object> buildError(HttpStatus status, String message) {
         Map<String, Object> error = new HashMap<>();
         error.put("timestamp", LocalDateTime.now().toString());
-        error.put("message", ex.getMessage());
-        error.put("status", HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.badRequest().body(error);
+        error.put("status", status.value());
+        error.put("error", status.getReasonPhrase());
+        error.put("message", message);
+        return error;
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(buildError(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CompilationException.class)
+    public ResponseEntity<Map<String, Object>> handleCompilationException(CompilationException ex) {
+        return ResponseEntity.badRequest()
+            .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage()));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, Object>> handleBadCredentialsException(BadCredentialsException ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("timestamp", LocalDateTime.now().toString());
-        error.put("message", "Invalid username or password");
-        error.put("status", HttpStatus.UNAUTHORIZED.value());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(buildError(HttpStatus.UNAUTHORIZED, "Invalid username or password"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -38,6 +49,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> errors = new HashMap<>();
         errors.put("timestamp", LocalDateTime.now().toString());
         errors.put("status", HttpStatus.BAD_REQUEST.value());
+        errors.put("error", "Validation Failed");
 
         Map<String, String> fieldErrors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
@@ -48,5 +60,11 @@ public class GlobalExceptionHandler {
 
         errors.put("errors", fieldErrors);
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(buildError(HttpStatus.INTERNAL_SERVER_ERROR, "An internal error occurred"));
     }
 }

@@ -35,7 +35,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (token) {
       authAPI.getMe()
         .then(response => {
-          setUser({ id: 0, username: response.data.username, email: '' });
+          setUser({
+            id: response.data.userId || 0,
+            username: response.data.username,
+            email: response.data.email || '',
+          });
         })
         .catch(() => {
           localStorage.removeItem('token');

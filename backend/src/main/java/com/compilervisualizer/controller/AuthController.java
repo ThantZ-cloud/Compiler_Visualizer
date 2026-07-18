@@ -3,6 +3,7 @@ package com.compilervisualizer.controller;
 import com.compilervisualizer.dto.AuthResponse;
 import com.compilervisualizer.dto.LoginRequest;
 import com.compilervisualizer.dto.RegisterRequest;
+import com.compilervisualizer.repository.UserRepository;
 import com.compilervisualizer.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -31,10 +33,16 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<AuthResponse> getCurrentUser(Authentication authentication) {
-        // The authentication object contains the current user info
         String username = authentication.getName();
+        var user = userRepository.findByUsername(username)
+            .orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(AuthResponse.builder()
-                .username(username)
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
                 .tokenType("Bearer")
                 .build());
     }

@@ -18,7 +18,7 @@ public class CodeController {
 
     private final CodeService codeService;
 
-    @PostMapping("/save")
+    @PostMapping
     public ResponseEntity<SavedCodeResponse> saveCode(
             Authentication authentication,
             @Valid @RequestBody SaveCodeRequest request) {
@@ -61,6 +61,6 @@ public class CodeController {
             Authentication authentication,
             @PathVariable Long id) {
         codeService.deleteSavedCode(authentication.getName(), id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }

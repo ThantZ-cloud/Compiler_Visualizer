@@ -50,7 +50,7 @@ export const executeAPI = {
 // Code Management API
 export const codeAPI = {
   save: (title: string, sourceCode: string, folderId?: number) =>
-    api.post('/code/save', { title, sourceCode, folderId }),
+    api.post('/code', { title, sourceCode, folderId }),
   getSaved: (folderId?: number) =>
     folderId ? api.get(`/code/saved?folderId=${folderId}`) : api.get('/code/saved'),
   getById: (id: number) => api.get(`/code/${id}`),

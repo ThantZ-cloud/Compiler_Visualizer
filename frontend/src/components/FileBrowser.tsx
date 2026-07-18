@@ -329,7 +329,7 @@ const FileBrowser: React.FC = () => {
       <React.Fragment key={`${node.type}-${node.id}`}>
         {/* Node row */}
         <div
-          className={`flex items-center gap-2 h-[28px] pr-3 cursor-pointer transition-colors duration-75 group rounded-sm
+          className={`flex items-center gap-2 h-[28px] pr-4 cursor-pointer transition-colors duration-75 group rounded-sm
             ${isSelected && !isFolder
               ? 'bg-[var(--color-neon)]/8 text-[var(--color-neon)]'
               : 'text-[var(--color-text-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]'}`}
@@ -392,7 +392,7 @@ const FileBrowser: React.FC = () => {
           {/* Delete button */}
           {!isRenaming && (
             <button
-              className="bg-transparent border-none p-1 text-[var(--color-text-muted)] hover:text-[var(--color-rose)] transition-all shrink-0 opacity-0 group-hover:opacity-100"
+              className="bg-transparent border-none p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-rose)] transition-all shrink-0 opacity-0 group-hover:opacity-100"
               onClick={(e) => { e.stopPropagation(); handleDelete(node); }}
               title={`Delete ${node.name}`}
               aria-label={`Delete ${node.name}`}
@@ -416,16 +416,16 @@ const FileBrowser: React.FC = () => {
   return (
     <div className="w-[260px] min-w-[220px] max-w-[400px] bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col shrink-0 select-none">
       {/* Header */}
-      <div className="px-4 py-2.5 border-b border-[var(--color-border)] flex items-center justify-between h-[36px]">
+      <div className="px-5 py-2.5 border-b border-[var(--color-border)] flex items-center justify-between h-[36px]">
         <span
           className="text-[10px] font-bold text-[var(--color-text-dim)] tracking-[0.15em] uppercase"
           style={{ fontFamily: 'var(--font-display)' }}
         >
           Explorer
         </span>
-        <div className="flex gap-0.5">
+        <div className="flex gap-1">
           <button
-            className="p-1 rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+            className="p-1.5 rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
             onClick={() => startCreateRoot('file')}
             title="New File"
             aria-label="Create new file"
@@ -433,7 +433,7 @@ const FileBrowser: React.FC = () => {
             <FilePlus size={15} />
           </button>
           <button
-            className="p-1 rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+            className="p-1.5 rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
             onClick={() => startCreateRoot('folder')}
             title="New Folder"
             aria-label="Create new folder"
@@ -444,7 +444,7 @@ const FileBrowser: React.FC = () => {
       </div>
 
       {/* Tree content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-1">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2">
         {/* Section header */}
         <div className="flex items-center gap-1.5 px-3 py-1.5 mb-1 select-none">
           <ChevronRight size={12} className="rotate-90 text-[var(--color-text-muted)]" />

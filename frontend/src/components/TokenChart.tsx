@@ -123,6 +123,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('opacity', 1);
 
     return () => {
+      svg.selectAll('.bar').on('mouseenter', null).on('mouseleave', null);
       svg.selectAll('*').remove();
     };
   }, [tokens]);
@@ -242,6 +243,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .text(d => `L${d.line}`);
 
     return () => {
+      rects.on('mouseover', null).on('mouseout', null);
       svg.selectAll('*').remove();
     };
   }, [tokens]);

@@ -112,10 +112,10 @@ public class JavaLexer {
                 emitStringLiteral();
             } else if (c == '\'') {
                 emitCharLiteral();
+            } else if (c == '0' && (peek() == 'x' || peek() == 'X')) {
+                emitHexLiteral();
             } else if (Character.isDigit(c) || (c == '.' && Character.isDigit(peek()))) {
                 emitNumericLiteral();
-            } else if (c == '0' && peek() == 'x' || c == '0' && peek() == 'X') {
-                emitHexLiteral();
             } else if (Character.isJavaIdentifierStart(c)) {
                 emitIdentifier();
             } else if (isOperatorStart(c)) {

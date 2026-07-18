@@ -392,7 +392,7 @@ const FileBrowser: React.FC = () => {
           {/* Delete button */}
           {!isRenaming && (
             <button
-              className="bg-transparent border-none p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-rose)] transition-all shrink-0 opacity-0 group-hover:opacity-100"
+              className="bg-transparent border-none p-1.5 mr-5 text-[var(--color-text-muted)] hover:text-[var(--color-rose)] transition-all shrink-0 opacity-0 group-hover:opacity-100"
               onClick={(e) => { e.stopPropagation(); handleDelete(node); }}
               title={`Delete ${node.name}`}
               aria-label={`Delete ${node.name}`}

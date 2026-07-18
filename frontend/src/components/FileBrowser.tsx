@@ -145,7 +145,7 @@ const FileBrowser: React.FC = () => {
           title="New File"
           aria-label="Create new file"
         >
-          <FilePlus size={15} />
+          <FilePlus size={23} />
         </button>
       </div>
 
@@ -232,7 +232,7 @@ const FileBrowser: React.FC = () => {
                 title={`Delete ${file.title}`}
                 aria-label={`Delete ${file.title}`}
               >
-                <Trash2 size={12} />
+                <Trash2 size={18} />
               </button>
             )}
           </div>

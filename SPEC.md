@@ -41,10 +41,14 @@ The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spri
 | **Backend** | Spring Boot | 3.2.0, Java 17 | Industry standard, matches Java EE |
 | **Java Parsing** | JavaParser | 3.25.8 | Token extraction + AST without building a compiler |
 | **Bytecode** | javac + javap | JDK built-in | Compile in-process, disassemble with `javap -c -p` |
+| **3D Visualization** | Three.js | ^0.185 | 3D pipeline scene visualization |
 | **Database (Dev)** | SQLite | via Hibernate | Simple local development, no server needed |
+| **Database (Test)** | H2 | via Hibernate | In-memory database for testing |
 | **Database (Prod)** | MySQL | 8+ | Production database |
 | **ORM** | Spring Data JPA | Hibernate | Standard JPA with Spring Boot |
 | **Auth** | Spring Security + JWT | jjwt 0.12.3 | Stateless authentication |
+| **Boilerplate** | Lombok | latest | Reduces Java boilerplate (builders, getters, setters) |
+| **Validation** | spring-boot-starter-validation | 3.2 | Request validation via Jakarta annotations |
 | **Build Tool** | Maven | Spring wrapper | Standard Java build tool |
 | **Linting** | oxlint | ^1.71 | NOT ESLint -- faster, Rust-based |
 
@@ -64,16 +68,23 @@ All styling uses Tailwind CSS v4 with custom `@theme` tokens defined in `fronten
 | `--color-border` | `#1E1E30` | Default border |
 | `--color-border-bright` | `#2A2A42` | Bright border |
 | `--color-neon` | `#00FF88` | Primary accent (neon green) |
+| `--color-neon-dim` | `#00FF8833` | Neon at low opacity (glows, backgrounds) |
+| `--color-neon-glow` | `#00FF8866` | Neon at medium opacity (glow effects) |
 | `--color-cyan` | `#00D4FF` | Secondary accent |
+| `--color-cyan-dim` | `#00D4FF22` | Cyan at low opacity |
 | `--color-magenta` | `#FF00FF` | Tertiary accent |
+| `--color-magenta-dim` | `#FF00FF22` | Magenta at low opacity |
 | `--color-amber` | `#FFB000` | Warning/dirty state |
+| `--color-amber-dim` | `#FFB00022` | Amber at low opacity |
 | `--color-rose` | `#FF3366` | Error/delete states |
+| `--color-rose-dim` | `#FF336622` | Rose at low opacity |
+| `--color-binary` | `#00FF8844` | Binary rain animation color |
 | `--color-text` | `#E0E0F0` | Primary text |
 | `--color-text-dim` | `#8888AA` | Dimmed text |
 | `--color-text-muted` | `#555570` | Muted/disabled text |
 | `--font-display` | Orbitron | Headings (sci-fi/terminal aesthetic) |
-| `--font-body` | JetBrains Mono | Body text |
-| `--font-mono` | JetBrains Mono | Code/data |
+| `--font-body` | JetBrains Mono (+ Fira Code fallback) | Body text |
+| `--font-mono` | JetBrains Mono (+ Fira Code fallback) | Code/data |
 
 ---
 
@@ -134,11 +145,12 @@ All styling uses Tailwind CSS v4 with custom `@theme` tokens defined in `fronten
                               |
                  +------------v-----------+
                  |  SQLite (dev)           |
+                 |  H2 (test)              |
                  |  MySQL (prod)           |
                  |                          |
                  |  - users                |
                  |  - saved_code           |
-                 |  - folder               |
+                 |  - id_generator         |
                  +-------------------------+
 ```
 
@@ -171,6 +183,8 @@ frontend/src/
     RegisterModal.tsx        # Modal dialog for user registration
     UserMenu.tsx             # Dropdown menu for user profile and logout
     Footer.tsx               # Footer component (defined but currently unused)
+  lib/
+    utils.ts                 # cn() utility for merging Tailwind classnames
     ui/
       button.tsx             # shadcn/ui button
       input.tsx              # shadcn/ui input
@@ -219,49 +233,28 @@ frontend/src/
 ### users
 | Column | Type | Description |
 |---|---|---|
-| id | BIGINT (PK) | Auto-generated |
-| username | VARCHAR | Unique |
-| email | VARCHAR | Unique |
-| password | VARCHAR | BCrypt hashed |
-| created_at | TIMESTAMP | Account creation |
-| updated_at | TIMESTAMP | Last update |
+| id | BIGINT (PK) | TABLE generator strategy (id_generator table) |
+| username | VARCHAR(50) | Unique |
+| email | VARCHAR(100) | Unique |
+| password_hash | VARCHAR | BCrypt hashed |
+| created_at | TIMESTAMP | Account creation (auto-set) |
+| updated_at | TIMESTAMP | Last update (auto-set) |
 
 ### saved_code
 | Column | Type | Description |
 |---|---|---|
-| id | BIGINT (PK) | Auto-generated |
-| user_id | BIGINT (FK) | References users.id |
-| folder_id | BIGINT (FK, nullable) | References folder.id (unused in UI) |
-| title | VARCHAR | Code title |
+| id | BIGINT (PK) | TABLE generator strategy (id_generator table) |
+| user_id | BIGINT (FK) | References users.id, not nullable |
+| title | VARCHAR(100) | Code title |
 | source_code | TEXT | Java source code |
-| created_at | TIMESTAMP | When saved |
-| updated_at | TIMESTAMP | Last modified |
+| created_at | TIMESTAMP | When saved (auto-set) |
+| updated_at | TIMESTAMP | Last modified (auto-set) |
 
-### folder
+### id_generator (TABLE generator)
 | Column | Type | Description |
 |---|---|---|
-| id | BIGINT (PK) | Auto-generated |
-| user_id | BIGINT (FK) | References users.id |
-| name | VARCHAR | Folder name |
-| parent_id | BIGINT (FK, nullable) | Self-referencing for nesting |
-| created_at | TIMESTAMP | When created |
-| updated_at | TIMESTAMP | Last modified |
-
-> **Note**: Folder management exists in the backend but the frontend uses flat file listing only. Folders are not exposed in the current UI.
-
-### compilation_log
-| Column | Type | Description |
-|---|---|---|
-| id | BIGINT (PK) | Auto-generated (TABLE generator) |
-| user_id | BIGINT (FK) | References users.id |
-| code_id | BIGINT (FK, nullable) | References saved_code.id |
-| source_code | TEXT | The compiled source code |
-| tokens_json | JSON | Tokenization results |
-| ast_json | JSON | AST serialization |
-| symbol_table_json | JSON | Symbol table data |
-| bytecode | TEXT | JVM bytecode output |
-| execution_output | TEXT | Program output |
-| compiled_at | TIMESTAMP | When compilation occurred |
+| gen_name | VARCHAR | Generator name (e.g. "user_id", "saved_code_id") |
+| gen_value | BIGINT | Current counter value |
 
 ### Database Profiles
 
@@ -296,21 +289,13 @@ Switch profiles: `./mvnw spring-boot:run -Dspring-boot.run.profiles=prod`
 ### Code Management
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/api/code/save` | Yes | Save code snippet |
+| POST | `/api/code` | Yes | Save code snippet |
 | GET | `/api/code/saved` | Yes | Get all saved codes |
 | GET | `/api/code/{id}` | Yes | Get specific code |
 | PUT | `/api/code/{id}` | Yes | Update code title/source |
 | DELETE | `/api/code/{id}` | Yes | Delete code |
 
-### Folder Management (backend exists, not used in UI)
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/api/folders` | Yes | Create a folder |
-| GET | `/api/folders` | Yes | List all folders |
-| PUT | `/api/folders/{id}` | Yes | Rename a folder |
-| DELETE | `/api/folders/{id}` | Yes | Delete a folder |
-
----
+> **Note**: All `/api/compile/**` and `/api/execute` endpoints are rate-limited via `RateLimiter` (10 requests per minute per IP). Returns HTTP 429 when exceeded.
 
 ## 7. Compilation Phases
 
@@ -348,7 +333,7 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 
 ### Current Implementation
 - **Flat file list** under "SNIPPETS" root
-- Backend folder API endpoints exist and are defined in `api.ts` (create, list, rename, delete)
+- No folder system — files are stored flat per user
 - `FileBrowser.tsx` only shows when user is authenticated AND on `/compiler` route
 - Each file stores: title, source code, timestamps
 
@@ -358,8 +343,8 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 | Create file | Yes | Click + icon, type name, Enter |
 | Load file | Yes | Click file in sidebar, loads in editor |
 | Save file | Yes | Save button or Ctrl+S |
-| Delete file | Yes | X button on hover, with confirmation |
-| Rename file | Yes | Right-click context menu, Rename |
+| Delete file | Yes | Trash icon on hover, with confirmation |
+| Rename file | Yes | Click filename to inline-edit, Enter to confirm |
 | Dirty tracking | Yes | Amber dot when unsaved changes |
 | Unsaved warning | Yes | confirmDiscard() checks isDirty before switching files |
 
@@ -443,7 +428,7 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 |             |  $ Click COMPILE to run your code.              |
 +--------------------------------------------------------------+
 ```
-- **Sidebar (FileBrowser)**: Only shown when user is authenticated AND on `/compiler` route. Width: `w-56` (224px).
+- **Sidebar (FileBrowser)**: Only shown when user is authenticated AND on `/compiler` route. Width: `w-[260px]` (min 220px, max 400px).
 - **Toolbar**: File tab (file icon + name + dirty indicator) | Save button (cyan) + Compile button (neon green) | Separator | STDIN input field
 - **Editor**: Monaco Editor (Java language, vs-dark theme, JetBrains Mono font)
 - **Terminal**: Fixed height `h-[220px]` at bottom, shows compilation output/errors/loading state

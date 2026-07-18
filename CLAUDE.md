@@ -35,7 +35,7 @@ Think of it like an online Java compiler that doesn't just give you the answer �
 ### Full Stack
 - Frontend runs on `http://localhost:5173`, backend on `http://localhost:8080`
 - API calls from frontend hit `http://localhost:8080/api`
-- CORS is configured in `CorsConfig.java` — update if ports change
+- CORS is configured in `SecurityConfig.java` — update if ports change
 
 ## Architecture — How It All Fits Together
 
@@ -68,47 +68,45 @@ frontend/src/
 ├── App.tsx              # Legacy single-page version (unused after React Router migration)
 ├── main.tsx             # Entry point with BrowserRouter, Routes, CompileProvider
 ├── index.css            # Cyberpunk/terminal theme reset (Orbitron, neon green)
+├── i18n/
+│   ├── index.ts         # i18next initialization (en, my)
+│   └── locales/
+│       ├── en.json      # English translations
+│       └── my.json      # Myanmar translations
 ├── context/
 │   ├── AuthContext.tsx   # Auth state (login, register, logout, JWT token)
-│   └── CompileContext.tsx # Shared compile state (code, results, file management)
+│   ├── CompileContext.tsx # Shared compile state (code, results, file management)
+│   ├── ThemeContext.tsx  # Theme state (dark/light/system) with localStorage persistence
+│   └── LanguageContext.tsx # Language state (en/my) wrapping i18next
 ├── components/
 │   ├── Layout.tsx       # Shared layout: header + sidebar + Outlet for routes
-│   ├── Layout.css       # Layout styling
-│   ├── FileBrowser.tsx  # VS Code-like sidebar (folders, files, context menu)
-│   ├── FileBrowser.css  # Sidebar styling
+│   ├── FileBrowser.tsx  # VS Code-like sidebar (flat file list, context menu)
 │   ├── AstTree.tsx      # D3.js AST tree visualization (collapsible)
-│   ├── AstTree.css      # AST tree styling
 │   ├── TokenChart.tsx   # D3.js token bar chart + token flow visualization
-│   ├── TokenChart.css   # Token chart styling
 │   ├── SemanticTree.tsx # D3.js collapsible tree for symbol table
-│   ├── SemanticTree.css # Semantic tree styling
 │   ├── PipelineScene.tsx # Three.js 3D pipeline visualization scene
 │   ├── BinaryRain.tsx   # Canvas-based Matrix-style binary rain animation
 │   ├── Skeleton.tsx     # Loading skeleton placeholder component
 │   ├── LoginModal.tsx   # Modal dialog for user login
 │   ├── RegisterModal.tsx # Modal dialog for user registration
 │   ├── UserMenu.tsx     # Dropdown menu for user profile and logout
-│   ├── AuthModal.css    # Styling for auth modals
-│   └── UserMenu.css     # Styling for user menu dropdown
+│   ├── Footer.tsx       # Footer component (defined but currently unused)
+│   └── ui/              # shadcn/ui components (button, input, card, dialog, etc.)
 ├── pages/
 │   ├── EditorPage.tsx   # Code editor (Monaco) + terminal output
-│   ├── EditorPage.css   # Editor + terminal styles
 │   ├── LandingPage.tsx  # Landing page with BinaryRain, typewriter, feature cards
-│   ├── LandingPage.css  # Landing page styling
 │   ├── PipelinePage.tsx # Full-page Three.js 3D pipeline visualization
-│   ├── PipelinePage.css # Pipeline page styling
 │   ├── VisualizeLayout.tsx # Nav bar with phase links + Outlet
-│   ├── VisualizeLayout.css # Nav styling
 │   ├── TokensPanel.tsx  # Token visualization with chart/grid toggle
-│   ├── TokensPanel.css  # Token panel styles
 │   ├── AstPanel.tsx     # Full-screen AST tree
 │   ├── SemanticPanel.tsx # Symbol table with tree/JSON toggle
-│   ├── BytecodePanel.tsx # Full-screen bytecode display
-│   └── PanelPage.css    # Shared panel styles
+│   └── BytecodePanel.tsx # Full-screen bytecode display
 ├── services/
-│   └── api.ts           # Axios client: authAPI, compileAPI, codeAPI, folderAPI
+│   └── api.ts           # Axios client: authAPI, compileAPI, codeAPI
+├── lib/
+│   └── utils.ts         # cn() utility for merging Tailwind classnames
 └── types/
-    └── index.ts         # TypeScript interfaces (Token, CompileResponse, Folder, etc.)
+    └── index.ts         # TypeScript interfaces (Token, CompileResponse, SavedCode, etc.)
 ```
 
 **How the frontend works:**
@@ -199,14 +197,10 @@ Source Code
 | Login | `POST /api/auth/login` | `authService.login(username, password)` → returns JWT token |
 | Current user | `GET /api/auth/me` | `authService.getCurrentUser(token)` → returns user info |
 | Compile code | `POST /api/compile` | `compileService.compileAndExecute(sourceCode, stdin)` → returns full results |
-| Save code | `POST /api/code/save` | `codeService.saveCode(userId, title, sourceCode, folderId)` |
-| Get saved code | `GET /api/code/saved` | `codeService.getSavedCodes(userId, folderId)` → returns list |
+| Save code | `POST /api/code` | `codeService.saveCode(userId, title, sourceCode)` |
+| Get saved code | `GET /api/code/saved` | `codeService.getSavedCodes(userId)` → returns list |
 | Update code | `PUT /api/code/{id}` | `codeService.updateSavedCode(id, title, sourceCode)` |
 | Delete code | `DELETE /api/code/{id}` | `codeService.deleteSavedCode(id)` |
-| Create folder | `POST /api/folders` | `folderService.createFolder(userId, name)` → returns folder |
-| Get folders | `GET /api/folders` | `folderService.getFolders(userId)` → returns list |
-| Rename folder | `PUT /api/folders/{id}` | `folderService.renameFolder(id, name)` |
-| Delete folder | `DELETE /api/folders/{id}` | `folderService.deleteFolder(id)` |
 
 **JWT Authentication (like a session token):**
 1. User logs in → server generates a JWT token (a signed string)
@@ -218,7 +212,7 @@ Source Code
 
 - **React Router** separates landing (`/`), pipeline (`/pipeline`), editor (`/compiler`), and visualizations (`/visualize/*`) — each phase gets full screen
 - **CompileContext** shares code/results across routes — compile once, visualize anywhere
-- **FileBrowser** provides VS Code-like sidebar with folders and files, saved to MySQL per user
+- **FileBrowser** provides VS Code-like sidebar with flat file list, saved to MySQL per user
 - **D3.js** visualizations: bar chart + token flow for tokens, collapsible trees for AST and semantic
 - All `/api/compile/**` endpoints return the full response (tokens + AST + symbol table + bytecode + output)
 - Tokenization and AST run in parallel (via `CompletableFuture`) — like running two threads simultaneously

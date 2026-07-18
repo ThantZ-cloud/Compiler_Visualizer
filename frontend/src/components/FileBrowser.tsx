@@ -145,7 +145,7 @@ const FileBrowser: React.FC = () => {
           title="New File"
           aria-label="Create new file"
         >
-          <FilePlus size={23} />
+          <FilePlus size={13} />
         </button>
       </div>
 

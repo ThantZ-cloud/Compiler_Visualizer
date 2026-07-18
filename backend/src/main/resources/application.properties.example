@@ -13,8 +13,9 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 
-# JWT Configuration (change this to a random secret in production!)
-jwt.secret=your-secret-key-here-min-32-chars
+# JWT Configuration
+# Set JWT_SECRET env var to a random 32+ char string in production
+jwt.secret=${JWT_SECRET:change-this-in-production}
 jwt.expiration=86400000
 
 # File Upload Configuration

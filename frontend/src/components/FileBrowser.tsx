@@ -132,20 +132,20 @@ const FileBrowser: React.FC = () => {
   return (
     <div className="w-[260px] min-w-[220px] max-w-[400px] bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col shrink-0 select-none">
       {/* Header */}
-      <div className="px-5 py-2.5 border-b border-[var(--color-border)] flex items-center justify-between h-[36px]">
+      <div className="px-5 py-2.5 border-b border-[var(--color-border)] flex items-center justify-around h-[36px]">
         <span
           className="text-[10px] font-bold text-[var(--color-text-dim)] tracking-[0.15em] uppercase"
           style={{ fontFamily: 'var(--font-display)' }}
         >
           Explorer
         </span>
-        <button
-          className="p-1.5 rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+        <button 
+          className="p-1.5  rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
           onClick={handleStartCreate}
           title="New File"
           aria-label="Create new file"
         >
-          <FilePlus size={13} />
+          <FilePlus size={15} />
         </button>
       </div>
 

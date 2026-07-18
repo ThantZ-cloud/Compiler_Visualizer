@@ -277,10 +277,10 @@ const FileBrowser: React.FC = () => {
 
   const renderCreateInput = (depth: number) => (
     <div
-      className="flex items-center gap-1.5 py-[3px] pr-2"
-      style={{ paddingLeft: `${depth * 12 + 24}px` }}
+      className="flex items-center gap-2 h-[28px] pr-3"
+      style={{ paddingLeft: `${depth * 16 + 12}px` }}
     >
-      <span className="shrink-0">
+      <span className="shrink-0 flex items-center">
         {(creatingRoot === 'folder' || creatingInFolder?.type === 'folder') ? (
           <Folder size={14} className="text-[var(--color-neon)]" />
         ) : (
@@ -289,7 +289,7 @@ const FileBrowser: React.FC = () => {
       </span>
       <input
         ref={inputRef}
-        className="h-6 flex-1 text-[12px] px-1.5 bg-[var(--color-void)] border border-[var(--color-neon)] text-[var(--color-neon)] outline-none rounded-none"
+        className="h-6 flex-1 text-[12px] px-2 bg-[var(--color-void)] border border-[var(--color-neon)] text-[var(--color-neon)] outline-none rounded-none"
         style={{ fontFamily: 'var(--font-mono)' }}
         value={newName}
         onChange={(e) => setNewName(e.target.value)}
@@ -329,11 +329,11 @@ const FileBrowser: React.FC = () => {
       <React.Fragment key={`${node.type}-${node.id}`}>
         {/* Node row */}
         <div
-          className={`flex items-center gap-1.5 h-[26px] pr-2 cursor-pointer transition-colors duration-75 group
+          className={`flex items-center gap-2 h-[28px] pr-3 cursor-pointer transition-colors duration-75 group rounded-sm
             ${isSelected && !isFolder
               ? 'bg-[var(--color-neon)]/8 text-[var(--color-neon)]'
               : 'text-[var(--color-text-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]'}`}
-          style={{ paddingLeft: `${indent + 8}px`, fontFamily: 'var(--font-mono)' }}
+          style={{ paddingLeft: `${indent + 12}px`, fontFamily: 'var(--font-mono)' }}
           onClick={() => handleSelectFile(node)}
           onContextMenu={(e) => {
             e.preventDefault();
@@ -416,7 +416,7 @@ const FileBrowser: React.FC = () => {
   return (
     <div className="w-[260px] min-w-[220px] max-w-[400px] bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col shrink-0 select-none">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-[var(--color-border)] flex items-center justify-between h-[34px]">
+      <div className="px-4 py-2.5 border-b border-[var(--color-border)] flex items-center justify-between h-[36px]">
         <span
           className="text-[10px] font-bold text-[var(--color-text-dim)] tracking-[0.15em] uppercase"
           style={{ fontFamily: 'var(--font-display)' }}
@@ -444,9 +444,9 @@ const FileBrowser: React.FC = () => {
       </div>
 
       {/* Tree content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-1">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-1">
         {/* Section header */}
-        <div className="flex items-center gap-1.5 px-2 py-1 select-none">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 mb-1 select-none">
           <ChevronRight size={12} className="rotate-90 text-[var(--color-text-muted)]" />
           <span
             className="text-[11px] font-bold text-[var(--color-text-dim)] tracking-wide flex-1 uppercase"
@@ -465,7 +465,7 @@ const FileBrowser: React.FC = () => {
         </div>
 
         {tree.length === 0 && !isCreating && (
-          <div className="text-[11px] text-[var(--color-text-muted)] px-4 py-3" style={{ fontFamily: 'var(--font-mono)' }}>
+          <div className="text-[11px] text-[var(--color-text-muted)] px-4 py-4" style={{ fontFamily: 'var(--font-mono)' }}>
             No files or folders yet
           </div>
         )}
@@ -474,7 +474,7 @@ const FileBrowser: React.FC = () => {
       {/* Context menu */}
       {contextMenu && (
         <div
-          className="fixed bg-[var(--color-card)] border border-[var(--color-border)] shadow-2xl z-50 min-w-[180px] py-1 rounded"
+          className="fixed bg-[var(--color-card)] border border-[var(--color-border)] shadow-2xl z-50 min-w-[180px] py-1.5 rounded"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronRight, Folder, FolderOpen, X, Circle, FilePlus, FolderPlus } from 'lucide-react';
+import { ChevronRight, Folder, FolderOpen, Trash2, Circle, FilePlus, FolderPlus } from 'lucide-react';
 import { useCompile } from '../context/CompileContext';
 import { codeAPI, folderAPI } from '../services/api';
 import type { SavedCode, Folder as FolderType } from '../types';
@@ -397,7 +397,7 @@ const FileBrowser: React.FC = () => {
               title={`Delete ${node.name}`}
               aria-label={`Delete ${node.name}`}
             >
-              <X size={12} />
+              <Trash2 size={12} />
             </button>
           )}
         </div>

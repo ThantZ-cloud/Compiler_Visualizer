@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
-import './SemanticTree.css';
 
 interface SemanticTreeProps {
   symbolTableJson: string;
@@ -13,7 +12,7 @@ interface TreeNode {
   modifiers?: string[];
   returnType?: string;
   children?: TreeNode[];
-  _children?: TreeNode; // For collapse/expand
+  _children?: TreeNode;
 }
 
 function parseSymbolTable(jsonStr: string): TreeNode | null {
@@ -33,7 +32,6 @@ function convertToTree(data: any): TreeNode {
     children: [],
   };
 
-  // Add imports as a group
   if (data.imports && data.imports.length > 0) {
     root.children!.push({
       name: `Imports (${data.imports.length})`,
@@ -45,7 +43,6 @@ function convertToTree(data: any): TreeNode {
     });
   }
 
-  // Add types (classes, interfaces, enums)
   if (data.types) {
     data.types.forEach((type: any) => {
       root.children!.push(convertTypeToTree(type));
@@ -63,28 +60,24 @@ function convertTypeToTree(type: any): TreeNode {
     children: [],
   };
 
-  // Add extends
   if (type.extends) {
     type.extends.forEach((ext: string) => {
       node.children!.push({ name: `extends ${ext}`, kind: 'inheritance' });
     });
   }
 
-  // Add implements
   if (type.implements) {
     type.implements.forEach((imp: string) => {
       node.children!.push({ name: `implements ${imp}`, kind: 'inheritance' });
     });
   }
 
-  // Add members
   if (type.members) {
     type.members.forEach((member: any) => {
       node.children!.push(convertMemberToTree(member));
     });
   }
 
-  // Add enum constants
   if (type.constants) {
     type.constants.forEach((c: any) => {
       node.children!.push({ name: c.name, kind: 'enum-constant' });
@@ -110,7 +103,6 @@ function convertMemberToTree(member: any): TreeNode {
       children: [],
     };
 
-    // Add parameters as children
     if (member.parameters) {
       member.parameters.forEach((p: any) => {
         node.children!.push({
@@ -121,7 +113,6 @@ function convertMemberToTree(member: any): TreeNode {
       });
     }
 
-    // Add thrown exceptions
     if (member.throws) {
       member.throws.forEach((ex: string) => {
         node.children!.push({ name: `throws ${ex}`, kind: 'exception' });
@@ -153,7 +144,6 @@ function convertMemberToTree(member: any): TreeNode {
   } else if (member.kind === 'initializer') {
     return { name: member.static ? 'static initializer' : 'instance initializer', kind: 'initializer' };
   } else if (member.kind) {
-    // Inner type
     return convertTypeToTree(member);
   }
   return { name: 'unknown', kind: 'unknown' };
@@ -245,7 +235,6 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
     const nodesWithPos = root.descendants() as unknown as d3.HierarchyPointNode<TreeNode>[];
     const linksWithPos = root.links() as unknown as d3.HierarchyPointLink<TreeNode>[];
 
-    // Draw links
     g.selectAll('.link')
       .data(linksWithPos)
       .join('path')
@@ -255,7 +244,6 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
         .y(d => d.x)
       );
 
-    // Draw nodes
     const nodes = g.selectAll('.node')
       .data(nodesWithPos)
       .join('g')
@@ -266,7 +254,6 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
         setSelectedNode(d.data);
         if (d.children || (d as any)._children) {
           toggleNode(d);
-          // Re-render tree
           treeLayout(root);
           const newNodes = root.descendants() as unknown as d3.HierarchyPointNode<TreeNode>[];
           const newLinks = root.links() as unknown as d3.HierarchyPointLink<TreeNode>[];
@@ -317,7 +304,6 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
       .attr('font-size', '11px')
       .attr('font-family', "'Consolas', 'Monaco', monospace");
 
-    // Center the tree
     const bounds = g.node()?.getBBox();
     if (bounds) {
       const dx = (width - bounds.width) / 2 - bounds.x;
@@ -325,39 +311,44 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
       svg.call(zoom.transform, d3.zoomIdentity.translate(dx, dy));
     }
 
+    // Cleanup
+    return () => {
+      svg.selectAll('*').remove();
+      svg.on('.zoom', null);
+    };
   }, [symbolTableJson, toggleNode]);
 
   if (!symbolTableJson) {
-    return <div className="panel-placeholder">No symbol table to display</div>;
+    return <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">No symbol table to display</div>;
   }
 
   return (
-    <div className="semantic-tree-container">
-      <div className="semantic-tree-header">
-        <h3>Symbol Table</h3>
-        <span className="semantic-tree-hint">Click nodes to expand/collapse • Scroll to zoom • Drag to pan</span>
+    <div className="flex flex-col flex-1 min-h-0 gap-2">
+      <div className="flex justify-between items-center shrink-0">
+        <h3 className="text-sm font-medium text-[#cccccc]">Symbol Table</h3>
+        <span className="text-[11px] text-[#808080]">Click nodes to expand/collapse • Scroll to zoom • Drag to pan</span>
       </div>
-      <div className="semantic-tree-wrapper" ref={containerRef}>
+      <div className="flex-1 min-h-0 bg-[#1e1e1e] border border-[#3c3c3c] rounded-[6px] overflow-hidden" ref={containerRef}>
         <svg
           ref={svgRef}
-          width="100%"
-          height="100%"
+          className="block w-full h-full cursor-grab active:cursor-grabbing"
           role="img"
           aria-label="Symbol Table tree visualization. Use mouse wheel to zoom, drag to pan, click nodes to expand or collapse."
         />
       </div>
       {selectedNode && (
-        <div className="semantic-node-detail">
-          <span className="detail-icon">{getIcon(selectedNode.kind || '')}</span>
-          <span className="detail-kind" style={{ color: getColor(selectedNode.kind || '') }}>
+        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#252526] border border-[#3c3c3c] rounded-[6px] shrink-0">
+          <span className="text-base">{getIcon(selectedNode.kind || '')}</span>
+          <span className="text-[11px] font-bold uppercase px-2 py-0.5 bg-[rgba(255,255,255,0.05)] rounded-[4px] font-mono"
+            style={{ color: getColor(selectedNode.kind || '') }}>
             {selectedNode.kind}
           </span>
-          <span className="detail-name">{selectedNode.name}</span>
+          <span className="text-[13px] text-white font-semibold font-mono">{selectedNode.name}</span>
           {selectedNode.modifiers && (
-            <span className="detail-modifiers">{selectedNode.modifiers.join(' ')}</span>
+            <span className="text-[11px] text-[#c586c0] font-mono">{selectedNode.modifiers.join(' ')}</span>
           )}
           {selectedNode.type && (
-            <span className="detail-type">{selectedNode.type}</span>
+            <span className="text-[11px] text-[#4ec9b0] font-mono">{selectedNode.type}</span>
           )}
         </div>
       )}

@@ -21,7 +21,8 @@ import java.util.List;
 public class Folder {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "folder_gen")
+    @TableGenerator(name = "folder_gen", table = "id_generator", pkColumnName = "gen_name", pkColumnValue = "folder_id", valueColumnName = "gen_value", allocationSize = 1)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

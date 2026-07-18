@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "d3-viz": {
+      "source": "chrisvoncsefalvay/claude-d3js-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "7bf222fdb6005fc8b802b43b93a5f4db9b40db15ec5c13a646ab5edfa52b94e7"
+    },
     "d3js-visualization": {
       "source": "bbeierle12/skill-mcp-claude",
       "sourceType": "github",

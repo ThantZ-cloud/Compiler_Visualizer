@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
-import './AstTree.css';
 
 interface AstNode {
   name: string;
@@ -55,7 +54,6 @@ function getNodeColor(type: string): string {
 }
 
 function getNodeLabel(type: string, name?: string): string {
-  // Shorten type names for readability
   const shortType = type
     .replace('Declaration', 'Decl')
     .replace('Expression', 'Expr')
@@ -87,7 +85,6 @@ function convertToAstNode(obj: any): AstNode {
   const line = obj.line;
   const column = obj.column;
 
-  // Recurse into children array
   const children: AstNode[] = [];
   if (Array.isArray(obj.children)) {
     obj.children.forEach((child: any) => {
@@ -114,7 +111,6 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
 
   const getNodeId = useCallback((node: d3.HierarchyPointNode<AstNode>): string => {
-    // Use type + name as unique ID for collapse tracking
     return `${node.data.type}-${node.data.name}`;
   }, []);
 
@@ -153,7 +149,6 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
 
     svg.call(zoom);
 
-    // Filter out collapsed children
     function filterCollapsed(node: AstNode): AstNode {
       const nodeId = `${node.type}-${node.name}`;
       if (collapsedNodes.has(nodeId) && node.children) {
@@ -166,10 +161,8 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
     }
 
     const filteredData = filterCollapsed(astData);
-
     const root = d3.hierarchy(filteredData);
 
-    // Use a wider spacing for better readability
     const nodeCount = root.descendants().length;
     const treeHeight = Math.max(height - 80, nodeCount * 25);
     const treeWidth = Math.max(width - 250, 400);
@@ -177,11 +170,9 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
     const treeLayout = d3.tree<AstNode>().size([treeHeight, treeWidth]);
     treeLayout(root);
 
-    // Cast to point nodes after tree layout computes positions
     const nodesWithPos = root.descendants() as unknown as d3.HierarchyPointNode<AstNode>[];
     const linksWithPos = root.links() as unknown as d3.HierarchyPointLink<AstNode>[];
 
-    // Draw links with smooth curves
     g.selectAll('.link')
       .data(linksWithPos)
       .join('path')
@@ -191,7 +182,6 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
         .y(d => d.x)
       );
 
-    // Draw nodes
     const nodes = g.selectAll('.node')
       .data(nodesWithPos)
       .join('g')
@@ -200,13 +190,11 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       .on('click', (event, d) => {
         event.stopPropagation();
         setSelectedNode(d.data);
-        // Toggle collapse on double-click
         if (event.detail === 2 && d.data.children && d.data.children.length > 0) {
           toggleCollapse(getNodeId(d));
         }
       });
 
-    // Node circles
     nodes.append('circle')
       .attr('r', d => d.data.children ? 7 : 5)
       .attr('fill', d => getNodeColor(d.data.type))
@@ -214,7 +202,6 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       .attr('stroke-width', 1.5)
       .style('cursor', 'pointer');
 
-    // Node labels — show type + name
     nodes.append('text')
       .attr('dy', '0.31em')
       .attr('x', d => d.children ? -12 : 12)
@@ -227,7 +214,6 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       .attr('font-size', '11px')
       .attr('font-family', "'Consolas', 'Monaco', monospace");
 
-    // Node count indicator for collapsed nodes
     nodes.filter(d => collapsedNodes.has(`${d.data.type}-${d.data.name}`) && !!d.data.children)
       .append('text')
       .attr('dy', '0.31em')
@@ -238,7 +224,6 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       .attr('font-size', '8px')
       .attr('font-weight', 'bold');
 
-    // Center the tree
     const bounds = g.node()?.getBBox();
     if (bounds) {
       const dx = (width - bounds.width) / 2 - bounds.x;
@@ -246,36 +231,41 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       svg.call(zoom.transform, d3.zoomIdentity.translate(dx, dy));
     }
 
+    // Cleanup
+    return () => {
+      svg.selectAll('*').remove();
+      svg.on('.zoom', null);
+    };
   }, [astJson, collapsedNodes, getNodeId, toggleCollapse]);
 
   if (!astJson) {
-    return <div className="panel-placeholder">No AST data to display</div>;
+    return <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">No AST data to display</div>;
   }
 
   return (
-    <div className="ast-tree-container">
-      <div className="ast-tree-header">
-        <h3>Abstract Syntax Tree</h3>
-        <span className="ast-tree-hint">Double-click to expand/collapse • Scroll to zoom • Drag to pan</span>
+    <div className="flex flex-col flex-1 min-h-0 gap-2">
+      <div className="flex justify-between items-center shrink-0">
+        <h3 className="text-sm font-medium text-[#cccccc]">Abstract Syntax Tree</h3>
+        <span className="text-[11px] text-[#808080]">Double-click to expand/collapse • Scroll to zoom • Drag to pan</span>
       </div>
-      <div className="ast-tree-wrapper" ref={containerRef}>
+      <div className="flex-1 min-h-0 bg-[#1e1e1e] border border-[#3c3c3c] rounded-[4px] overflow-hidden relative" ref={containerRef}>
         <svg
           ref={svgRef}
-          width="100%"
-          height="100%"
+          className="block w-full h-full cursor-grab active:cursor-grabbing"
           role="img"
           aria-label="Abstract Syntax Tree visualization. Use mouse wheel to zoom, drag to pan, double-click nodes to expand or collapse."
         />
       </div>
       {selectedNode && (
-        <div className="ast-node-detail">
-          <span className="detail-label">Selected:</span>
-          <span className="detail-type" style={{ backgroundColor: getNodeColor(selectedNode.type) + '33', color: getNodeColor(selectedNode.type) }}>
+        <div className="flex items-center gap-2.5 px-3 py-2.5 bg-[#252526] border border-[#3c3c3c] rounded-[4px] shrink-0">
+          <span className="text-[11px] text-[#808080] uppercase">Selected:</span>
+          <span className="text-xs px-2 py-0.5 rounded-[3px] font-medium font-mono"
+            style={{ backgroundColor: getNodeColor(selectedNode.type) + '33', color: getNodeColor(selectedNode.type) }}>
             {selectedNode.type}
           </span>
-          {selectedNode.name && <span className="detail-name">{selectedNode.name}</span>}
-          {selectedNode.line && <span className="detail-pos">Line {selectedNode.line}:{selectedNode.column}</span>}
-          {selectedNode.value && <span className="detail-value">"{selectedNode.value}"</span>}
+          {selectedNode.name && <span className="text-[13px] text-white font-semibold font-mono">{selectedNode.name}</span>}
+          {selectedNode.line && <span className="text-[11px] text-[#808080]">Line {selectedNode.line}:{selectedNode.column}</span>}
+          {selectedNode.value && <span className="text-xs text-[#ce9178] font-mono">"{selectedNode.value}"</span>}
         </div>
       )}
     </div>

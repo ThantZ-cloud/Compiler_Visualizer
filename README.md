@@ -29,30 +29,36 @@ A web application for visualizing the Java compilation pipeline. Write Java code
 
 - **Java 17+** (JDK, not JRE)
 - **Node.js 18+** and npm
-- **MySQL 8+** (or use H2 for local dev)
-- **Maven** (or use the included `mvnw` wrapper)
+- **Maven 3.6+** (or use `mvn` if installed globally)
+- **MySQL 8+** (production only — SQLite is used for local dev automatically)
 
 ### Backend
+
+Open a terminal and run:
 
 ```bash
 cd backend
 
 # Start the server (port 8080)
-./mvnw spring-boot:run
+mvn spring-boot:run
 
 # Build the jar
-./mvnw clean package
+mvn clean package
 
 # Run tests
-./mvnw test
+mvn test
 ```
 
+> **Note:** The dev profile uses SQLite by default — no database setup needed for local development. For MySQL, activate the `mysql` profile: `mvn spring-boot:run -Dspring-boot.run.profiles=mysql`
+
 ### Frontend
+
+Open a **second** terminal and run:
 
 ```bash
 cd frontend
 
-# Install dependencies
+# Install dependencies (first time only)
 npm install
 
 # Start dev server (port 5173)
@@ -192,6 +198,7 @@ Dark theme (VS Code-inspired) with color-coded token types (keywords, methods, c
 ### Backend (`application.properties`)
 
 - `server.port` — backend port (default: 8080)
+- `spring.profiles.active` — active profile (`dev` uses SQLite, `mysql` uses MySQL)
 - `spring.datasource.*` — database connection
 - `jwt.secret` — JWT signing secret (change in production!)
 - `jwt.expiration` — token lifetime in ms (default: 24h)

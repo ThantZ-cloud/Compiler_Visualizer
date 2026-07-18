@@ -1,16 +1,8 @@
-import React, { useEffect, useState, useRef, Suspense, lazy } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import BinaryRain from '../components/BinaryRain';
-
-const PipelineScene = lazy(() => import('../components/PipelineScene'));
-
-const FEATURES = [
-  { label: 'MONACO EDITOR', desc: 'Full Java syntax highlighting with JetBrains Mono' },
-  { label: 'REAL COMPILATION', desc: 'javac-powered — not a toy, real bytecode output' },
-  { label: 'FILE MANAGEMENT', desc: 'VS Code-like sidebar with folders and save' },
-  { label: 'LIVE VISUALIZATION', desc: 'D3.js trees, charts, and flow diagrams' },
-];
 
 // ── Typewriter hook ──
 function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 2000) {
@@ -43,6 +35,8 @@ function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 20
 
 // ── Floating binary strings ──
 function FloatingBinary() {
+  const prefersReduced = useRef(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
   const bits = useRef(
     Array.from({ length: 18 }, (_, i) => ({
       id: i,
@@ -53,6 +47,8 @@ function FloatingBinary() {
       size: 10 + Math.random() * 4,
     }))
   ).current;
+
+  if (prefersReduced.current) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -80,11 +76,11 @@ function FloatingBinary() {
 function BootSequence({ onComplete }: { onComplete: () => void }) {
   const [lines, setLines] = useState<string[]>([]);
   const bootLines = useRef([
-    '[BOOT] Compiler Visualizer v2.0.0',
+    '[BOOT] Compilation Visualizer v2.0.0',
     '[SYS]  Initializing JVM interface...',
     '[OK]   JavaParser loaded',
     '[OK]   D3.js visualization engine ready',
-    '[OK]   Monaco Editor loaded',
+    '[OK]   Monaco Compiler loaded',
     '[SYS]  Scanning compilation pipeline...',
     '[OK]   Phase 1: Lexer — online',
     '[OK]   Phase 2: Parser — online',
@@ -111,7 +107,7 @@ function BootSequence({ onComplete }: { onComplete: () => void }) {
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-[9998] bg-[var(--color-void)] flex items-center justify-center">
+    <div className="fixed inset-0 z-[200] bg-[var(--color-void)] flex items-center justify-center">
       <div className="max-w-lg w-full px-8">
         {lines.map((line, i) => (
           <div
@@ -134,12 +130,12 @@ function BootSequence({ onComplete }: { onComplete: () => void }) {
 }
 
 const LandingPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [booted, setBooted] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const pipelineRef = useRef<HTMLDivElement>(null);
 
   const typed = useTypewriter([
     'javac Main.java',
@@ -149,15 +145,6 @@ const LandingPage: React.FC = () => {
     'System.out.println("0101")',
     'tokenize → parse → compile',
   ], 70, 35, 1800);
-
-  const scrollToPipeline = () => {
-    if (scrollContainerRef.current && pipelineRef.current) {
-      const container = scrollContainerRef.current;
-      const target = pipelineRef.current;
-      const targetTop = target.offsetTop - container.offsetTop;
-      container.scrollTo({ top: targetTop, behavior: 'smooth' });
-    }
-  };
 
   // Boot sequence on mount
   useEffect(() => {
@@ -187,25 +174,27 @@ const LandingPage: React.FC = () => {
 
       <div
         ref={scrollContainerRef}
-        className={`flex-1 overflow-y-auto bg-[var(--color-void)] transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
+        className={`relative flex-1 flex flex-col overflow-hidden bg-[var(--color-void)] transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
       >
-        {/* ═══════ HERO ═══════ */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          <BinaryRain />
-          <FloatingBinary />
+        {/* Background — covers full page */}
+        <BinaryRain />
+        <FloatingBinary />
 
-          {/* Scanline overlay */}
-          <div className="absolute inset-0 pointer-events-none z-10"
-            style={{
-              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.02) 2px, rgba(0,255,136,0.02) 4px)',
-            }}
-          />
+        {/* Scanline overlay — full page */}
+        <div className="absolute inset-0 pointer-events-none z-10"
+          style={{
+            background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.02) 2px, rgba(0,255,136,0.02) 4px)',
+          }}
+        />
+
+        {/* ═══════ HERO ═══════ */}
+        <section className="relative flex-1 flex items-center justify-center overflow-hidden">
 
           {/* Neon corner brackets */}
-          <div className="absolute top-8 left-8 w-16 h-16 border-t-2 border-l-2 border-[var(--color-neon)] opacity-30 z-10" />
-          <div className="absolute top-8 right-8 w-16 h-16 border-t-2 border-r-2 border-[var(--color-neon)] opacity-30 z-10" />
-          <div className="absolute bottom-8 left-8 w-16 h-16 border-b-2 border-l-2 border-[var(--color-neon)] opacity-30 z-10" />
-          <div className="absolute bottom-8 right-8 w-16 h-16 border-b-2 border-r-2 border-[var(--color-neon)] opacity-30 z-10" />
+          <div className="absolute top-6 left-6 md:top-8 md:left-8 w-12 h-12 md:w-16 md:h-16 border-t-2 border-l-2 border-[var(--color-neon)] opacity-30 z-10" />
+          <div className="absolute top-6 right-6 md:top-8 md:right-8 w-12 h-12 md:w-16 md:h-16 border-t-2 border-r-2 border-[var(--color-neon)] opacity-30 z-10" />
+          <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 w-12 h-12 md:w-16 md:h-16 border-b-2 border-l-2 border-[var(--color-neon)] opacity-30 z-10" />
+          <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 w-12 h-12 md:w-16 md:h-16 border-b-2 border-r-2 border-[var(--color-neon)] opacity-30 z-10" />
 
           <div className="relative z-20 text-center px-6 max-w-5xl mx-auto">
             {/* Status badge */}
@@ -213,7 +202,7 @@ const LandingPage: React.FC = () => {
               <span className="w-1.5 h-1.5 bg-[var(--color-neon)] pulse-ring" />
               <span className="text-[10px] font-bold text-[var(--color-neon)] tracking-[0.25em] uppercase"
                 style={{ fontFamily: 'var(--font-display)' }}>
-                SYSTEM ONLINE
+                {t('landing.statusBadge')}
               </span>
             </div>
 
@@ -221,7 +210,7 @@ const LandingPage: React.FC = () => {
             <h1 className="mb-2"
               style={{ fontFamily: 'var(--font-display)' }}>
               <span className="block text-5xl md:text-7xl lg:text-8xl font-black tracking-wider text-[var(--color-text)] text-glitch">
-                COMPILER
+                COMPILATION
               </span>
               <span className="block text-5xl md:text-7xl lg:text-8xl font-black tracking-wider neon-text mt-1">
                 VISUALIZER
@@ -240,228 +229,38 @@ const LandingPage: React.FC = () => {
             {/* Description */}
             <p className="text-[var(--color-text-dim)] text-sm md:text-base max-w-xl mx-auto mb-12 leading-relaxed"
               style={{ fontFamily: 'var(--font-mono)' }}>
-              {'// '}Write Java code. Watch the compiler dissect it —<br />
-              token by token, tree by tree, instruction by instruction.
+              {t('landing.description')}
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
               <button
-                className="btn-neon px-10 py-4 text-sm tracking-[0.15em] glitch-hover"
-                onClick={() => navigate('/compiler')}
-              >
-                <span>[ {isAuthenticated ? 'OPEN EDITOR' : 'BEGIN'} ]</span>
-              </button>
-              <button
-                className="px-8 py-4 text-sm text-[var(--color-text-dim)] border border-[var(--color-border)] hover:border-[var(--color-text-muted)] transition-colors tracking-[0.1em]"
+                className="btn-neon px-8 py-4 text-sm tracking-[0.15em] glitch-hover min-h-[48px]"
                 style={{ fontFamily: 'var(--font-display)' }}
-                onClick={scrollToPipeline}
+                onClick={() => navigate('/pipeline', { state: { from: '/' } })}
               >
-                <span>VIEW PIPELINE ↓</span>
+                <span>{t('landing.viewPipeline')}</span>
               </button>
-            </div>
-          </div>
-
-          {/* Scroll indicator */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
-            <span className="text-[9px] text-[var(--color-text-muted)] tracking-[0.3em] uppercase"
-              style={{ fontFamily: 'var(--font-display)' }}>
-              Scroll
-            </span>
-            <div className="w-px h-8 bg-gradient-to-b from-[var(--color-neon)] to-transparent opacity-40" />
-          </div>
-        </section>
-
-        {/* ═══════ PIPELINE ═══════ */}
-        <section ref={pipelineRef} id="pipeline" className="py-16 px-6 relative border-t border-[var(--color-border)]">
-          <div className="max-w-6xl mx-auto">
-            {/* Section header */}
-            <div className="text-center mb-8">
-              <span className="text-[10px] font-bold text-[var(--color-neon)] tracking-[0.3em] uppercase mb-4 block"
-                style={{ fontFamily: 'var(--font-display)' }}>
-                {'< '}PIPELINE {' />'}
-              </span>
-              <h2 className="text-3xl md:text-4xl font-bold text-[var(--color-text)] mb-4"
-                style={{ fontFamily: 'var(--font-display)' }}>
-                FIVE PHASES. ONE JOURNEY.
-              </h2>
-              <p className="text-[var(--color-text-dim)] text-sm max-w-lg mx-auto"
-                style={{ fontFamily: 'var(--font-mono)' }}>
-                {'// '}Your source code passes through each stage.<br />
-                {'// '}Visualize every transformation.
-              </p>
-            </div>
-
-            {/* Three.js 3D Pipeline */}
-            <div className="w-full h-[400px] md:h-[450px] bg-[var(--color-void)] border border-[var(--color-border)] overflow-hidden">
-              <Suspense fallback={
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-[var(--color-neon)] text-xs font-bold tracking-[0.2em] animate-pulse"
-                      style={{ fontFamily: 'var(--font-display)' }}>
-                      LOADING 3D SCENE...
-                    </div>
-                  </div>
-                </div>
-              }>
-                <PipelineScene />
-              </Suspense>
-            </div>
-
-            {/* CTA below 3D scene */}
-            <div className="text-center mt-8">
               <button
-                className="btn-neon px-10 py-4 text-sm tracking-[0.15em] glitch-hover"
+                className="btn-neon px-10 py-4 text-sm tracking-[0.15em] glitch-hover min-h-[48px]"
                 onClick={() => navigate('/compiler')}
               >
-                <span>[ TRY IT YOURSELF ]</span>
+                <span>[ {isAuthenticated ? t('landing.openCompiler') : t('landing.begin')} ]</span>
               </button>
             </div>
-          </div>
-        </section>
-
-        {/* ═══════ FEATURES ═══════ */}
-        <section className="py-24 px-6 border-t border-[var(--color-border)]">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-16 items-center">
-              {/* Left — feature list */}
-              <div>
-                <span className="text-[10px] font-bold text-[var(--color-cyan)] tracking-[0.3em] uppercase mb-4 block"
-                  style={{ fontFamily: 'var(--font-display)' }}>
-                  {'< '}FEATURES {' />'}
-                </span>
-                <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-text)] mb-8"
-                  style={{ fontFamily: 'var(--font-display)' }}>
-                  NOT A TOY DEMO.
-                </h2>
-
-                <div className="space-y-4">
-                  {FEATURES.map((f, i) => (
-                    <div key={i} className="flex items-start gap-4 p-4 border border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-neon)] transition-colors group">
-                      <span className="text-[var(--color-neon)] text-xs font-bold mt-0.5 shrink-0"
-                        style={{ fontFamily: 'var(--font-mono)' }}>
-                        [{String(i + 1).padStart(2, '0')}]
-                      </span>
-                      <div>
-                        <h4 className="text-xs font-bold text-[var(--color-text)] tracking-[0.1em] mb-1"
-                          style={{ fontFamily: 'var(--font-display)' }}>
-                          {f.label}
-                        </h4>
-                        <p className="text-[11px] text-[var(--color-text-dim)]"
-                          style={{ fontFamily: 'var(--font-mono)' }}>
-                          {f.desc}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right — code block */}
-              <div className="bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
-                {/* Terminal title bar */}
-                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-                  <span className="w-2.5 h-2.5 bg-[var(--color-rose)] opacity-70" />
-                  <span className="w-2.5 h-2.5 bg-[var(--color-amber)] opacity-70" />
-                  <span className="w-2.5 h-2.5 bg-[var(--color-neon)] opacity-70" />
-                  <span className="ml-2 text-[10px] text-[var(--color-text-muted)]"
-                    style={{ fontFamily: 'var(--font-mono)' }}>
-                    Main.java
-                  </span>
-                </div>
-
-                {/* Code */}
-                <div className="p-5 text-xs leading-loose" style={{ fontFamily: 'var(--font-mono)' }}>
-                  <pre className="text-[var(--color-text-dim)]">
-                    <span className="text-[var(--color-neon)]">public class</span>{' '}
-                    <span className="text-[var(--color-amber)]">Main</span> {'{'}
-                  </pre>
-                  <pre className="text-[var(--color-text-dim)]">
-                    {'  '}
-                    <span className="text-[var(--color-neon)]">public static void</span>{' '}
-                    <span className="text-[var(--color-cyan)]">main</span>(
-                    <span className="text-[var(--color-magenta)]">String[]</span> args) {'{'}
-                  </pre>
-                  <pre className="text-[var(--color-text-dim)]">
-                    {'    '}System.<span className="text-[var(--color-cyan)]">out</span>.
-                    <span className="text-[var(--color-cyan)]">println</span>(
-                    <span className="text-[var(--color-neon)]">"Hello, World!"</span>);
-                  </pre>
-                  <pre className="text-[var(--color-text-dim)]">
-                    {'  }'}
-                  </pre>
-                  <pre className="text-[var(--color-text-dim)]">
-                    {'}'}
-                  </pre>
-                </div>
-
-                {/* Output bar */}
-                <div className="px-4 py-2.5 border-t border-[var(--color-border)] bg-[var(--color-surface)]">
-                  <span className="text-[10px] text-[var(--color-text-muted)]"
-                    style={{ fontFamily: 'var(--font-mono)' }}>
-                    <span className="text-[var(--color-neon)]">$</span> javac Main.java && java Main
-                  </span>
-                  <br />
-                  <span className="text-[11px] text-[var(--color-text)]"
-                    style={{ fontFamily: 'var(--font-mono)' }}>
-                    Hello, World!
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════ FOOTER CTA ═══════ */}
-        <section className="py-24 px-6 border-t border-[var(--color-border)] relative overflow-hidden">
-          {/* Background glow */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[600px] h-[300px] bg-[var(--color-neon)] opacity-[0.03] blur-[120px]" />
-          </div>
-
-          <div className="max-w-2xl mx-auto text-center relative z-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-text)] mb-4"
-              style={{ fontFamily: 'var(--font-display)' }}>
-              READY TO COMPILE?
-            </h2>
-            <p className="text-[var(--color-text-dim)] text-sm mb-10"
-              style={{ fontFamily: 'var(--font-mono)' }}>
-              {'// '}Open the editor, write some Java, and watch every phase unfold.
-            </p>
-            <button
-              className="btn-neon px-12 py-5 text-sm tracking-[0.15em] glitch-hover"
-              onClick={() => navigate('/compiler')}
-            >
-              <span>[ LAUNCH EDITOR ]</span>
-            </button>
           </div>
         </section>
 
         {/* ═══════ FOOTER ═══════ */}
-        <footer className="py-6 px-6 border-t border-[var(--color-border)] bg-[var(--color-card)]">
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-[var(--color-neon)] font-bold"
-                style={{ fontFamily: 'var(--font-display)' }}>
-                {'< '}CV{' />'}
-              </span>
-              <span className="text-[10px] text-[var(--color-text-muted)]"
-                style={{ fontFamily: 'var(--font-mono)' }}>
-                Compiler Visualizer v2.0.0
-              </span>
-            </div>
-            <div className="flex items-center gap-6">
-              <span className="text-[10px] text-[var(--color-text-muted)]"
-                style={{ fontFamily: 'var(--font-mono)' }}>
-                Java 17 • Spring Boot • React • D3.js
-              </span>
-              <span className="text-[10px] text-[var(--color-text-muted)]"
-                style={{ fontFamily: 'var(--font-mono)' }}>
-                Built with {'<3'} for learning
-              </span>
-            </div>
-          </div>
-        </footer>
+        <div className="py-6 text-center shrink-0">
+          <p className="text-[11px] text-[var(--color-neon)] tracking-[0.1em] flex items-center justify-center gap-4"
+            style={{ fontFamily: 'var(--font-mono)' }}>
+            <span>© 2026 Compilation Visualizer</span>
+            <span className="text-[var(--color-border)]">•</span>
+            <span className="cursor-pointer hover:underline transition-colors">Contact Us</span>
+          </p>
+        </div>
+
       </div>
     </div>
   );

@@ -18,7 +18,8 @@ import java.time.LocalDateTime;
 public class CompilationLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "compilation_log_gen")
+    @TableGenerator(name = "compilation_log_gen", table = "id_generator", pkColumnName = "gen_name", pkColumnValue = "compilation_log_id", valueColumnName = "gen_value", allocationSize = 1)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

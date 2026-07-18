@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { X, Circle } from 'lucide-react';
 import { useCompile } from '../context/CompileContext';
 import { codeAPI } from '../services/api';
 import type { SavedCode } from '../types';
@@ -136,7 +137,9 @@ const FileBrowser: React.FC = () => {
           {/* Create input */}
           {isCreating && (
             <div className="flex items-center gap-2 pl-8 pr-3 py-1">
-              <span className="text-[var(--color-neon)] text-xs shrink-0" style={{ fontFamily: 'var(--font-mono)' }}>☕</span>
+              <span className="text-[var(--color-neon)] text-xs shrink-0" style={{ fontFamily: 'var(--font-mono)' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 0h-9L7 1.5V6H2.5L1 7.5v15.07L2.5 24h12.07L16 22.57V18h4.7l1.3-1.43V4.5L17.5 0zm0 2.12l2.38 2.38H17.5V2.12zm-3 20.38h-12v-15H7v9.07L8.5 18h6v4.5zm6-6h-12v-15H16V6h4.5v10.5z"/></svg>
+              </span>
               <input
                 ref={inputRef}
                 className="h-7 flex-1 text-[11px] px-2 bg-[var(--color-void)] border border-[var(--color-neon)] text-[var(--color-neon)] outline-none"
@@ -168,7 +171,9 @@ const FileBrowser: React.FC = () => {
                   setContextMenu({ id: file.id, x: e.clientX, y: e.clientY });
                 }}
               >
-                <span className="text-[var(--color-neon)] text-[10px] shrink-0" style={{ fontFamily: 'var(--font-mono)' }}>☕</span>
+                <span className="text-[var(--color-neon)] shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 0h-9L7 1.5V6H2.5L1 7.5v15.07L2.5 24h12.07L16 22.57V18h4.7l1.3-1.43V4.5L17.5 0zm0 2.12l2.38 2.38H17.5V2.12zm-3 20.38h-12v-15H7v9.07L8.5 18h6v4.5zm6-6h-12v-15H16V6h4.5v10.5z"/></svg>
+                </span>
                 {renamingId === file.id ? (
                   <input
                     ref={renameRef}
@@ -188,7 +193,7 @@ const FileBrowser: React.FC = () => {
                     style={{ fontFamily: 'var(--font-mono)' }}>
                     {file.title}
                     {currentFileId === file.id && isDirty && (
-                      <span className="text-[var(--color-amber)] text-[10px] ml-1">●</span>
+                      <Circle size={6} className="inline fill-[var(--color-amber)] text-[var(--color-amber)] ml-1" />
                     )}
                   </span>
                 )}
@@ -199,7 +204,7 @@ const FileBrowser: React.FC = () => {
                   onClick={(e) => { e.stopPropagation(); handleDeleteFile(file.id); }}
                   title="Delete File"
                   aria-label={`Delete ${file.title}`}
-                >✕</button>
+                ><X size={10} /></button>
               </div>
             ))}
             {files.length === 0 && !isCreating && (

@@ -14,6 +14,24 @@ const BinaryRain: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Respect prefers-reduced-motion
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      // Draw a static frame instead of animating
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      ctx.fillStyle = 'rgba(10, 10, 15, 1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${FONT_SIZE}px JetBrains Mono, monospace`;
+      for (let x = 0; x < canvas.width; x += FONT_SIZE * 3) {
+        for (let y = 0; y < canvas.height; y += FONT_SIZE * 4) {
+          ctx.fillStyle = Math.random() > 0.5 ? '#00FF8833' : '#00FF8811';
+          ctx.fillText(CHARS[Math.floor(Math.random() * CHARS.length)], x, y);
+        }
+      }
+      return;
+    }
+
     let animId: number;
     let columns: number[] = [];
 

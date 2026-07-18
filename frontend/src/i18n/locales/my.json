@@ -1,0 +1,54 @@
+{
+  "nav": {
+    "compiler": "ကိုဒ် ဘာသာပြန်",
+    "compile": "ဘာသာပြန်ရန်",
+    "compiling": "ဘာသာပြန်နေသည်...",
+    "visualize": "မြင်ကွင်းပြရန်",
+    "signIn": "ဝင်ရောက်ရန်",
+    "register": "စာရင်းသွင်းရန်"
+  },
+  "landing": {
+    "statusBadge": "စနစ်အဆင်သင့်ဖြစ်သည်",
+    "description": "// Java ကုဒ်ရေးပါ။ ဘာသာပြန်ကို ကြည့်ပါ — တစ်ခုချင်းစီ ခွဲခြမ်းစိတ်ဖြာသည်။",
+    "begin": "စတင်ရန်",
+    "openCompiler": "ဘာသာပြန်ဖွင့်ရန်",
+    "viewPipeline": "လုပ်ငန်းစဉ်ကြည့်ရန်"
+  },
+  "footer": {
+    "tagline": "Java သည် သင့်ကုဒ်ကို ဘယ်လို ဘာသာပြန်သည်ကို ကြည့်ပါ — အဆင့်ဆင့်။",
+    "product": "ထုတ်ကုန်",
+    "compiler": "ဘာသာပြန်",
+    "pipeline": "လုပ်ငန်းစဉ်",
+    "visualize": "မြင်ကွင်းပြရန်",
+    "features": "လုပ်ဆောင်ချက်များ",
+    "resources": "အရင်းအမြစ်များ",
+    "documentation": "စာရွက်စာတမ်း",
+    "apiReference": "API ရည်ညွှန်",
+    "changelog": "ပြောင်းလဲမှုမှတ်တမ်း",
+    "roadmap": "လမ်းပြမြေပုံ",
+    "legal": "ဥပဒေ",
+    "privacyPolicy": "ကိုယ်ရေးမူဝါဒ",
+    "termsOfService": "ဝန်ဆောင်မှုစည်းမျဉ်း",
+    "license": "License (MIT)",
+    "copyright": "© 2026 Compilation Visualizer။ MIT License ဖြင့် ဖွင့်လင့်ထားသည်။",
+    "builtWith": "React · Spring Boot · Java · D3.js · Three.js ဖြင့် ဖန်တီးထားသည်"
+  },
+  "auth": {
+    "email": "အီးမေးလ်",
+    "password": "စကားဝှက်",
+    "username": "အသုံးပြုသူအမည်",
+    "loginTitle": "ဝင်ရောက်ရန်",
+    "registerTitle": "စာရင်းသွင်းရန်",
+    "loginButton": "ဝင်ရောက်ရန်",
+    "registerButton": "စာရင်းသွင်းရန်",
+    "noAccount": "အကောင့်မရှိပါလား။",
+    "hasAccount": "အကောင့်ရှိပြီးသားလား။",
+    "switchToRegister": "စာရင်းသွင်းရန်",
+    "switchToLogin": "ဝင်ရောက်ရန်"
+  },
+  "editor": {
+    "save": "သိမ်းဆည်းရန်",
+    "saving": "သိမ်းဆည်းနေသည်...",
+    "visualize": "မြင်ကွင်းပြရန်"
+  }
+}

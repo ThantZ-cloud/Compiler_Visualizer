@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import "tailwindcss";
 
 @theme {
   --color-void: #0A0A0F;
@@ -31,6 +31,31 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
+/* ── Light theme overrides ── */
+[data-theme="light"] {
+  --color-void: #F0F0F8;
+  --color-void-light: #E8E8F0;
+  --color-card: #FFFFFF;
+  --color-card-hover: #F5F5FA;
+  --color-surface: #EEEEF5;
+  --color-surface-2: #E0E0EA;
+  --color-surface-3: #D0D0DD;
+  --color-border: #C8C8D8;
+  --color-border-bright: #A8A8C0;
+  --color-text: #1A1A2E;
+  --color-text-dim: #4A4A6A;
+  --color-text-muted: #7A7A98;
+  --color-binary: #00FF8833;
+  /* Keep accent colors for branding identity */
+  --color-neon: #00CC6A;
+  --color-neon-dim: #00CC6A33;
+  --color-neon-glow: #00CC6A66;
+  --color-cyan: #0099CC;
+  --color-magenta: #CC00CC;
+  --color-amber: #CC8800;
+  --color-rose: #CC2255;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -60,23 +85,14 @@ a {
   text-decoration: none;
 }
 
-/* Scrollbar — cyberpunk style */
+/* Scrollbar — hidden */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 0;
+  height: 0;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-void);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-neon-dim);
-  border: 1px solid var(--color-neon);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-neon-glow);
+* {
+  scrollbar-width: none;
 }
 
 /* Selection */
@@ -91,7 +107,7 @@ a {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 90;
   background: repeating-linear-gradient(
     0deg,
     transparent,
@@ -197,16 +213,10 @@ a {
 }
 
 .cursor-blink::after {
-  content: '█';
+  content: '\2588';
   color: var(--color-neon);
   animation: blink 1s step-end infinite;
   margin-left: 2px;
-}
-
-/* ── Typewriter ── */
-@keyframes typewriter {
-  from { width: 0; }
-  to { width: 100%; }
 }
 
 /* ── Pulse ring ── */
@@ -228,13 +238,6 @@ a {
   94% { opacity: 1; }
 }
 
-/* ── Terminal prompt ── */
-.terminal-prompt::before {
-  content: '> ';
-  color: var(--color-neon);
-  font-weight: 700;
-}
-
 /* ── Binary float keyframes ── */
 @keyframes float-up {
   0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
@@ -243,43 +246,10 @@ a {
   100% { transform: translateY(-10vh) rotate(180deg); opacity: 0; }
 }
 
-/* ── ASCII box styles ── */
-.ascii-box {
-  border: 1px solid var(--color-neon);
-  position: relative;
-}
-
-.ascii-box::before {
-  content: '+';
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  color: var(--color-neon);
-  font-size: 10px;
-  line-height: 1;
-}
-
-.ascii-box::after {
-  content: '+';
-  position: absolute;
-  bottom: -1px;
-  right: -1px;
-  color: var(--color-neon);
-  font-size: 10px;
-  line-height: 1;
-}
-
-/* ── Phase card hover ── */
-.phase-card {
-  transition: all 0.2s ease;
-  border: 1px solid var(--color-border);
-  background: var(--color-card);
-}
-
-.phase-card:hover {
-  border-color: var(--color-neon);
-  box-shadow: 0 0 20px var(--color-neon-dim), inset 0 0 20px var(--color-neon-dim);
-  transform: translateY(-2px);
+/* ── Skeleton loading animation ── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
 }
 
 /* ── Button styles ── */
@@ -313,6 +283,10 @@ a {
 
 .btn-neon:hover::before {
   opacity: 1;
+}
+
+.btn-neon:active {
+  transform: scale(0.97);
 }
 
 .btn-neon span {
@@ -361,6 +335,16 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
+/* Tap feedback for all buttons */
+button {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
 .btn-neon:focus-visible {
   outline: 2px solid var(--color-neon);
   outline-offset: 2px;
@@ -385,18 +369,4 @@ a:focus-visible {
 
 .skip-link:focus {
   top: 0;
-}
-
-/* ── Skeleton loading animation ── */
-@keyframes skeleton-pulse {
-  0%, 100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-.skeleton {
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
 }

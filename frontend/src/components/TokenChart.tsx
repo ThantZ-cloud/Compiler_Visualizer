@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
-import './TokenChart.css';
 
 interface Token {
   type: string;
@@ -54,7 +53,6 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
     const svg = d3.select(barChartRef.current);
     svg.selectAll('*').remove();
 
-    // Group by type
     const grouped = d3.rollup(tokens, v => v.length, d => d.type);
     const data = Array.from(grouped, ([type, count]) => ({ type, count }))
       .sort((a, b) => b.count - a.count);
@@ -79,7 +77,6 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .range([0, height])
       .padding(0.2);
 
-    // Bars
     g.selectAll('.bar')
       .data(data)
       .join('rect')
@@ -95,7 +92,6 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .delay((_, i) => i * 50)
       .attr('width', d => xScale(d.count));
 
-    // Labels (type name)
     g.selectAll('.label')
       .data(data)
       .join('text')
@@ -109,7 +105,6 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('font-family', "'Consolas', 'Monaco', monospace")
       .text(d => d.type);
 
-    // Count labels
     g.selectAll('.count')
       .data(data)
       .join('text')
@@ -127,6 +122,9 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .delay((_, i) => i * 50 + 300)
       .attr('opacity', 1);
 
+    return () => {
+      svg.selectAll('*').remove();
+    };
   }, [tokens]);
 
   // Flow chart: tokens as colored blocks in sequence
@@ -148,7 +146,6 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Calculate token widths based on value length
     const minWidth = 4;
     const maxWidth = 60;
     const totalChars = tokens.reduce((sum, t) => sum + Math.max(t.value.length, 1), 0);
@@ -162,7 +159,6 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       return rect;
     });
 
-    // Draw tokens as rectangles
     const rects = g.selectAll('.token-block')
       .data(tokenRects)
       .join('rect')
@@ -181,7 +177,6 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .delay((_, i) => i * 8)
       .attr('opacity', 0.85);
 
-    // Tooltip on hover
     rects.on('mouseover', function(_, d) {
       d3.select(this).attr('opacity', 1).attr('stroke', '#ffffff').attr('stroke-width', 2);
 
@@ -217,7 +212,6 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       g.selectAll('.tooltip-group').remove();
     });
 
-    // Line numbers on x-axis
     const linePositions: { line: number; x: number }[] = [];
     let lastLine = 0;
     tokenRects.forEach(rect => {
@@ -247,30 +241,35 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('font-family', "'Consolas', 'Monaco', monospace")
       .text(d => `L${d.line}`);
 
+    return () => {
+      svg.selectAll('*').remove();
+    };
   }, [tokens]);
 
   return (
-    <div className="token-chart-container">
-      <div className="chart-section">
-        <h3 className="chart-title">Token Distribution by Type</h3>
-        <div className="chart-wrapper">
+    <div className="flex flex-col gap-6 h-full">
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium text-[#cccccc] m-0">Token Distribution by Type</h3>
+        <div className="bg-[#1e1e1e] border border-[#3c3c3c] rounded-[6px] p-3 overflow-x-auto">
           <svg
             ref={barChartRef}
+            className="block"
             role="img"
             aria-label="Bar chart showing token count distribution by type"
           />
         </div>
       </div>
-      <div className="chart-section">
-        <h3 className="chart-title">Token Flow (source code sequence)</h3>
-        <div className="chart-wrapper flow-wrapper">
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium text-[#cccccc] m-0">Token Flow (source code sequence)</h3>
+        <div className="bg-[#1e1e1e] border border-[#3c3c3c] rounded-[6px] p-3 overflow-x-auto">
           <svg
             ref={flowChartRef}
+            className="block"
             role="img"
             aria-label="Token flow visualization showing tokens as colored blocks in source code sequence. Hover over blocks to see details."
           />
         </div>
-        <div className="chart-hint">Hover over tokens to see details</div>
+        <div className="text-[11px] text-[#808080] text-right">Hover over tokens to see details</div>
       </div>
     </div>
   );

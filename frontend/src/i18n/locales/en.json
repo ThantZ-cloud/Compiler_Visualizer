@@ -1,0 +1,54 @@
+{
+  "nav": {
+    "compiler": "COMPILER",
+    "compile": "COMPILE",
+    "compiling": "COMPILING...",
+    "visualize": "VISUALIZE",
+    "signIn": "SIGN IN",
+    "register": "REGISTER"
+  },
+  "landing": {
+    "statusBadge": "SYSTEM ONLINE",
+    "description": "// Write Java code. Watch the compiler dissect it — token by token, tree by tree, instruction by instruction.",
+    "begin": "BEGIN",
+    "openCompiler": "OPEN COMPILER",
+    "viewPipeline": "VIEW PIPELINE"
+  },
+  "footer": {
+    "tagline": "See how Java compiles your code — phase by phase, instruction by instruction.",
+    "product": "Product",
+    "compiler": "Compiler",
+    "pipeline": "Pipeline",
+    "visualize": "Visualize",
+    "features": "Features",
+    "resources": "Resources",
+    "documentation": "Documentation",
+    "apiReference": "API Reference",
+    "changelog": "Changelog",
+    "roadmap": "Roadmap",
+    "legal": "Legal",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "license": "License (MIT)",
+    "copyright": "© 2026 Compilation Visualizer. Open source under MIT License.",
+    "builtWith": "Built with React · Spring Boot · Java · D3.js · Three.js"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "loginTitle": "Sign In",
+    "registerTitle": "Register",
+    "loginButton": "SIGN IN",
+    "registerButton": "REGISTER",
+    "noAccount": "No account?",
+    "hasAccount": "Already have an account?",
+    "switchToRegister": "Register",
+    "switchToLogin": "Sign in"
+  },
+  "editor": {
+    "save": "SAVE",
+    "saving": "SAVING...",
+    "visualize": "VISUALIZE"
+  }
+}

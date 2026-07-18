@@ -18,13 +18,12 @@ const Skeleton: React.FC<SkeletonProps> = ({
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`skeleton ${className}`}
+          className={`animate-[skeleton-pulse_1.5s_ease-in-out_infinite] ${className}`}
           style={{
             height,
             width,
             backgroundColor: 'var(--color-surface)',
             borderRadius: '2px',
-            animation: 'skeleton-pulse 1.5s ease-in-out infinite',
           }}
           aria-hidden="true"
         />

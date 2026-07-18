@@ -65,9 +65,9 @@ function App() {
 **File structure:**
 ```
 frontend/src/
-├── App.tsx              # Root component (unused after React Router migration)
+├── App.tsx              # Legacy single-page version (unused after React Router migration)
 ├── main.tsx             # Entry point with BrowserRouter, Routes, CompileProvider
-├── index.css            # Dark theme reset (VS Code-inspired)
+├── index.css            # Cyberpunk/terminal theme reset (Orbitron, neon green)
 ├── context/
 │   ├── AuthContext.tsx   # Auth state (login, register, logout, JWT token)
 │   └── CompileContext.tsx # Shared compile state (code, results, file management)
@@ -81,10 +81,22 @@ frontend/src/
 │   ├── TokenChart.tsx   # D3.js token bar chart + token flow visualization
 │   ├── TokenChart.css   # Token chart styling
 │   ├── SemanticTree.tsx # D3.js collapsible tree for symbol table
-│   └── SemanticTree.css # Semantic tree styling
+│   ├── SemanticTree.css # Semantic tree styling
+│   ├── PipelineScene.tsx # Three.js 3D pipeline visualization scene
+│   ├── BinaryRain.tsx   # Canvas-based Matrix-style binary rain animation
+│   ├── Skeleton.tsx     # Loading skeleton placeholder component
+│   ├── LoginModal.tsx   # Modal dialog for user login
+│   ├── RegisterModal.tsx # Modal dialog for user registration
+│   ├── UserMenu.tsx     # Dropdown menu for user profile and logout
+│   ├── AuthModal.css    # Styling for auth modals
+│   └── UserMenu.css     # Styling for user menu dropdown
 ├── pages/
 │   ├── EditorPage.tsx   # Code editor (Monaco) + terminal output
 │   ├── EditorPage.css   # Editor + terminal styles
+│   ├── LandingPage.tsx  # Landing page with BinaryRain, typewriter, feature cards
+│   ├── LandingPage.css  # Landing page styling
+│   ├── PipelinePage.tsx # Full-page Three.js 3D pipeline visualization
+│   ├── PipelinePage.css # Pipeline page styling
 │   ├── VisualizeLayout.tsx # Nav bar with phase links + Outlet
 │   ├── VisualizeLayout.css # Nav styling
 │   ├── TokensPanel.tsx  # Token visualization with chart/grid toggle
@@ -102,16 +114,20 @@ frontend/src/
 **How the frontend works:**
 1. `main.tsx` starts the app (like `main()` in Java) with React Router and CompileProvider
 2. `Layout.tsx` renders the header, sidebar (when logged in), and route content via `<Outlet />`
-3. User writes Java code on `/` (EditorPage), clicks "Compile & Execute"
-4. `CompileContext.tsx` manages shared state (code, results, current file, save/load)
-5. `api.ts` sends the code to the backend via HTTP POST
-6. Backend returns compilation results (tokens, AST, bytecode, output)
-7. User clicks "Visualize" → navigates to `/visualize/tokens` (or ast/semantic/bytecode)
-8. Each visualization page shows D3.js charts/trees for that phase
+3. User lands on `/` (LandingPage) with BinaryRain background and feature cards
+4. User navigates to `/compiler` (EditorPage) to write Java code, clicks "Compile & Execute"
+5. `CompileContext.tsx` manages shared state (code, results, current file, save/load)
+6. `api.ts` sends the code to the backend via HTTP POST
+7. Backend returns compilation results (tokens, AST, bytecode, output)
+8. User clicks "Visualize" → navigates to `/visualize/tokens` (or ast/semantic/bytecode)
+9. Each visualization page shows D3.js charts/trees for that phase
+10. User can explore the pipeline in 3D at `/pipeline` (Three.js visualization)
 
 **Route structure:**
 ```
-/                      → EditorPage (code editor + terminal)
+/                      → LandingPage (hero, BinaryRain, feature cards)
+/pipeline              → PipelinePage (Three.js 3D pipeline visualization)
+/compiler              → EditorPage (code editor + terminal)
 /visualize             → VisualizeLayout (nav bar)
 /visualize/tokens      → TokensPanel (D3.js bar chart + token flow)
 /visualize/ast         → AstPanel (D3.js collapsible tree)
@@ -200,7 +216,7 @@ Source Code
 
 ### Key Design Decisions
 
-- **React Router** separates editor (`/`) from visualizations (`/visualize/*`) — each phase gets full screen
+- **React Router** separates landing (`/`), pipeline (`/pipeline`), editor (`/compiler`), and visualizations (`/visualize/*`) — each phase gets full screen
 - **CompileContext** shares code/results across routes — compile once, visualize anywhere
 - **FileBrowser** provides VS Code-like sidebar with folders and files, saved to MySQL per user
 - **D3.js** visualizations: bar chart + token flow for tokens, collapsible trees for AST and semantic

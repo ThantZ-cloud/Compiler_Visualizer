@@ -3,5 +3,8 @@
     "context7",
     "chrome-devtools",
     "mysql-mcp"
+  ],
+  "disabledMcpjsonServers": [
+    "mysql-mcp"
   ]
 }

@@ -1,11 +1,12 @@
 import React, { useCallback, useState } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
-import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Save, Loader2, Circle, Play } from 'lucide-react';
 import { useCompile } from '../context/CompileContext';
 
 const EditorPage: React.FC = () => {
-  const { code, setCode, result, loading, error, stdinInput, setStdinInput, saveFile, currentFileId, currentFileName, isDirty } = useCompile();
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { code, setCode, result, loading, error, stdinInput, setStdinInput, saveFile, currentFileId, currentFileName, isDirty, handleCompile } = useCompile();
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
@@ -41,16 +42,18 @@ const EditorPage: React.FC = () => {
       {/* Editor section */}
       <div className="flex-1 flex flex-col min-h-0">
         {/* Toolbar — terminal tab bar */}
-        <div className="flex justify-between items-center px-4 h-10 bg-[var(--color-card)] border-b border-[var(--color-border)] shrink-0">
+        <div className="flex justify-between items-center px-5 h-10 bg-[var(--color-card)] border-b border-[var(--color-border)] shrink-0">
           <div className="flex items-center gap-3">
             {/* File tab */}
             <div className="flex items-center gap-2 px-3 py-1 border border-[var(--color-border)] bg-[var(--color-surface)]">
-              <span className="text-[10px] text-[var(--color-neon)]" style={{ fontFamily: 'var(--font-mono)' }}>☕</span>
+              <span className="text-[var(--color-neon)]">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 0h-9L7 1.5V6H2.5L1 7.5v15.07L2.5 24h12.07L16 22.57V18h4.7l1.3-1.43V4.5L17.5 0zm0 2.12l2.38 2.38H17.5V2.12zm-3 20.38h-12v-15H7v9.07L8.5 18h6v4.5zm6-6h-12v-15H16V6h4.5v10.5z"/></svg>
+              </span>
               <span className="text-[11px] font-medium text-[var(--color-text)]"
                 style={{ fontFamily: 'var(--font-mono)' }}>
                 {currentFileName}
               </span>
-              {isDirty && <span className="text-[var(--color-amber)] text-xs">●</span>}
+              {isDirty && <Circle size={8} className="fill-[var(--color-amber)] text-[var(--color-amber)]" />}
             </div>
             {saveMessage && (
               <span className={`text-[10px] font-bold tracking-wider ${
@@ -63,17 +66,33 @@ const EditorPage: React.FC = () => {
           <div className="flex items-center gap-3">
             {/* Save button */}
             <button
-              className="px-3 py-1 text-[10px] font-bold text-[var(--color-cyan)] border border-[var(--color-cyan)] hover:bg-[var(--color-cyan)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] disabled:opacity-40"
+              className="px-4 py-2 text-xs font-bold text-[var(--color-cyan)] border border-[var(--color-cyan)] hover:bg-[var(--color-cyan)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] disabled:opacity-40 flex items-center gap-1.5"
               style={{ fontFamily: 'var(--font-display)' }}
               onClick={handleSave}
               disabled={saving}
               title="Save (Ctrl+S)"
             >
-              {saving ? '⟳' : '⊞'} SAVE
+              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+              {t('editor.save')}
+            </button>
+
+            {/* Compile button */}
+            <button
+              className={`btn-neon px-4 py-2 text-xs tracking-[0.12em] flex items-center gap-1.5 ${loading ? 'opacity-70' : ''}`}
+              style={{ fontFamily: 'var(--font-display)' }}
+              onClick={handleCompile}
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Play size={12} />
+              )}
+              {loading ? t('nav.compiling') : t('nav.compile')}
             </button>
 
             {/* Separator */}
-            <div className="w-px h-4 bg-[var(--color-border)]" />
+            <div className="w-px h-5 bg-[var(--color-border)]" />
 
             {/* Stdin input */}
             <div className="flex items-center gap-2">
@@ -124,7 +143,7 @@ const EditorPage: React.FC = () => {
       {/* Terminal section */}
       <div className="h-[220px] min-h-[120px] flex flex-col bg-[var(--color-card)] shrink-0 border-t border-[var(--color-neon)]/20">
         {/* Terminal header */}
-        <div className="flex justify-between items-center px-4 h-8 border-b border-[var(--color-border)] shrink-0 bg-[var(--color-surface)]">
+        <div className="flex justify-between items-center px-5 h-8 border-b border-[var(--color-border)] shrink-0 bg-[var(--color-surface)]">
           <div className="flex items-center gap-3">
             <span className="w-2 h-2 bg-[var(--color-neon)]" />
             <span className="text-[10px] font-bold text-[var(--color-text-muted)] tracking-[0.2em] uppercase"
@@ -138,23 +157,14 @@ const EditorPage: React.FC = () => {
               </span>
             )}
           </div>
-          {result && (
-            <button
-              className="text-[10px] font-bold text-[var(--color-magenta)] border border-[var(--color-magenta)]/30 px-2.5 py-0.5 hover:bg-[var(--color-magenta)]/10 transition-all tracking-wider"
-              style={{ fontFamily: 'var(--font-display)' }}
-              onClick={() => navigate('/visualize/tokens')}
-            >
-              ◎ VISUALIZE →
-            </button>
-          )}
         </div>
 
         {/* Terminal body */}
-        <div className="flex-1 px-4 py-3 overflow-auto text-[12px] leading-relaxed"
+        <div className="flex-1 px-5 py-3 overflow-auto text-[12px] leading-relaxed"
           style={{ fontFamily: 'var(--font-mono)' }}>
           {loading && (
             <div className="text-[var(--color-amber)] flex items-center gap-2">
-              <span className="inline-block animate-spin">⟳</span>
+              <Loader2 size={14} className="animate-spin" />
               <span>Compiling<span className="animate-pulse">...</span></span>
             </div>
           )}
@@ -175,7 +185,7 @@ const EditorPage: React.FC = () => {
           )}
           {!loading && !error && !result && (
             <div className="text-[var(--color-text-muted)]">
-              <span className="text-[var(--color-neon)]">$</span> Click <span className="text-[var(--color-neon)]">▶ COMPILE</span> to run your code.
+              <span className="text-[var(--color-neon)]">$</span> Click <span className="text-[var(--color-neon)]">COMPILE</span> to run your code.
             </div>
           )}
         </div>

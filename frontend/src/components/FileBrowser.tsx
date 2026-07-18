@@ -150,11 +150,11 @@ const FileBrowser: React.FC = () => {
       </div>
 
       {/* File list */}
-      <div className="flex-1 overflow-y-auto py-2 px-2">
+      <div className="flex-1 overflow-y-auto  py-2 px-2">
         {/* Section header */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 mb-1 select-none">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 mb-1 select-none justify-around">
           <span
-            className="text-[11px] font-bold text-[var(--color-text-dim)] tracking-wide flex-1 uppercase"
+            className="text-[11px]  font-bold text-[var(--color-text-dim)] tracking-wide flex-1 uppercase"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Snippets
@@ -191,7 +191,7 @@ const FileBrowser: React.FC = () => {
         {files.map(file => (
           <div
             key={file.id}
-            className={`flex items-center gap-2 h-[28px] pr-4 pl-3 cursor-pointer transition-colors duration-75 group rounded-sm
+            className={`flex items-center gap-2 h-[28px] pr-4 pl-3 cursor-pointer transition-colors duration-75 group rounded-sm justify-around
               ${selectedId === file.id
                 ? 'bg-[var(--color-neon)]/8 text-[var(--color-neon)]'
                 : 'text-[var(--color-text-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]'}`}

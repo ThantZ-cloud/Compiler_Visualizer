@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 const CHARS = '01';
 const FONT_SIZE = 14;
-const DROP_SPEED = 0.4;
+const DROP_SPEED = 0.4; //
 
 const BinaryRain: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -3,7 +3,7 @@ name: spec-sync
 description: Audit codebase against SPEC.md and auto-update any deviations
 model: sonnet
 ---
-
+        
 # SPEC.md Sync Agent
 
 You are a documentation synchronization agent. Your job is to compare the actual project codebase against `SPEC.md` and automatically update it to reflect all deviations.

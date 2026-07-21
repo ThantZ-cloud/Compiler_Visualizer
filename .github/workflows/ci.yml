@@ -1,0 +1,113 @@
+# CI Workflow — Compiler Visualizer
+#
+# What is CI (Continuous Integration)?
+# =====================================
+# CI is like an automatic quality checker that runs EVERY TIME you or your
+# teammates push code to GitHub. It makes sure nothing is broken before
+# anyone merges their changes.
+#
+# Think of it like this:
+#   Before CI:  "Hey team, my code works on MY machine. Trust me! 🤞"
+#   With CI:    "GitHub automatically builds & tests every push. ✅"
+#
+# This workflow:
+#   1. Checks out your code
+#   2. Installs dependencies (like npm install / mvn dependency:resolve)
+#   3. Runs linting (checks code style)
+#   4. Runs TypeScript check + build (frontend) / compile (backend)
+#   5. Runs tests
+#
+# It runs on every push to 'main' and on every Pull Request (so reviewers
+# know the code is safe before they approve).
+
+name: CI
+
+# When does this run?
+on:
+  # On every push to the main branch (when someone merges a PR)
+  push:
+    branches: [main]
+
+  # On every Pull Request that targets main (before merging)
+  pull_request:
+    branches: [main]
+
+  # Allows you to manually trigger this workflow from GitHub's UI
+  workflow_dispatch:
+
+# What jobs should run?
+# Jobs run in parallel by default. Here we have two independent jobs:
+# one for the frontend (Node/React) and one for the backend (Java/Spring).
+jobs:
+  # ============================================================
+  # FRONTEND JOB (React + TypeScript + Vite)
+  # ============================================================
+  frontend:
+    name: Frontend (React/TypeScript)
+    # Runs on the latest Ubuntu — GitHub's free Linux runner
+    runs-on: ubuntu-latest
+
+    # Default directory for all commands in this job
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      # Step 1: Download the code from GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install the correct Node.js version
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # Cache npm dependencies — speeds up future runs
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # Step 3: Install npm packages (like npm install)
+      - name: Install dependencies
+        run: npm ci
+        # npm ci is faster than npm install in CI because it
+        # installs EXACTLY what's in package-lock.json (no surprises)
+
+      # Step 4: Check code style with oxlint
+      - name: Run linter
+        run: npm run lint
+
+      # Step 5: TypeScript check + Vite production build
+      - name: Build
+        run: npm run build
+
+  # ============================================================
+  # BACKEND JOB (Java + Spring Boot + Maven)
+  # ============================================================
+  backend:
+    name: Backend (Java/Spring Boot)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Java 17 (the JDK, not just JRE)
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'  # Eclipse Temurin (formerly AdoptOpenJDK)
+          # Cache Maven dependencies — speeds up future runs
+          cache: 'maven'
+
+      # Step 3: Compile the code + run tests
+      # Note: mvn (not ./mvnw) because this project doesn't have a Maven wrapper.
+      # setup-java above provides Maven automatically on the runner.
+      - name: Build and test
+        run: mvn clean package
+        # 'mvn clean package' compiles, runs tests, and packages the .jar
+        # If a test fails, the whole build fails — that's the point!

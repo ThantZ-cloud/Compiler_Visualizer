@@ -1,6 +1,10 @@
 # Compiler Visualizer
 
+[![CI](https://github.com/ThantZ-cloud/Compiler_Visualizer/actions/workflows/ci.yml/badge.svg)](https://github.com/ThantZ-cloud/Compiler_Visualizer/actions/workflows/ci.yml)
+
 A web application for visualizing the Java compilation pipeline. Write Java code, see it go through lexing, parsing, AST generation, semantic analysis, and bytecode generation — then view execution results.
+
+> 🧑‍💻 **Team project** — see the [Collaborating with Teammates](#collaborating-with-teammates--github-setup-guide) section below for the workflow.
 
 ## Tech Stack
 
@@ -243,6 +247,139 @@ The app uses a VS Code-inspired layout with React Router for multi-page navigati
 
 - `src/services/api.ts` — `API_BASE_URL` (default: `http://localhost:8080/api`)
 - Vite config: `vite.config.ts`
+
+## CI/CD — Continuous Integration
+
+This project uses **GitHub Actions** for CI (Continuous Integration).
+
+### What is CI?
+
+CI is an **automatic checker** that runs on GitHub every time you or your teammates push code. It verifies that:
+
+1. The frontend **builds** successfully (TypeScript check + Vite build)
+2. The frontend **passes linting** (oxlint — no code style issues)
+3. The backend **compiles** successfully (Java + Maven)
+4. The backend **tests pass** (JUnit tests)
+
+> Think of CI like a **robot reviewer** that checks every PR before a human reviews it. If the robot says ❌, don't merge — something is broken.
+
+### What happens when you push?
+
+```
+You push code → GitHub sees the push → CI workflow starts → Status appears on your PR
+                                                                     ↓
+                                              ✅ Green check = safe to merge
+                                              ❌ Red X = something broke
+```
+
+### Where is the CI configured?
+
+The workflow file is at `.github/workflows/ci.yml`. It runs two jobs in parallel:
+
+| Job | What it does | Time |
+|-----|-------------|------|
+| **Frontend** | `npm ci` → `npm run lint` → `npm run build` | ~1-2 min |
+| **Backend** | `./mvnw clean package` (compile + test) | ~3-5 min |
+
+### How to read CI results on GitHub
+
+1. Open your Pull Request on GitHub
+2. Scroll to the bottom — you'll see a **"Checks"** section
+3. Click **"Details"** next to any failed check to see the logs
+4. Fix the issue, push again — CI re-runs automatically
+
+### Badge (add this to your README for a professional touch)
+
+[![CI](https://github.com/ThantZ-cloud/Compiler_Visualizer/actions/workflows/ci.yml/badge.svg)](https://github.com/ThantZ-cloud/Compiler_Visualizer/actions/workflows/ci.yml)
+
+<!-- Replace YOUR_USERNAME above with your GitHub username if you forked the repo -->
+
+## Collaborating with Teammates — GitHub Setup Guide
+
+### Step 1: Push this project to GitHub
+
+```bash
+# If you haven't connected to GitHub yet:
+# 1. Create a new repo on github.com (DO NOT check "Initialize with README")
+# 2. Then run:
+
+git remote add origin https://github.com/ThantZ-cloud/Compiler_Visualizer.git
+git branch -M main
+git push -u origin main
+```
+
+### Step 2: Add your teammates as collaborators
+
+1. Go to your repo on GitHub → **Settings** → **Collaborators** → **Add people**
+2. Enter your teammates' GitHub usernames or email addresses
+3. They'll receive an invite — once accepted, they can push code
+
+### Step 3: Team workflow (how to work together without breaking things)
+
+```
+main branch  ──────┬──────────────────────┬──────────────
+                   │                      │
+feature-1          └── work ── commit ── PR ── merge ──►
+                                              ↑
+                                        CI must pass
+                                              ↑
+                                        Teammate approves
+```
+
+**The golden rules:**
+
+| Rule | Why |
+|------|-----|
+| **Never push directly to `main`** | Everyone's code would collide. Always use branches. |
+| **Create a branch for each feature/fix** | Keep work isolated: `git checkout -b feat/login-page` |
+| **Open a Pull Request (PR) before merging** | PRs let teammates review your code before it goes live |
+| **Wait for CI to pass ✅** | If CI fails, fix it. Don't merge broken code. |
+| **Get at least one teammate review** | Fresh eyes catch bugs you miss |
+| **Pull latest `main` before starting new work** | Avoid merge conflicts: `git checkout main && git pull` |
+
+### Step 4: Your daily workflow
+
+```bash
+# 1. Get the latest code
+git checkout main
+git pull
+
+# 2. Create a branch for your task
+git checkout -b feat/add-tests
+
+# 3. Work, commit, push
+git add .
+git commit -m "Add unit tests for CompileService"
+git push -u origin feat/add-tests
+
+# 4. Go to github.com → open a Pull Request
+#    CI will run automatically on your PR
+
+# 5. After PR is approved and merged, delete the branch
+git checkout main
+git pull
+git branch -d feat/add-tests
+```
+
+### Step 5: See CI in action
+
+1. Open your PR on GitHub
+2. Look for the **"Checks"** section at the bottom
+3. You'll see the CI workflow running — wait for the green checkmark
+4. If it fails, click **"Details"** to see what went wrong
+
+### What if CI fails?
+
+Don't panic! Here's the checklist:
+
+1. Click **"Details"** on the failed check
+2. Read the error message — it tells you exactly what's wrong
+3. Common issues:
+   - ❌ **TypeScript error** → Fix the type mismatch
+   - ❌ **Lint error** → Run `npm run lint` locally and fix style issues
+   - ❌ **Java compilation error** → Fix the syntax error
+   - ❌ **Test failure** → Run `mvn test` locally and see which test broke
+4. Fix the code, commit, push — CI re-runs automatically
 
 ## License
 

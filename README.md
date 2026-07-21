@@ -29,7 +29,7 @@ A web application for visualizing the Java compilation pipeline. Write Java code
 
 - **Java 17+** (JDK, not JRE)
 - **Node.js 18+** and npm
-- **Maven 3.6+** (or use `mvn` if installed globally)
+- **Maven 3.6+** (install globally, or use the OS package manager)
 - **MySQL 8+** (production only — SQLite is used for local dev automatically)
 
 ### Backend
@@ -39,8 +39,12 @@ Open a terminal and run:
 ```bash
 cd backend
 
-# Start the server (port 8080)
+# Download dependencies + start the server (port 8080)
+# Maven auto-downloads all required .jar files on first run
 mvn spring-boot:run
+
+# Or explicitly download dependencies first (one-time)
+mvn dependency:resolve
 
 # Build the jar
 mvn clean package
@@ -58,16 +62,19 @@ Open a **second** terminal and run:
 ```bash
 cd frontend
 
-# Install dependencies (first time only)
+# Install dependencies (first time only — creates node_modules/)
 npm install
 
 # Start dev server (port 5173)
 npm run dev
 
-# Production build
+# Production build (TypeScript check + Vite build)
 npm run build
 
-# Lint
+# Preview production build locally
+npm run preview
+
+# Lint (uses oxlint, not ESLint)
 npm run lint
 ```
 
@@ -113,18 +120,37 @@ Phases 1 and 2 run in parallel via `CompletableFuture`. Results are cached (LRU,
 
 ```
 frontend/src/
-├── main.tsx                 # Entry point with BrowserRouter, Routes, CompileProvider
+├── main.tsx                 # Entry point with BrowserRouter, Routes, providers
 ├── index.css                # Dark theme reset (VS Code-inspired)
+├── i18n/
+│   ├── index.ts             # i18next setup with English (en) and Myanmar (my)
+│   └── locales/
+│       ├── en.json          # English translations
+│       └── my.json          # Myanmar (Burmese) translations
 ├── context/
 │   ├── AuthContext.tsx      # Auth state (login, register, logout, JWT token)
-│   └── CompileContext.tsx   # Shared compile state (code, results, file management)
+│   ├── CompileContext.tsx   # Shared compile state (code, results, file management)
+│   ├── ThemeContext.tsx     # Theme state (dark/light/system) with localStorage
+│   └── LanguageContext.tsx  # Language state (en/my) wrapping i18next
 ├── components/
 │   ├── Layout.tsx           # Shared layout: header + sidebar + Outlet for routes
 │   ├── FileBrowser.tsx      # VS Code-like sidebar (folders, files, context menu)
 │   ├── AstTree.tsx          # D3.js AST tree visualization (collapsible)
 │   ├── TokenChart.tsx       # D3.js token bar chart + token flow visualization
-│   └── SemanticTree.tsx     # D3.js collapsible tree for symbol table
+│   ├── SemanticTree.tsx     # D3.js collapsible tree for symbol table
+│   ├── PipelineScene.tsx    # Three.js 3D compilation pipeline visualization
+│   ├── BinaryRain.tsx       # Canvas-based Matrix-style binary rain animation
+│   ├── Skeleton.tsx         # Loading skeleton placeholder
+│   ├── LoginModal.tsx       # Modal dialog for user login
+│   ├── RegisterModal.tsx    # Modal dialog for user registration
+│   ├── UserMenu.tsx         # Dropdown menu for user profile + logout
+│   ├── Footer.tsx           # Footer component (currently unused)
+│   └── ui/                  # shadcn/ui components
+│       ├── button.tsx, card.tsx, dialog.tsx, dropdown-menu.tsx
+│       ├── input.tsx, label.tsx, separator.tsx, tabs.tsx
 ├── pages/
+│   ├── LandingPage.tsx      # Landing page with BinaryRain, typewriter, feature cards
+│   ├── PipelinePage.tsx     # Full-page Three.js 3D pipeline visualization
 │   ├── EditorPage.tsx       # Code editor (Monaco) + terminal output
 │   ├── VisualizeLayout.tsx  # Nav bar with phase links + Outlet
 │   ├── TokensPanel.tsx      # Token visualization with chart/grid toggle
@@ -177,21 +203,30 @@ backend/src/main/java/com/compilervisualizer/
 The app uses a VS Code-inspired layout with React Router for multi-page navigation:
 
 ### Routes
-- **`/`** — Code editor (Monaco) with terminal output at bottom
+- **`/`** — Landing page with BinaryRain animation, typewriter effect, feature cards
+- **`/pipeline`** — Full-page Three.js 3D pipeline visualization
+- **`/compiler`** — Code editor (Monaco) with terminal output at bottom
 - **`/visualize/tokens`** — D3.js bar chart + token flow visualization
 - **`/visualize/ast`** — D3.js collapsible AST tree
 - **`/visualize/semantic`** — D3.js collapsible symbol table tree
 - **`/visualize/bytecode`** — Raw bytecode display
 
 ### Components
-- **Header**: Logo, "Compile & Execute" button with cancel support, "Visualize" button, auth buttons
+- **Header**: Logo, "Compile & Execute" button with cancel support, "Visualize" button, auth buttons, language/theme toggles
 - **Sidebar** (when logged in): VS Code-like FileBrowser with folders and files
 - **Editor**: Monaco Editor with Java syntax highlighting
 - **Terminal**: Output panel at bottom (like VS Code terminal)
 - **Visualizations**: Full-screen D3.js charts/trees for each compilation phase
+- **PipelineScene**: Three.js 3D scene showing the compilation pipeline as an animated flow
+- **BinaryRain**: Canvas-based Matrix-style "digital rain" animation on the landing page
+- **Skeleton**: Loading placeholder while compilation results are being fetched
+- **LoginModal / RegisterModal**: Modal dialogs for JWT-based authentication
+- **UserMenu**: Avatar dropdown with profile info and logout
 
-### Theme
-Dark theme (VS Code-inspired) with color-coded token types (keywords, methods, classes).
+### Theme & Internationalization
+
+- **Theme**: Dark/light/system mode via `ThemeContext.tsx` — persisted in `localStorage` and applied as a `data-theme` attribute on `<html>`
+- **Internationalization**: English and Myanmar (Burmese) via i18next (`LanguageContext.tsx` wrapping i18next). Switch languages in the header dropdown
 
 ## Configuration
 

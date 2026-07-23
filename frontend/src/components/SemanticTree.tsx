@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
+import './SemanticTree.css';
 
 interface SemanticTreeProps {
   symbolTableJson: string;
@@ -12,7 +13,6 @@ interface TreeNode {
   modifiers?: string[];
   returnType?: string;
   children?: TreeNode[];
-  _children?: TreeNode;
 }
 
 function parseSymbolTable(jsonStr: string): TreeNode | null {
@@ -174,18 +174,19 @@ function getColor(kind: string): string {
 
 function getIcon(kind: string): string {
   switch (kind) {
-    case 'package': return '⌂';
-    case 'imports': return '≡';
-    case 'import': return '→';
-    case 'class': return '◆';
-    case 'interface': return '◇';
-    case 'enum': return '▥';
-    case 'method': return 'ƒ';
-    case 'constructor': return '⊕';
-    case 'field': return '□';
-    case 'parameter': return '·';
-    case 'inheritance': return '△';
-    case 'enum-constant': return '▪';
+    case 'package': return '📦';
+    case 'imports': return '📋';
+    case 'import': return '📄';
+    case 'class': return '🏛️';
+    case 'interface': return '📐';
+    case 'enum': return '📊';
+    case 'record': return '📜';
+    case 'method': return '⚡';
+    case 'constructor': return '🔧';
+    case 'field': return '📦';
+    case 'parameter': return '📎';
+    case 'inheritance': return '🔗';
+    case 'enum-constant': return '🔹';
     default: return '•';
   }
 }
@@ -194,15 +195,14 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
+  const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
 
-  const toggleNode = useCallback((d: d3.HierarchyPointNode<TreeNode>) => {
-    if (d.children) {
-      (d as any)._children = d.children;
-      d.children = undefined;
-    } else if ((d as any)._children) {
-      d.children = (d as any)._children;
-      (d as any)._children = undefined;
+  const getNodeId = useCallback((node: d3.HierarchyPointNode<TreeNode>): string => {
+    if (node.parent) {
+      const index = node.parent.children!.indexOf(node);
+      return `${getNodeId(node.parent)}-${index}`;
     }
+    return 'root';
   }, []);
 
   useEffect(() => {
@@ -228,13 +228,26 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
 
     svg.call(zoom);
 
-    const root = d3.hierarchy(astData);
+    // Filter out collapsed branches
+    function filterCollapsed(node: TreeNode, path: string = 'root'): TreeNode {
+      if (collapsedNodes.has(path) && node.children) {
+        return { ...node, children: [] };
+      }
+      return {
+        ...node,
+        children: node.children?.map((c, i) => filterCollapsed(c, `${path}-${i}`)),
+      };
+    }
+
+    const filteredData = filterCollapsed(astData);
+    const root = d3.hierarchy(filteredData);
     const treeLayout = d3.tree<TreeNode>().size([height - 60, width - 300]);
     treeLayout(root);
 
     const nodesWithPos = root.descendants() as unknown as d3.HierarchyPointNode<TreeNode>[];
     const linksWithPos = root.links() as unknown as d3.HierarchyPointLink<TreeNode>[];
 
+    // Draw links
     g.selectAll('.link')
       .data(linksWithPos)
       .join('path')
@@ -244,6 +257,7 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
         .y(d => d.x)
       );
 
+    // Draw nodes
     const nodes = g.selectAll('.node')
       .data(nodesWithPos)
       .join('g')
@@ -252,103 +266,88 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
       .on('click', (event, d) => {
         event.stopPropagation();
         setSelectedNode(d.data);
-        if (d.children || (d as any)._children) {
-          toggleNode(d);
-          treeLayout(root);
-          const newNodes = root.descendants() as unknown as d3.HierarchyPointNode<TreeNode>[];
-          const newLinks = root.links() as unknown as d3.HierarchyPointLink<TreeNode>[];
-
-          g.selectAll('.link').data(newLinks).join('path')
-            .attr('class', 'link')
-            .attr('d', d3.linkHorizontal<d3.HierarchyPointLink<TreeNode>, d3.HierarchyPointNode<TreeNode>>()
-              .x(d => d.y).y(d => d.x));
-
-          const newGs = g.selectAll('.node').data(newNodes).join('g')
-            .attr('class', 'node')
-            .attr('transform', d => `translate(${d.y},${d.x})`);
-
-          newGs.selectAll('circle').remove();
-          newGs.selectAll('text').remove();
-
-          newGs.append('circle')
-            .attr('r', d => (d.children || (d as any)._children) ? 7 : 5)
-            .attr('fill', d => getColor(d.data.kind || ''))
-            .attr('stroke', '#1e1e1e')
-            .attr('stroke-width', 1.5)
-            .style('cursor', 'pointer');
-
-          newGs.append('text')
-            .attr('dy', '0.31em')
-            .attr('x', d => d.children ? -12 : 12)
-            .attr('text-anchor', d => d.children ? 'end' : 'start')
-            .text(d => d.data.name.length > 30 ? d.data.name.substring(0, 30) + '...' : d.data.name)
-            .attr('fill', '#d4d4d4')
-            .attr('font-size', '11px')
-            .attr('font-family', "'Consolas', 'Monaco', monospace");
+        if (d.data.children && d.data.children.length > 0) {
+          const id = getNodeId(d);
+          setCollapsedNodes(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+              next.delete(id);
+            } else {
+              next.add(id);
+            }
+            return next;
+          });
         }
       });
 
     nodes.append('circle')
-      .attr('r', d => (d.children || (d as any)._children) ? 7 : 5)
+      .attr('r', d => d.data.children ? 7 : 5)
       .attr('fill', d => getColor(d.data.kind || ''))
       .attr('stroke', '#1e1e1e')
-      .attr('stroke-width', 1.5)
-      .style('cursor', 'pointer');
+      .attr('stroke-width', 1.5);
 
-    nodes.append('text')
+    // Show collapsed count badge
+    nodes.filter(d => collapsedNodes.has(getNodeId(d)) && !!d.data.children)
+      .append('text')
+      .attr('dy', '0.31em')
+      .attr('x', 0)
+      .attr('text-anchor', 'middle')
+      .text(d => `[${d.data.children?.length || '?'}]`)
+      .attr('fill', '#ffffff')
+      .attr('font-size', '8px')
+      .attr('font-weight', 'bold');
+
+    const labelText = nodes.append('text')
       .attr('dy', '0.31em')
       .attr('x', d => d.children ? -12 : 12)
       .attr('text-anchor', d => d.children ? 'end' : 'start')
       .text(d => d.data.name.length > 30 ? d.data.name.substring(0, 30) + '...' : d.data.name)
       .attr('fill', '#d4d4d4')
-      .attr('font-size', '11px')
-      .attr('font-family', "'Consolas', 'Monaco', monospace");
+      .attr('font-size', '11px');
 
+    labelText.append('title')
+      .text(d => d.data.name);
+
+    // Center the tree
     const bounds = g.node()?.getBBox();
     if (bounds) {
-      const dx = (width - bounds.width) / 2 - bounds.x;
+      const leftPad = 20;
+      const dx = (width - bounds.width) / 2 - bounds.x + leftPad;
       const dy = 60 - bounds.y;
       svg.call(zoom.transform, d3.zoomIdentity.translate(dx, dy));
     }
 
-    // Cleanup
     return () => {
       svg.selectAll('*').remove();
       svg.on('.zoom', null);
     };
-  }, [symbolTableJson, toggleNode]);
+  }, [symbolTableJson, collapsedNodes, getNodeId]);
 
   if (!symbolTableJson) {
-    return <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">No symbol table to display</div>;
+    return <div className="semantic-tree-container"><div className="semantic-tree-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#808080', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>No symbol table to display</div></div>;
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 gap-2">
-      <div className="flex justify-between items-center shrink-0">
-        <h3 className="text-sm font-medium text-[#cccccc]">Symbol Table</h3>
-        <span className="text-[11px] text-[#808080]">Click nodes to expand/collapse • Scroll to zoom • Drag to pan</span>
+    <div className="semantic-tree-container">
+      <div className="semantic-tree-header">
+        <h3>Symbol Table</h3>
+        <span className="semantic-tree-hint">Click nodes to expand/collapse • Scroll to zoom • Drag to pan</span>
       </div>
-      <div className="flex-1 min-h-0 bg-[#1e1e1e] border border-[#3c3c3c] rounded-[6px] overflow-hidden" ref={containerRef}>
-        <svg
-          ref={svgRef}
-          className="block w-full h-full cursor-grab active:cursor-grabbing"
-          role="img"
-          aria-label="Symbol Table tree visualization. Use mouse wheel to zoom, drag to pan, click nodes to expand or collapse."
-        />
+      <div className="semantic-tree-wrapper" ref={containerRef}>
+        <svg ref={svgRef} width="100%" height="100%" />
       </div>
       {selectedNode && (
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#252526] border border-[#3c3c3c] rounded-[6px] shrink-0">
-          <span className="text-base">{getIcon(selectedNode.kind || '')}</span>
-          <span className="text-[11px] font-bold uppercase px-2 py-0.5 bg-[rgba(255,255,255,0.05)] rounded-[4px] font-mono"
-            style={{ color: getColor(selectedNode.kind || '') }}>
+        <div className="semantic-node-detail">
+          <span className="detail-icon">{getIcon(selectedNode.kind || '')}</span>
+          <span className="detail-kind" style={{ color: getColor(selectedNode.kind || '') }}>
             {selectedNode.kind}
           </span>
-          <span className="text-[13px] text-white font-semibold font-mono">{selectedNode.name}</span>
+          <span className="detail-name">{selectedNode.name}</span>
           {selectedNode.modifiers && (
-            <span className="text-[11px] text-[#c586c0] font-mono">{selectedNode.modifiers.join(' ')}</span>
+            <span className="detail-modifiers">{selectedNode.modifiers.join(' ')}</span>
           )}
           {selectedNode.type && (
-            <span className="text-[11px] text-[#4ec9b0] font-mono">{selectedNode.type}</span>
+            <span className="detail-type">{selectedNode.type}</span>
           )}
         </div>
       )}

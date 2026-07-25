@@ -5,7 +5,7 @@
 ---
  
 ## 1. Project Overview
- 
+  
 ### What It Does
 Users write Java code in a browser-based editor. The system visualizes **how** the code compiles (lexing -> parsing -> AST -> semantic analysis -> bytecode generation) with animated UI, and then shows the **result** of executing the code.
 

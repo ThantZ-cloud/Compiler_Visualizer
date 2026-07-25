@@ -45,15 +45,15 @@
   --color-text: #1A1A2E;
   --color-text-dim: #4A4A6A;
   --color-text-muted: #7A7A98;
-  --color-binary: #00FF8833;
-  /* Keep accent colors for branding identity */
-  --color-neon: #00CC6A;
-  --color-neon-dim: #00CC6A33;
-  --color-neon-glow: #00CC6A66;
-  --color-cyan: #0099CC;
-  --color-magenta: #CC00CC;
-  --color-amber: #CC8800;
-  --color-rose: #CC2255;
+  --color-binary: #00CC6A22;
+  /* Toned-down accent colors for light mode */
+  --color-neon: #008A4C;
+  --color-neon-dim: #008A4C22;
+  --color-neon-glow: #008A4C44;
+  --color-cyan: #007799;
+  --color-magenta: #880088;
+  --color-amber: #996600;
+  --color-rose: #991144;
 }
 
 * {
@@ -112,9 +112,28 @@ a {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 255, 136, 0.015) 2px,
-    rgba(0, 255, 136, 0.015) 4px
+    var(--color-neon-dim) 2px,
+    var(--color-neon-dim) 4px
   );
+}
+
+[data-theme="light"] .scanlines::after {
+  opacity: 0.04;
+}
+
+/* Div-based scanline (theme-aware, used inside components) */
+.theme-aware-scanline {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--color-neon-dim) 2px,
+    var(--color-neon-dim) 4px
+  );
+}
+
+[data-theme="light"] .theme-aware-scanline {
+  opacity: 0.05;
 }
 
 /* ── Glitch animation ── */
@@ -279,6 +298,41 @@ a {
 .btn-neon:hover {
   color: var(--color-void);
   box-shadow: 0 0 20px var(--color-neon-dim), 0 0 40px var(--color-neon-dim);
+}
+
+[data-theme="light"] .btn-neon:hover {
+  color: #FFFFFF;
+}
+
+/* Binary rain canvas opacity — brighter in light mode to compensate for darker green */
+.binary-rain-canvas {
+  opacity: 0.35;
+}
+
+[data-theme="light"] .binary-rain-canvas {
+  opacity: 0.25;
+}
+
+/* Floating binary digits — dimmer in light mode */
+.floating-binary-digit {
+  opacity: 0.08;
+}
+
+[data-theme="light"] .floating-binary-digit {
+  opacity: 0.04;
+}
+
+/* Corner brackets — subtler in light mode */
+[data-theme="light"] .neon-corner {
+  opacity: 0.12 !important;
+  border-color: var(--color-text-muted) !important;
+}
+
+/* Reduce neon glow intensity on "VISUALIZER" text in light mode */
+[data-theme="light"] .neon-text {
+  text-shadow:
+    0 0 4px var(--color-neon),
+    0 0 10px var(--color-neon-dim);
 }
 
 .btn-neon:hover::before {

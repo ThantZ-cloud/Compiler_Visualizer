@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
@@ -35,7 +35,16 @@ function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 20
 
 // ── Floating binary strings ──
 function FloatingBinary() {
-  const prefersReduced = useRef(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [prefersReduced, setPrefersReduced] = useState(
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const bits = useRef(
     Array.from({ length: 18 }, (_, i) => ({
@@ -48,18 +57,17 @@ function FloatingBinary() {
     }))
   ).current;
 
-  if (prefersReduced.current) return null;
+  if (prefersReduced) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
       {bits.map(b => (
         <span
           key={b.id}
-          className="absolute text-[var(--color-neon)]"
+          className="absolute text-[var(--color-neon)] floating-binary-digit"
           style={{
             left: `${b.left}%`,
             fontSize: `${b.size}px`,
-            opacity: 0.08,
             fontFamily: 'var(--font-mono)',
             animation: `float-up ${b.duration}s linear ${b.delay}s infinite`,
             writingMode: 'vertical-rl',
@@ -107,7 +115,7 @@ function BootSequence({ onComplete }: { onComplete: () => void }) {
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-[200] bg-[var(--color-void)] flex items-center justify-center">
+    <div className="fixed inset-0 z-[200] bg-[var(--color-void)] flex items-center justify-center" role="log" aria-live="polite" aria-atomic="false">
       <div className="max-w-lg w-full px-8">
         {lines.map((line, i) => (
           <div
@@ -137,14 +145,16 @@ const LandingPage: React.FC = () => {
   const [showContent, setShowContent] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const typed = useTypewriter([
+  const typewriterTexts = useMemo(() => [
     'javac Main.java',
     'java -cp . Main',
     'class Lexer { scan() }',
     'public static void main',
     'System.out.println("0101")',
     'tokenize → parse → compile',
-  ], 70, 35, 1800);
+  ], []);
+
+  const typed = useTypewriter(typewriterTexts, 70, 35, 1800);
 
   // Boot sequence on mount
   useEffect(() => {
@@ -168,7 +178,7 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="scanlines flex flex-col h-full">
+    <div className="flex flex-col h-full">
       {/* Boot sequence */}
       {!booted && <BootSequence onComplete={handleBootComplete} />}
 
@@ -180,21 +190,14 @@ const LandingPage: React.FC = () => {
         <BinaryRain />
         <FloatingBinary />
 
-        {/* Scanline overlay — full page */}
-        <div className="absolute inset-0 pointer-events-none z-10"
-          style={{
-            background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.02) 2px, rgba(0,255,136,0.02) 4px)',
-          }}
-        />
-
         {/* ═══════ HERO ═══════ */}
         <section className="relative flex-1 flex items-center justify-center overflow-hidden">
 
           {/* Neon corner brackets */}
-          <div className="absolute top-6 left-6 md:top-8 md:left-8 w-12 h-12 md:w-16 md:h-16 border-t-2 border-l-2 border-[var(--color-neon)] opacity-30 z-10" />
-          <div className="absolute top-6 right-6 md:top-8 md:right-8 w-12 h-12 md:w-16 md:h-16 border-t-2 border-r-2 border-[var(--color-neon)] opacity-30 z-10" />
-          <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 w-12 h-12 md:w-16 md:h-16 border-b-2 border-l-2 border-[var(--color-neon)] opacity-30 z-10" />
-          <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 w-12 h-12 md:w-16 md:h-16 border-b-2 border-r-2 border-[var(--color-neon)] opacity-30 z-10" />
+          <div className="absolute top-6 left-6 md:top-8 md:left-8 w-12 h-12 md:w-16 md:h-16 border-t-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
+          <div className="absolute top-6 right-6 md:top-8 md:right-8 w-12 h-12 md:w-16 md:h-16 border-t-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
+          <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 w-12 h-12 md:w-16 md:h-16 border-b-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
+          <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 w-12 h-12 md:w-16 md:h-16 border-b-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
 
           <div className="relative z-20 text-center px-6 max-w-5xl mx-auto">
             {/* Status badge */}
@@ -257,7 +260,7 @@ const LandingPage: React.FC = () => {
             style={{ fontFamily: 'var(--font-mono)' }}>
             <span>© 2026 Compilation Visualizer</span>
             <span className="text-[var(--color-border)]">•</span>
-            <span className="cursor-pointer hover:underline transition-colors">Contact Us</span>
+            <span>{t('landing.contactUs', 'Contact Us')}</span>
           </p>
         </div>
 

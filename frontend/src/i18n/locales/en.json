@@ -12,7 +12,8 @@
     "description": "// Write Java code. Watch the compiler dissect it — token by token, tree by tree, instruction by instruction.",
     "begin": "BEGIN",
     "openCompiler": "OPEN COMPILER",
-    "viewPipeline": "VIEW PIPELINE"
+    "viewPipeline": "VIEW PIPELINE",
+    "contactUs": "Contact Us"
   },
   "footer": {
     "tagline": "See how Java compiles your code — phase by phase, instruction by instruction.",

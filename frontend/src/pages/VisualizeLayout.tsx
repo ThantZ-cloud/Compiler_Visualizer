@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
-import { CircleDot, TreePine, Database, Binary, Eye } from 'lucide-react';
+import { CircleDot, TreePine, Database, Binary, Eye, GitFork } from 'lucide-react';
 
 const VisualizeLayout: React.FC = () => {
   const { result } = useCompile();
@@ -12,6 +12,7 @@ const VisualizeLayout: React.FC = () => {
     { path: '/visualize/ast', label: 'AST', icon: TreePine },
     { path: '/visualize/semantic', label: 'Semantic', icon: Database },
     { path: '/visualize/bytecode', label: 'Bytecode', icon: Binary },
+    { path: '/visualize/cfg', label: 'CFG', icon: GitFork },
   ];
 
   return (

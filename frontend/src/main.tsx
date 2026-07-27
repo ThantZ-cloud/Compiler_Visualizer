@@ -16,6 +16,7 @@ import TokensPanel from './pages/TokensPanel'
 import AstPanel from './pages/AstPanel'
 import SemanticPanel from './pages/SemanticPanel'
 import BytecodePanel from './pages/BytecodePanel'
+import CfgPanel from './pages/CfgPanel'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -34,6 +35,7 @@ createRoot(document.getElementById('root')!).render(
                     <Route path="ast" element={<AstPanel />} />
                     <Route path="semantic" element={<SemanticPanel />} />
                     <Route path="bytecode" element={<BytecodePanel />} />
+                    <Route path="cfg" element={<CfgPanel />} />
                   </Route>
                 </Route>
               </Routes>

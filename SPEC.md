@@ -1,7 +1,7 @@
 # Compilation Visualizer -- Project Plan
 
 > A web-based tool that lets users write Java code and visualize the entire compilation pipeline step-by-step, then see the execution result.
-
+     
 ---
  
 ## 1. Project Overview

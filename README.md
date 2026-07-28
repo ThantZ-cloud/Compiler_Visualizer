@@ -3,7 +3,7 @@
 [![CI](https://github.com/ThantZ-cloud/Compiler_Visualizer/actions/workflows/ci.yml/badge.svg)](https://github.com/ThantZ-cloud/Compiler_Visualizer/actions/workflows/ci.yml)
 
 A web application for visualizing the Java compilation pipeline. Write Java code, see it go through lexing, parsing, AST generation, semantic analysis, and bytecode generation — then view execution results.
-
+   
 > 🧑‍💻 **Team project** — see the [Collaborating with Teammates](#collaborating-with-teammates--github-setup-guide) section below for the workflow.
 
 ## Tech Stack

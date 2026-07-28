@@ -28,6 +28,9 @@ public class CompileResponse {
     private String bytecode;
     private String compilationError;
 
+    private String cfgJson;
+    private String cfgError;
+
     private String executionOutput;
     private String executionError;
     private Integer exitCode;

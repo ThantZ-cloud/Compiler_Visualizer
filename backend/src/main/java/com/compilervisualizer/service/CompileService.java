@@ -118,6 +118,23 @@ public class CompileService {
             }
             long symbolTableTime = System.currentTimeMillis() - t1;
 
+            // Phase 3b: Control Flow Graph (reuse parsed AST)
+            long tCfg = System.currentTimeMillis();
+            String cfgJson;
+            String cfgError = null;
+            try {
+                if (cu == null) {
+                    cfgJson = "{\"error\": \"Skipped — AST parse failed\"}";
+                } else {
+                    cfgJson = ControlFlowGraphBuilder.toJson(cu);
+                }
+            } catch (Exception e) {
+                log.error("CFG generation failed", e);
+                cfgJson = "{\"error\": \"" + escapeJson(e.getMessage()) + "\"}";
+                cfgError = e.getMessage();
+            }
+            long cfgTime = System.currentTimeMillis() - tCfg;
+
             long parallelTime = System.currentTimeMillis() - t0;
             long tokenTime = parallelTime; // both ran in parallel, same wall-clock
             long astTime = parallelTime;

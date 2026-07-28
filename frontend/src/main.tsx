@@ -16,6 +16,7 @@ import AstPanel from './pages/AstPanel'
 import SemanticPanel from './pages/SemanticPanel'
 import TacPanel from './pages/TacPanel'
 import BytecodePanel from './pages/BytecodePanel'
+import CfgPanel from './pages/CfgPanel'
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>

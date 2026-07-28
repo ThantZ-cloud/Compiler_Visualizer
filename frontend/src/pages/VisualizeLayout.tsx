@@ -13,6 +13,7 @@ const VisualizeLayout: React.FC = () => {
     { path: '/visualize/semantic', label: 'Sym Table', icon: Database },
     { path: '/visualize/tac', label: 'TAC', icon: Code2 },
     { path: '/visualize/bytecode', label: 'Bytecode', icon: Binary },
+    { path: '/visualize/cfg', label: 'CFG', icon: GitFork },
   ];
 
   return (

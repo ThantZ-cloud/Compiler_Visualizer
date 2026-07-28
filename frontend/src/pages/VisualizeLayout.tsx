@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
-import { CircleDot, TreePine, Database, Code2, Binary, Eye } from 'lucide-react';
+import { CircleDot, TreePine, Database, Code2, Binary, Eye, GitFork } from 'lucide-react';
 
 const VisualizeLayout: React.FC = () => {
   const { result } = useCompile();

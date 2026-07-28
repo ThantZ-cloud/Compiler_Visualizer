@@ -35,6 +35,7 @@ createRoot(document.getElementById('root')!).render(
                   <Route path="semantic" element={<SemanticPanel />} />
                   <Route path="tac" element={<TacPanel />} />
                   <Route path="bytecode" element={<BytecodePanel />} />
+                  <Route path="cfg" element={<CfgPanel />} />
                 </Route>
               </Route>
             </Routes>

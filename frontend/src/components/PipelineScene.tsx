@@ -19,7 +19,7 @@ const PipelineScene: React.FC<Props> = ({ activeStep }) => {
     renderer: THREE.WebGLRenderer;
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
-    clock: THREE.Clock;
+    startTime: number;
     nodes: THREE.Group[];
     particleSystems: THREE.Points[];
     frameId: number;
@@ -250,11 +250,11 @@ const PipelineScene: React.FC<Props> = ({ activeStep }) => {
     window.addEventListener('resize', onResize);
 
     // ── Animation loop ──
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
       if (sceneRef.current?.disposed) return;
-      const elapsed = clock.getElapsedTime();
+      const elapsed = (performance.now() - startTime) / 1000;
       const currentActive = activeStepRef.current;
 
       // Rotate node rings and inner shapes
@@ -320,7 +320,7 @@ const PipelineScene: React.FC<Props> = ({ activeStep }) => {
       renderer,
       scene,
       camera,
-      clock,
+      startTime,
       nodes,
       particleSystems,
       frameId: requestAnimationFrame(animate),

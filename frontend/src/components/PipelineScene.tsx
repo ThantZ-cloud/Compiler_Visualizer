@@ -1,434 +1,373 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
+import { pipelineSteps } from '../data/pipelineData';
 
-const PHASES = [
-  { label: 'LEXING', color: 0x00FF88, desc: 'Break source into tokens' },
-  { label: 'PARSING', color: 0x00D4FF, desc: 'Build syntax tree' },
-  { label: 'AST', color: 0xFF00FF, desc: 'Abstract syntax tree' },
-  { label: 'SEMANTIC', color: 0xFFB000, desc: 'Analyze symbol table' },
-  { label: 'BYTECODE', color: 0xFF3366, desc: 'JVM instructions' },
-];
-
-const SPACING = 3.5;
-const CUBE_SIZE = 0.9;
-const PARTICLE_COUNT = 120;
-const REDUCED_PARTICLE_COUNT = 30;
-
-interface HoverInfo {
-  label: string;
-  desc: string;
-  x: number;
-  y: number;
+interface Props {
+  activeStep: number;
 }
 
-const PipelineScene: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const cubesRef = useRef<THREE.Object3D[]>([]);
-  const particlesRef = useRef<THREE.Points[]>([]);
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const raycasterRef = useRef(new THREE.Raycaster());
-  const frameRef = useRef<number>(0);
-  const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
-  const [reducedMotion, setReducedMotion] = useState(false);
+const NODE_SPACING = 2.8;
+const RING_RADIUS = 0.6;
+const RING_TUBE = 0.04;
+const PARTICLE_COUNT = 60;
+const AMBIENT_COUNT = 120;
 
-  // Check reduced motion preference
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  const getPhasePosition = useCallback((index: number) => {
-    const totalWidth = (PHASES.length - 1) * SPACING;
-    const startX = -totalWidth / 2;
-    return { x: startX + index * SPACING, y: 0, z: 0 };
-  }, []);
+const PipelineScene: React.FC<Props> = ({ activeStep }) => {
+  const mountRef = useRef<HTMLDivElement>(null);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string; color: string } | null>(null);
+  const sceneRef = useRef<{
+    renderer: THREE.WebGLRenderer;
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    clock: THREE.Clock;
+    nodes: THREE.Group[];
+    particleSystems: THREE.Points[];
+    frameId: number;
+    disposed: boolean;
+  } | null>(null);
+  const activeStepRef = useRef(activeStep);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    activeStepRef.current = activeStep;
+  }, [activeStep]);
 
-    const container = containerRef.current;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    const ctx = sceneRef.current;
+    if (!ctx) return;
 
-    // Scene
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0A0A0F);
-    scene.fog = new THREE.FogExp2(0x0A0A0F, 0.04);
-    sceneRef.current = scene;
+    const rect = ctx.renderer.domElement.getBoundingClientRect();
+    const mouse = new THREE.Vector2(
+      ((e.clientX - rect.left) / rect.width) * 2 - 1,
+      -((e.clientY - rect.top) / rect.height) * 2 + 1,
+    );
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
-    camera.position.set(0, 2.5, 10);
-    camera.lookAt(0, 0, 0);
-    cameraRef.current = camera;
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, ctx.camera);
 
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setSize(width, height);
+    for (let i = 0; i < ctx.nodes.length; i++) {
+      const intersects = raycaster.intersectObjects(ctx.nodes[i].children, true);
+      if (intersects.length > 0) {
+        const step = pipelineSteps[i];
+        setTooltip({ x: e.clientX, y: e.clientY, label: `${step.title} — ${step.subtitle}`, color: step.color });
+        return;
+      }
+    }
+    setTooltip(null);
+  }, []);
+
+  useEffect(() => {
+    if (!mountRef.current) return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const container = mountRef.current;
+
+    // ── Renderer ──
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.1;
     container.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0x222233, 0.8);
-    scene.add(ambientLight);
+    // ── Scene ──
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x050510, 0.08);
 
-    const pointLight1 = new THREE.PointLight(0x00FF88, 1.5, 20);
-    pointLight1.position.set(-6, 3, 5);
-    scene.add(pointLight1);
+    // ── Camera ──
+    const camera = new THREE.PerspectiveCamera(
+      50,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      100,
+    );
+    camera.position.set(3, 2, 5);
+    camera.lookAt(0, 0, 0);
 
-    const pointLight2 = new THREE.PointLight(0xFF00FF, 1.0, 20);
-    pointLight2.position.set(6, -2, 5);
-    scene.add(pointLight2);
+    // ── Lights ──
+    scene.add(new THREE.AmbientLight(0x222233, 0.6));
+    const topLight = new THREE.PointLight(0x8B5CF6, 1.5, 20);
+    topLight.position.set(2, 4, 3);
+    scene.add(topLight);
+    const bottomLight = new THREE.PointLight(0xFF3366, 1.5, 20);
+    bottomLight.position.set(-2, -4, 3);
+    scene.add(bottomLight);
 
-    // Grid floor
-    const gridHelper = new THREE.GridHelper(30, 30, 0x1E1E30, 0x1E1E30);
-    gridHelper.position.y = -2;
-    scene.add(gridHelper);
+    // ── Build nodes (vertical, top to bottom) ──
+    const nodes: THREE.Group[] = [];
+    const nodeLights: THREE.PointLight[] = [];
+    const totalHeight = (pipelineSteps.length - 1) * NODE_SPACING;
 
-    // Cubes for each phase
-    const cubes: THREE.Object3D[] = [];
-    const cubeGroup = new THREE.Group();
+    pipelineSteps.forEach((step, i) => {
+      const group = new THREE.Group();
+      const y = totalHeight / 2 - i * NODE_SPACING;
+      group.position.set(0, y, 0);
 
-    PHASES.forEach((phase, i) => {
-      const pos = getPhasePosition(i);
-
-      // Main cube
-      const geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
-      const edges = new THREE.EdgesGeometry(geometry);
-      const material = new THREE.LineBasicMaterial({
-        color: phase.color,
+      // Outer ring
+      const ringGeo = new THREE.TorusGeometry(RING_RADIUS, RING_TUBE, 16, 64);
+      const ringMat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(step.color),
+        emissive: new THREE.Color(step.color),
+        emissiveIntensity: 0.3,
+        metalness: 0.8,
+        roughness: 0.2,
         transparent: true,
         opacity: 0.9,
       });
-      const wireframe = new THREE.LineSegments(edges, material);
-      wireframe.position.set(pos.x, pos.y, pos.z);
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = Math.PI / 2;
+      group.add(ring);
 
-      // Inner glow cube
-      const innerGeometry = new THREE.BoxGeometry(
-        CUBE_SIZE * 0.7,
-        CUBE_SIZE * 0.7,
-        CUBE_SIZE * 0.7
-      );
-      const innerMaterial = new THREE.MeshStandardMaterial({
-        color: phase.color,
+      // Inner glow sphere
+      const glowGeo = new THREE.SphereGeometry(RING_RADIUS * 0.45, 16, 16);
+      const glowMat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(step.color),
+        emissive: new THREE.Color(step.color),
+        emissiveIntensity: 0.6,
         transparent: true,
         opacity: 0.15,
-        emissive: phase.color,
-        emissiveIntensity: 0.3,
       });
-      const innerCube = new THREE.Mesh(innerGeometry, innerMaterial);
-      wireframe.add(innerCube);
+      group.add(new THREE.Mesh(glowGeo, glowMat));
 
-      // Point light per cube
-      const cubeLight = new THREE.PointLight(phase.color, 0.5, 4);
-      wireframe.add(cubeLight);
+      // Wireframe icosahedron inside
+      const icoGeo = new THREE.IcosahedronGeometry(RING_RADIUS * 0.3, 0);
+      const icoMat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(step.color),
+        wireframe: true,
+        transparent: true,
+        opacity: 0.4,
+      });
+      group.add(new THREE.Mesh(icoGeo, icoMat));
 
-      cubeGroup.add(wireframe);
-      cubes.push(wireframe);
+      // Node point light
+      const light = new THREE.PointLight(new THREE.Color(step.color), 0.5, 4);
+      group.add(light);
+      nodeLights.push(light);
+
+      scene.add(group);
+      nodes.push(group);
     });
 
-    scene.add(cubeGroup);
-    cubesRef.current = cubes;
-
-    // Connecting lines between cubes
-    for (let i = 0; i < PHASES.length - 1; i++) {
-      const start = getPhasePosition(i);
-      const end = getPhasePosition(i + 1);
-
-      const lineGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(start.x + CUBE_SIZE / 2 + 0.1, start.y, start.z),
-        new THREE.Vector3(end.x - CUBE_SIZE / 2 - 0.1, end.y, end.z),
-      ]);
-      const lineMaterial = new THREE.LineBasicMaterial({
-        color: 0x1E1E30,
+    // ── Connecting lines ──
+    for (let i = 0; i < nodes.length - 1; i++) {
+      const start = nodes[i].position.clone();
+      const end = nodes[i + 1].position.clone();
+      const points = [start, end];
+      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+      const lineMat = new THREE.LineBasicMaterial({
+        color: 0x333355,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.4,
       });
-      const line = new THREE.Line(lineGeometry, lineMaterial);
-      scene.add(line);
+      scene.add(new THREE.Line(lineGeo, lineMat));
     }
 
-    // Particle streams between cubes
-    const particleCount = reducedMotion ? REDUCED_PARTICLE_COUNT : PARTICLE_COUNT;
-    const particles: THREE.Points[] = [];
+    // ── Particle streams between nodes ──
+    const particleSystems: THREE.Points[] = [];
 
-    for (let i = 0; i < PHASES.length - 1; i++) {
-      const start = getPhasePosition(i);
-      const end = getPhasePosition(i + 1);
-      const startColor = new THREE.Color(PHASES[i].color);
-      const endColor = new THREE.Color(PHASES[i + 1].color);
+    for (let seg = 0; seg < nodes.length - 1; seg++) {
+      const count = prefersReduced ? 15 : PARTICLE_COUNT;
+      const positions = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+      const speeds: number[] = [];
 
-      const positions = new Float32Array(particleCount * 3);
-      const colors = new Float32Array(particleCount * 3);
-      const speeds = new Float32Array(particleCount);
+      const c1 = new THREE.Color(pipelineSteps[seg].color);
+      const c2 = new THREE.Color(pipelineSteps[seg + 1].color);
+      const startY = nodes[seg].position.y;
+      const endY = nodes[seg + 1].position.y;
 
-      for (let j = 0; j < particleCount; j++) {
+      for (let j = 0; j < count; j++) {
         const t = Math.random();
-        positions[j * 3] = start.x + CUBE_SIZE / 2 + 0.2 + t * (SPACING - CUBE_SIZE - 0.4);
-        positions[j * 3 + 1] = start.y + (Math.random() - 0.5) * 0.6;
-        positions[j * 3 + 2] = start.z + (Math.random() - 0.5) * 0.6;
+        positions[j * 3] = (Math.random() - 0.5) * 0.4;
+        positions[j * 3 + 1] = startY + (endY - startY) * t;
+        positions[j * 3 + 2] = (Math.random() - 0.5) * 0.4;
 
-        const color = startColor.clone().lerp(endColor, t);
-        colors[j * 3] = color.r;
-        colors[j * 3 + 1] = color.g;
-        colors[j * 3 + 2] = color.b;
+        const c = c1.clone().lerp(c2, t);
+        colors[j * 3] = c.r;
+        colors[j * 3 + 1] = c.g;
+        colors[j * 3 + 2] = c.b;
 
-        speeds[j] = 0.3 + Math.random() * 0.5;
+        speeds.push(0.3 + Math.random() * 0.7);
       }
 
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-      const material = new THREE.PointsMaterial({
-        size: 0.06,
+      const mat = new THREE.PointsMaterial({
+        size: 0.04,
         vertexColors: true,
-        transparent: true,
-        opacity: 0.8,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
+        transparent: true,
+        opacity: 0.8,
       });
 
-      const points = new THREE.Points(geometry, material);
+      const points = new THREE.Points(geo, mat);
       (points as any)._speeds = speeds;
-      (points as any)._startX = start.x + CUBE_SIZE / 2 + 0.2;
-      (points as any)._endX = end.x - CUBE_SIZE / 2 - 0.2;
-      (points as any)._segmentStart = i;
-
+      (points as any)._startY = startY;
+      (points as any)._endY = endY;
       scene.add(points);
-      particles.push(points);
+      particleSystems.push(points);
     }
 
-    particlesRef.current = particles;
+    // ── Ambient floating particles ──
+    const ambientPositions = new Float32Array(AMBIENT_COUNT * 3);
+    const ambientColors = new Float32Array(AMBIENT_COUNT * 3);
+    for (let i = 0; i < AMBIENT_COUNT; i++) {
+      ambientPositions[i * 3] = (Math.random() - 0.5) * 12;
+      ambientPositions[i * 3 + 1] = (Math.random() - 0.5) * totalHeight + 2;
+      ambientPositions[i * 3 + 2] = (Math.random() - 0.5) * 8 - 2;
 
-    // Floating ambient particles
-    const ambientCount = 200;
-    const ambientPositions = new Float32Array(ambientCount * 3);
-    const ambientColors = new Float32Array(ambientCount * 3);
-
-    for (let i = 0; i < ambientCount; i++) {
-      ambientPositions[i * 3] = (Math.random() - 0.5) * 20;
-      ambientPositions[i * 3 + 1] = (Math.random() - 0.5) * 10;
-      ambientPositions[i * 3 + 2] = (Math.random() - 0.5) * 10;
-
-      const brightness = 0.1 + Math.random() * 0.3;
-      ambientColors[i * 3] = 0 * brightness;
-      ambientColors[i * 3 + 1] = 1 * brightness;
-      ambientColors[i * 3 + 2] = 0.5 * brightness;
+      const c = new THREE.Color().setHSL(0.55 + Math.random() * 0.2, 0.8, 0.5);
+      ambientColors[i * 3] = c.r;
+      ambientColors[i * 3 + 1] = c.g;
+      ambientColors[i * 3 + 2] = c.b;
     }
-
-    const ambientGeometry = new THREE.BufferGeometry();
-    ambientGeometry.setAttribute('position', new THREE.BufferAttribute(ambientPositions, 3));
-    ambientGeometry.setAttribute('color', new THREE.BufferAttribute(ambientColors, 3));
-
-    const ambientMaterial = new THREE.PointsMaterial({
+    const ambientGeo = new THREE.BufferGeometry();
+    ambientGeo.setAttribute('position', new THREE.BufferAttribute(ambientPositions, 3));
+    ambientGeo.setAttribute('color', new THREE.BufferAttribute(ambientColors, 3));
+    const ambientMat = new THREE.PointsMaterial({
       size: 0.03,
       vertexColors: true,
-      transparent: true,
-      opacity: 0.4,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
+      transparent: true,
+      opacity: 0.4,
     });
+    scene.add(new THREE.Points(ambientGeo, ambientMat));
 
-    const ambientParticles = new THREE.Points(ambientGeometry, ambientMaterial);
-    scene.add(ambientParticles);
+    // ── Mouse interaction ──
+    window.addEventListener('mousemove', handleMouseMove);
 
-    // Animation loop
-    const clock = new THREE.Clock();
-
-    const animate = () => {
-      frameRef.current = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
-
-      // Rotate cubes gently
-      if (!reducedMotion) {
-        cubes.forEach((cube, i) => {
-          cube.rotation.x = Math.sin(elapsed * 0.5 + i * 0.5) * 0.15;
-          cube.rotation.y = elapsed * 0.2 + i * 0.3;
-          cube.position.y = Math.sin(elapsed * 0.8 + i * 1.2) * 0.15;
-        });
-      }
-
-      // Animate particles flowing between cubes
-      particles.forEach((points) => {
-        const positions = points.geometry.attributes.position as THREE.BufferAttribute;
-        const speeds = (points as any)._speeds as Float32Array;
-        const startX = (points as any)._startX as number;
-        const endX = (points as any)._endX as number;
-
-        for (let j = 0; j < positions.count; j++) {
-          let x = positions.getX(j) + speeds[j] * 0.02;
-          if (x > endX) {
-            x = startX;
-            positions.setY(j, (Math.random() - 0.5) * 0.6);
-            positions.setZ(j, (Math.random() - 0.5) * 0.6);
-          }
-          positions.setX(j, x);
-        }
-        positions.needsUpdate = true;
-      });
-
-      // Rotate ambient particles slowly
-      if (!reducedMotion) {
-        ambientParticles.rotation.y = elapsed * 0.02;
-      }
-
-      // Camera gentle orbit (unless reduced motion)
-      if (!reducedMotion) {
-        camera.position.x = Math.sin(elapsed * 0.1) * 1.5;
-        camera.position.y = 2.5 + Math.sin(elapsed * 0.15) * 0.5;
-        camera.lookAt(0, 0, 0);
-      }
-
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    // Handle resize
-    const handleResize = () => {
+    // ── Resize ──
+    const onResize = () => {
       const w = container.clientWidth;
       const h = container.clientHeight;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
+    window.addEventListener('resize', onResize);
 
-    window.addEventListener('resize', handleResize);
+    // ── Animation loop ──
+    const clock = new THREE.Clock();
 
-    // Mouse move for hover detection
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      mouseRef.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouseRef.current.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-    };
+    const animate = () => {
+      if (sceneRef.current?.disposed) return;
+      const elapsed = clock.getElapsedTime();
+      const currentActive = activeStepRef.current;
 
-    container.addEventListener('mousemove', handleMouseMove);
+      // Rotate node rings and inner shapes
+      nodes.forEach((group, i) => {
+        const ring = group.children[0] as THREE.Mesh;
+        const ico = group.children[2] as THREE.Mesh;
 
-    // Hover detection interval
-    const hoverInterval = setInterval(() => {
-      raycasterRef.current.setFromCamera(new THREE.Vector2(mouseRef.current.x, mouseRef.current.y), camera);
-      const intersects = raycasterRef.current.intersectObjects(cubes, true);
-      const containerRect = container.getBoundingClientRect();
-
-      if (intersects.length > 0) {
-        // Find which cube was hit
-        let hitObject: THREE.Object3D | null = intersects[0].object;
-        while (hitObject && !cubes.includes(hitObject)) {
-          hitObject = hitObject.parent;
+        if (!prefersReduced) {
+          ring.rotation.z = elapsed * 0.3 + i * 0.5;
+          ico.rotation.x = elapsed * 0.5 + i;
+          ico.rotation.y = elapsed * 0.3;
         }
-        const cubeIndex = cubes.indexOf(hitObject!);
-        if (cubeIndex >= 0) {
-          const phase = PHASES[cubeIndex];
-          const screenPos = cubes[cubeIndex].position.clone();
-          screenPos.project(camera);
-          const x = ((screenPos.x + 1) / 2) * containerRect.width;
-          const y = ((-screenPos.y + 1) / 2) * containerRect.height;
-          setHoverInfo({ label: phase.label, desc: phase.desc, x, y });
-        }
-      } else {
-        setHoverInfo(null);
-      }
-    }, 50);
 
-    return () => {
-      cancelAnimationFrame(frameRef.current);
-      clearInterval(hoverInterval);
-      window.removeEventListener('resize', handleResize);
-      container.removeEventListener('mousemove', handleMouseMove);
+        // Active node glow
+        const isActive = i === currentActive;
+        const mat = ring.material as THREE.MeshStandardMaterial;
+        mat.emissiveIntensity = isActive ? 0.6 + Math.sin(elapsed * 3) * 0.3 : 0.3;
+        mat.opacity = isActive ? 1.0 : 0.7;
 
-      // Dispose Three.js resources
-      scene.traverse((obj) => {
-        if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments || obj instanceof THREE.Points || obj instanceof THREE.Line) {
-          if (obj.geometry) obj.geometry.dispose();
-          if (obj.material) {
-            if (Array.isArray(obj.material)) {
-              obj.material.forEach((m) => m.dispose());
-            } else {
-              obj.material.dispose();
-            }
-          }
-        }
+        const icoMat = ico.material as THREE.MeshStandardMaterial;
+        icoMat.opacity = isActive ? 0.7 : 0.3;
+
+        nodeLights[i].intensity = isActive ? 1.5 + Math.sin(elapsed * 3) * 0.5 : 0.4;
       });
 
+      // Animate particle streams (flow downward)
+      particleSystems.forEach((ps) => {
+        const posAttr = ps.geometry.getAttribute('position') as THREE.BufferAttribute;
+        const speeds = (ps as any)._speeds as number[];
+        const startY = (ps as any)._startY as number;
+        const endY = (ps as any)._endY as number;
+        const range = endY - startY; // negative (flowing down)
+
+        for (let j = 0; j < posAttr.count; j++) {
+          let y = posAttr.getY(j) + range * speeds[j] * 0.003;
+          if (y < endY) y = startY; // Reset to top when reaching bottom
+          if (y > startY) y = endY; // Safety wrap
+          posAttr.setY(j, y);
+
+          // Slight horizontal wobble
+          const x = posAttr.getX(j) + Math.sin(elapsed * 2 + j) * 0.0005;
+          posAttr.setX(j, x);
+        }
+        posAttr.needsUpdate = true;
+      });
+
+      // Camera follows active step smoothly
+      const targetY = totalHeight / 2 - currentActive * NODE_SPACING;
+      const targetCamY = targetY * 0.4;
+
+      if (!prefersReduced) {
+        camera.position.x = 3 + Math.sin(elapsed * 0.2) * 0.5;
+        camera.position.z = 5 + Math.cos(elapsed * 0.15) * 0.3;
+      }
+      camera.position.y += (targetCamY - camera.position.y) * 0.02;
+      camera.lookAt(0, targetY * 0.3, 0);
+
+      renderer.render(scene, camera);
+      sceneRef.current!.frameId = requestAnimationFrame(animate);
+    };
+
+    sceneRef.current = {
+      renderer,
+      scene,
+      camera,
+      clock,
+      nodes,
+      particleSystems,
+      frameId: requestAnimationFrame(animate),
+      disposed: false,
+    };
+
+    return () => {
+      const ctx = sceneRef.current;
+      if (!ctx) return;
+      ctx.disposed = true;
+      cancelAnimationFrame(ctx.frameId);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('mousemove', handleMouseMove);
+
+      scene.traverse((obj) => {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.Line || obj instanceof THREE.Points) {
+          obj.geometry.dispose();
+          const mat = obj.material;
+          if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+          else mat.dispose();
+        }
+      });
       renderer.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
+      sceneRef.current = null;
     };
-  }, [reducedMotion, getPhasePosition]);
+  }, [handleMouseMove]);
 
   return (
-    <div className="pipeline-scene-wrapper" style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <div
-        ref={containerRef}
-        style={{ width: '100%', height: '100%', cursor: 'crosshair' }}
-      />
-
-      {/* Hover tooltip */}
-      {hoverInfo && (
+    <div className="relative w-full h-full" ref={mountRef}>
+      {tooltip && (
         <div
+          className="fixed z-50 pointer-events-none px-3 py-1.5 text-[10px] font-bold tracking-wider border"
           style={{
-            position: 'absolute',
-            left: hoverInfo.x,
-            top: hoverInfo.y - 60,
-            transform: 'translateX(-50%)',
-            background: 'rgba(18, 18, 26, 0.95)',
-            border: '1px solid var(--color-neon)',
-            padding: '8px 14px',
-            pointerEvents: 'none',
-            zIndex: 10,
+            left: tooltip.x + 16,
+            top: tooltip.y - 10,
             fontFamily: 'var(--font-display)',
-            textAlign: 'center',
-            boxShadow: '0 0 15px rgba(0, 255, 136, 0.2)',
+            color: tooltip.color,
+            borderColor: tooltip.color,
+            background: 'var(--color-card)',
           }}
         >
-          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-neon)', letterSpacing: '0.15em', marginBottom: '2px' }}>
-            {hoverInfo.label}
-          </div>
-          <div style={{ fontSize: '10px', color: 'var(--color-text-dim)', fontFamily: 'var(--font-mono)' }}>
-            {hoverInfo.desc}
-          </div>
+          {tooltip.label}
         </div>
       )}
-
-      {/* Phase labels below scene */}
-      <div style={{
-        position: 'absolute',
-        bottom: '12px',
-        left: 0,
-        right: 0,
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '24px',
-        pointerEvents: 'none',
-      }}>
-        {PHASES.map((phase) => (
-          <span
-            key={phase.label}
-            style={{
-              fontSize: '9px',
-              fontWeight: 700,
-              letterSpacing: '0.15em',
-              color: `#${phase.color.toString(16).padStart(6, '0')}`,
-              fontFamily: 'var(--font-display)',
-              textTransform: 'uppercase',
-              opacity: 0.7,
-            }}
-          >
-            {phase.label}
-          </span>
-        ))}
-      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
-import { CircleDot, TreePine, Database, Binary, Eye } from 'lucide-react';
+import { CircleDot, TreePine, Database, Code2, Binary, Eye } from 'lucide-react';
 
 const VisualizeLayout: React.FC = () => {
   const { result } = useCompile();
@@ -10,7 +10,8 @@ const VisualizeLayout: React.FC = () => {
   const phases = [
     { path: '/visualize/tokens', label: 'Tokens', icon: CircleDot },
     { path: '/visualize/ast', label: 'AST', icon: TreePine },
-    { path: '/visualize/semantic', label: 'Semantic', icon: Database },
+    { path: '/visualize/semantic', label: 'Sym Table', icon: Database },
+    { path: '/visualize/tac', label: 'TAC', icon: Code2 },
     { path: '/visualize/bytecode', label: 'Bytecode', icon: Binary },
   ];
 
@@ -30,7 +31,7 @@ const VisualizeLayout: React.FC = () => {
               key={phase.path}
               to={phase.path}
               className={({ isActive }) =>
-                `flex items-center gap-1.5 px-3.5 py-2 text-[10px] font-bold tracking-[0.12em] border transition-all font-display uppercase no-underline ${
+                `flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-[0.12em] border transition-all font-display uppercase no-underline ${
                   isActive
                     ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.05)] border-[var(--color-neon)] shadow-[0_0_10px_var(--color-neon-dim),inset_0_0_10px_var(--color-neon-dim)]'
                     : 'text-[var(--color-text-muted)] bg-transparent border-transparent hover:text-[var(--color-text)] hover:border-[var(--color-border)]'

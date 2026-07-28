@@ -22,6 +22,9 @@ public class CompileResponse {
     private String symbolTableJson;
     private String symbolTableError;
 
+    private String tacJson;
+    private String tacError;
+
     private String bytecode;
     private String compilationError;
 
@@ -36,6 +39,7 @@ public class CompileResponse {
     private Long tokenTimeMs;
     private Long astTimeMs;
     private Long symbolTableTimeMs;
+    private Long tacTimeMs;
     private Long bytecodeTimeMs;
     private Long executionTimeMs;
 }

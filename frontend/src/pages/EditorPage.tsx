@@ -1,12 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useTranslation } from 'react-i18next';
-import { Save, Loader2, Circle, Play } from 'lucide-react';
+import { Save, Loader2, Circle, Play, Square, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
 
 const EditorPage: React.FC = () => {
   const { t } = useTranslation();
-  const { code, setCode, result, loading, error, stdinInput, setStdinInput, saveFile, currentFileId, currentFileName, isDirty, handleCompile } = useCompile();
+  const navigate = useNavigate();
+  const { code, setCode, result, loading, error, stdinInput, setStdinInput, saveFile, currentFileId, currentFileName, isDirty, handleCompile, handleCancel } = useCompile();
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
@@ -78,7 +80,7 @@ const EditorPage: React.FC = () => {
 
             {/* Compile button */}
             <button
-              className={`btn-neon px-4 py-2 text-xs tracking-[0.12em] flex items-center gap-1.5 ${loading ? 'opacity-70' : ''}`}
+              className={`px-4 py-2 text-xs font-bold text-[var(--color-neon)] border border-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] disabled:opacity-40 flex items-center gap-1.5 ${loading ? 'opacity-70' : ''}`}
               style={{ fontFamily: 'var(--font-display)' }}
               onClick={handleCompile}
               disabled={loading}
@@ -90,6 +92,18 @@ const EditorPage: React.FC = () => {
               )}
               {loading ? t('nav.compiling') : t('nav.compile')}
             </button>
+
+            {/* Cancel button — only visible during compilation */}
+            {loading && (
+              <button
+                className="px-4 py-2 text-xs tracking-[0.12em] flex items-center gap-1.5 border border-[var(--color-rose)] text-[var(--color-rose)] hover:bg-[var(--color-rose)] hover:text-[var(--color-void)] transition-all"
+                style={{ fontFamily: 'var(--font-display)' }}
+                onClick={handleCancel}
+              >
+                <Square size={10} />
+                CANCEL
+              </button>
+            )}
 
             {/* Separator */}
             <div className="w-px h-5 bg-[var(--color-border)]" />
@@ -157,6 +171,18 @@ const EditorPage: React.FC = () => {
               </span>
             )}
           </div>
+
+          {/* Visualizer button — shows after successful compilation */}
+          {!loading && result && !result.error && (
+            <button
+              className="px-4 py-2 text-xs font-bold text-[var(--color-neon)] border border-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] flex items-center gap-1.5"
+              style={{ fontFamily: 'var(--font-display)' }}
+              onClick={() => navigate('/visualize/tokens')}
+            >
+              <Eye size={10} />
+              VISUALIZER
+            </button>
+          )}
         </div>
 
         {/* Terminal body */}

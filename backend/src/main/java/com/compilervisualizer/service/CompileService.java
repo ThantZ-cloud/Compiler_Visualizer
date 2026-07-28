@@ -122,6 +122,23 @@ public class CompileService {
             long tokenTime = parallelTime; // both ran in parallel, same wall-clock
             long astTime = parallelTime;
 
+            // Phase 3.5: Three-Address Code (reuses parsed AST)
+            long t2 = System.currentTimeMillis();
+            String tacJson;
+            String tacError = null;
+            try {
+                if (cu == null) {
+                    tacJson = "// Skipped — AST parse failed";
+                } else {
+                    tacJson = TacGenerator.generate(cu);
+                }
+            } catch (Exception e) {
+                log.error("TAC generation failed", e);
+                tacJson = "// Error generating TAC: " + e.getMessage();
+                tacError = e.getMessage();
+            }
+            long tacTime = System.currentTimeMillis() - t2;
+
             // Phase 4: Compile to bytecode (javac + javap)
             long t3 = System.currentTimeMillis();
             String bytecode;
@@ -154,7 +171,7 @@ public class CompileService {
             long totalTime = System.currentTimeMillis() - pipelineStart;
 
             // Determine legacy error field
-            String firstError = firstNonNull(tokenError, astError, symbolTableError, compilationError, executionError);
+            String firstError = firstNonNull(tokenError, astError, symbolTableError, tacError, compilationError, executionError);
 
             CompileResponse response = CompileResponse.builder()
                 .tokens(tokens)
@@ -166,6 +183,9 @@ public class CompileService {
                 .symbolTableJson(symbolTableJson)
                 .symbolTableError(symbolTableError)
                 .symbolTableTimeMs(symbolTableTime)
+                .tacJson(tacJson)
+                .tacError(tacError)
+                .tacTimeMs(tacTime)
                 .bytecode(bytecode)
                 .compilationError(compilationError)
                 .bytecodeTimeMs(bytecodeTime)

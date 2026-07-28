@@ -10,6 +10,7 @@ export interface CompileResponse {
   tokens: Token[];
   astJson: string;
   symbolTableJson: string;
+  tacJson: string;
   bytecode: string;
   executionOutput: string;
   error?: string;
@@ -38,4 +39,4 @@ export interface User {
   email: string;
 }
 
-export type CompilationPhase = 'tokens' | 'ast' | 'semantic' | 'bytecode' | 'execution';
+export type CompilationPhase = 'tokens' | 'ast' | 'semantic' | 'tac' | 'bytecode' | 'execution';

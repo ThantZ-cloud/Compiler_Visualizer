@@ -80,6 +80,10 @@ function FloatingBinary() {
   );
 }
 
+// Module-level flag: persists across React Router navigations (same JS session)
+// but resets on hard reload (new page load = new JS execution)
+let hasBootedInSession = false;
+
 // ── Boot sequence text ──
 function BootSequence({ onComplete }: { onComplete: () => void }) {
   const [lines, setLines] = useState<string[]>([]);
@@ -156,10 +160,10 @@ const LandingPage: React.FC = () => {
 
   const typed = useTypewriter(typewriterTexts, 70, 35, 1800);
 
-  // Boot sequence on mount
+  // Boot sequence — show on fresh page load (first visit / hard reload), skip on React Router nav
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) {
+    if (prefersReduced || hasBootedInSession) {
       setBooted(true);
       setShowContent(true);
       return;
@@ -169,7 +173,10 @@ const LandingPage: React.FC = () => {
       setBooted(true);
       setShowContent(true);
     }, 3200);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      hasBootedInSession = true;
+    };
   }, []);
 
   const handleBootComplete = () => {

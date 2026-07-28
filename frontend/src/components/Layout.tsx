@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sun, Moon, Monitor, Eye } from 'lucide-react';
+import { Sun, Moon, Monitor, Eye, Workflow, Code, Terminal } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useCompile } from '../context/CompileContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import LoginModal from './LoginModal';
@@ -14,7 +13,6 @@ import FileBrowser from './FileBrowser';
 const Layout: React.FC = () => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
-  const { loading, handleCancel } = useCompile();
   const { theme, setTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
@@ -32,6 +30,7 @@ const Layout: React.FC = () => {
 
   const isCompiler = location.pathname === '/compiler';
   const isVisualizing = location.pathname.startsWith('/visualize');
+  const isPipeline = location.pathname === '/pipeline';
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[var(--color-void)]">
@@ -50,10 +49,7 @@ const Layout: React.FC = () => {
             onClick={() => navigate('/')}
           >
             <div className="w-8 h-8 border border-[var(--color-neon)] flex items-center justify-center text-[var(--color-neon)] group-hover:bg-[var(--color-neon)] group-hover:text-[var(--color-void)] transition-all">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3" />
-                <path d="M18 2l4 4-10 10H8v-4L18 2z" />
-              </svg>
+              <Terminal size={16} />
             </div>
             <span className="text-xs font-bold text-[var(--color-text)] group-hover:text-[var(--color-neon)] transition-colors tracking-[0.12em]"
               style={{ fontFamily: 'var(--font-display)' }}>
@@ -64,15 +60,29 @@ const Layout: React.FC = () => {
           {/* Separator */}
           <div className="w-px h-6 bg-[var(--color-border)]" />
 
+          {/* Pipeline nav link */}
+          <button
+            className={`px-4 py-2 text-xs font-bold tracking-[0.1em] border transition-all flex items-center gap-1.5
+              ${isPipeline
+                ? 'text-[var(--color-neon)] border-[var(--color-neon)] bg-[var(--color-neon)]/5'
+                : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text)] hover:border-[var(--color-border)]'}`}
+            style={{ fontFamily: 'var(--font-display)' }}
+            onClick={() => navigate('/pipeline')}
+          >
+            <Workflow size={12} />
+            Pipeline
+          </button>
+
           {/* Compiler nav link */}
           <button
-            className={`px-4 py-2 text-xs font-bold tracking-[0.1em] border transition-all
+            className={`px-4 py-2 text-xs font-bold tracking-[0.1em] border transition-all flex items-center gap-1.5
               ${isCompiler
                 ? 'text-[var(--color-neon)] border-[var(--color-neon)] bg-[var(--color-neon)]/5'
                 : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text)] hover:border-[var(--color-border)]'}`}
             style={{ fontFamily: 'var(--font-display)' }}
             onClick={() => navigate('/compiler')}
           >
+            <Code size={12} />
             {t('nav.compiler')}
           </button>
 
@@ -91,18 +101,6 @@ const Layout: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          {/* Cancel button — shows when compiling */}
-          {loading && (
-            <button
-              className="btn-neon px-4 py-2 text-xs tracking-[0.12em] border-[var(--color-rose)] text-[var(--color-rose)] hover:bg-[var(--color-rose)] hover:text-[var(--color-void)]"
-              style={{ fontFamily: 'var(--font-display)' }}
-              onClick={handleCancel}
-              aria-label="Cancel compilation"
-            >
-              CANCEL
-            </button>
-          )}
-
           {/* Separator */}
           <div className="w-px h-6 bg-[var(--color-border)] mx-1" />
 

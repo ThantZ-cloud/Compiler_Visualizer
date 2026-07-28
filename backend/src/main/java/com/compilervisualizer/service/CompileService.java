@@ -188,7 +188,7 @@ public class CompileService {
             long totalTime = System.currentTimeMillis() - pipelineStart;
 
             // Determine legacy error field
-            String firstError = firstNonNull(tokenError, astError, symbolTableError, tacError, compilationError, executionError);
+            String firstError = firstNonNull(tokenError, astError, symbolTableError, tacError, cfgError, compilationError, executionError);
 
             CompileResponse response = CompileResponse.builder()
                 .tokens(tokens)
@@ -203,6 +203,9 @@ public class CompileService {
                 .tacJson(tacJson)
                 .tacError(tacError)
                 .tacTimeMs(tacTime)
+                .cfgJson(cfgJson)
+                .cfgError(cfgError)
+                .cfgTimeMs(cfgTime)
                 .bytecode(bytecode)
                 .compilationError(compilationError)
                 .bytecodeTimeMs(bytecodeTime)

@@ -53,7 +53,7 @@ const Layout: React.FC = () => {
             </div>
             <span className="text-xs font-bold text-[var(--color-text)] group-hover:text-[var(--color-neon)] transition-colors tracking-[0.12em]"
               style={{ fontFamily: 'var(--font-display)' }}>
-              Compilation Visualizer
+              Compiler Visualizer
             </span>
           </div>
 

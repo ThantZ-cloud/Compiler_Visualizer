@@ -30,6 +30,7 @@ public class CompileResponse {
 
     private String cfgJson;
     private String cfgError;
+    private Long cfgTimeMs;
 
     private String executionOutput;
     private String executionError;

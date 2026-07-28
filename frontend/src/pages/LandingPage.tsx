@@ -88,7 +88,7 @@ let hasBootedInSession = false;
 function BootSequence({ onComplete }: { onComplete: () => void }) {
   const [lines, setLines] = useState<string[]>([]);
   const bootLines = useRef([
-    '[BOOT] Compilation Visualizer v2.0.0',
+    '[BOOT] Compiler Visualizer v2.0.0',
     '[SYS]  Initializing JVM interface...',
     '[OK]   JavaParser loaded',
     '[OK]   D3.js visualization engine ready',
@@ -220,7 +220,7 @@ const LandingPage: React.FC = () => {
             <h1 className="mb-2"
               style={{ fontFamily: 'var(--font-display)' }}>
               <span className="block text-5xl md:text-7xl lg:text-8xl font-black tracking-wider text-[var(--color-text)] text-glitch">
-                COMPILATION
+                COMPILER
               </span>
               <span className="block text-5xl md:text-7xl lg:text-8xl font-black tracking-wider neon-text mt-1">
                 VISUALIZER
@@ -265,7 +265,7 @@ const LandingPage: React.FC = () => {
         <div className="py-6 text-center shrink-0">
           <p className="text-[11px] text-[var(--color-neon)] tracking-[0.1em] flex items-center justify-center gap-4"
             style={{ fontFamily: 'var(--font-mono)' }}>
-            <span>© 2026 Compilation Visualizer</span>
+            <span>© 2026 Compiler Visualizer</span>
             <span className="text-[var(--color-border)]">•</span>
             <span>{t('landing.contactUs', 'Contact Us')}</span>
           </p>

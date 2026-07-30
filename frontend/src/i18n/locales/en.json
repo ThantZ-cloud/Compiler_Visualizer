@@ -45,11 +45,55 @@
     "noAccount": "No account?",
     "hasAccount": "Already have an account?",
     "switchToRegister": "Register",
-    "switchToLogin": "Sign in"
+    "switchToLogin": "Sign in",
+    "signIn": "SIGN IN",
+    "register": "REGISTER",
+    "signOut": "SIGN OUT"
   },
   "editor": {
     "save": "SAVE",
     "saving": "SAVING...",
-    "visualize": "VISUALIZE"
+    "visualize": "VISUALIZE",
+    "cancel": "CANCEL",
+    "saveOk": "Code saved",
+    "saveFail": "Failed to save code"
+  },
+  "fileBrowser": {
+    "explorer": "Explorer",
+    "snippets": "Snippets",
+    "noFiles": "No files yet",
+    "classNamePlaceholder": "ClassName.java"
+  },
+  "visualize": {
+    "noCompilationResults": "No Compilation Results",
+    "selectPhase": "Write some Java code and click COMPILE to see the visualization."
+  },
+  "tokens": {
+    "noTokens": "No tokens generated"
+  },
+  "ast": {
+    "noAst": "No AST generated"
+  },
+  "semantic": {
+    "noSymbolTable": "No symbol table generated"
+  },
+  "bytecode": {
+    "noBytecode": "No bytecode generated"
+  },
+  "tac": {
+    "noTac": "No three-address code generated"
+  },
+  "cfg": {
+    "noCfg": "No control flow graph generated"
+  },
+  "pipeline": {
+    "title": "Compilation Pipeline",
+    "subtitle": "HOW JAVA COMPILES YOUR CODE",
+    "description": "Follow the journey from human-readable source code to machine-executable bytecode. Six phases, each transforming your code into something the JVM can understand.",
+    "complete": "Pipeline Complete",
+    "completeDescription": "In just six phases, your Java source code is transformed from human-readable text into bytecode that the JVM can execute on any platform. This is the magic behind \"write once, run anywhere.\""
+  },
+  "modal": {
+    "closeDialog": "Close dialog"
   }
 }

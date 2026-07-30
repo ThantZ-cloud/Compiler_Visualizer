@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 
 interface RegisterModalProps {
@@ -34,7 +35,9 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
       await register(username, email, password);
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Try a different username.');
+      const message = err.response?.data?.message || 'Registration failed. Try a different username.';
+      setError(message);
+      toast.error(err.response ? message : 'Connection failed');
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCompile } from '../context/CompileContext';
 import { TreePine } from 'lucide-react';
 import AstTree from '../components/AstTree';
 import Skeleton from '../components/Skeleton';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const AstPanel: React.FC = () => {
+  const { t } = useTranslation();
   const { result, loading } = useCompile();
 
   if (loading) {
@@ -21,14 +24,16 @@ const AstPanel: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">
         <TreePine size={48} className="text-[var(--color-neon)] opacity-30 mb-4" />
-        No AST generated
+        {t('ast.noAst')}
       </div>
     );
   }
 
   return (
     <div className="flex flex-col h-full gap-4">
-      <AstTree astJson={result.astJson} />
+      <ErrorBoundary name="AST Tree" inline>
+        <AstTree astJson={result.astJson} />
+      </ErrorBoundary>
     </div>
   );
 };

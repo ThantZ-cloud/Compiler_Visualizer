@@ -1,9 +1,11 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
 import { CircleDot, TreePine, Database, Code2, Binary, Eye, GitFork } from 'lucide-react';
 
 const VisualizeLayout: React.FC = () => {
+  const { t } = useTranslation();
   const { result } = useCompile();
   const navigate = useNavigate();
 
@@ -58,10 +60,10 @@ const VisualizeLayout: React.FC = () => {
           <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-center gap-3">
             <Eye size={48} className="text-[var(--color-neon)] opacity-30" />
             <h3 className="text-base font-bold text-[var(--color-text)] font-display tracking-[0.1em] uppercase">
-              No Compilation Results
+              {t('visualize.noCompilationResults')}
             </h3>
             <p className="text-xs max-w-[400px] font-mono">
-              {'// '}Write some Java code and click COMPILE to see the visualization.
+              {'// '}{t('visualize.selectPhase')}
             </p>
             <button
               className="mt-3 px-6 py-3 text-[10px] font-bold tracking-[0.12em] text-[var(--color-void)] bg-[var(--color-neon)] border-none cursor-pointer transition-all font-display uppercase hover:shadow-[0_0_20px_var(--color-neon-dim)]"

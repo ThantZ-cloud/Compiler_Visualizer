@@ -40,4 +40,34 @@ public class RateLimiter {
         }
         return count <= MAX_REQUESTS;
     }
+
+    public boolean tryAcquire(String key, int maxRequests, int windowSeconds) {
+        long now = System.currentTimeMillis();
+        long windowMs = windowSeconds * 1000L;
+        long[] timestamps = requests.compute(key, (k, v) -> {
+            if (v == null) return new long[]{now};
+
+            // Remove expired entries
+            int count = 0;
+            for (long ts : v) {
+                if (now - ts < windowMs) count++;
+            }
+
+            if (count >= maxRequests) return v;
+
+            long[] updated = new long[count + 1];
+            int i = 0;
+            for (long ts : v) {
+                if (now - ts < windowMs) updated[i++] = ts;
+            }
+            updated[i] = now;
+            return updated;
+        });
+
+        int count = 0;
+        for (long ts : timestamps) {
+            if (now - ts < windowMs) count++;
+        }
+        return count <= maxRequests;
+    }
 }

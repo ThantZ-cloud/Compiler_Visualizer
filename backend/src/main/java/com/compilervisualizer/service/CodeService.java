@@ -1,5 +1,6 @@
 package com.compilervisualizer.service;
 
+import com.compilervisualizer.dto.PaginatedResponse;
 import com.compilervisualizer.dto.SaveCodeRequest;
 import com.compilervisualizer.dto.SavedCodeResponse;
 import com.compilervisualizer.model.SavedCode;
@@ -7,6 +8,9 @@ import com.compilervisualizer.model.User;
 import com.compilervisualizer.repository.SavedCodeRepository;
 import com.compilervisualizer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,14 +37,26 @@ public class CodeService {
         return mapToResponse(savedCode);
     }
 
-    public List<SavedCodeResponse> getSavedCodes(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public PaginatedResponse<SavedCodeResponse> getSavedCodes(String username, int page, int size) {
+        // Clamp page size between 1 and 100
+        size = Math.max(1, Math.min(size, 100));
 
-        return savedCodeRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SavedCode> savedCodePage = savedCodeRepository
+                .findByUserUsernameOrderByUpdatedAtDesc(username, pageable);
+
+        List<SavedCodeResponse> data = savedCodePage.getContent()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+
+        return PaginatedResponse.<SavedCodeResponse>builder()
+                .data(data)
+                .page(savedCodePage.getNumber())
+                .size(savedCodePage.getSize())
+                .totalElements(savedCodePage.getTotalElements())
+                .totalPages(savedCodePage.getTotalPages())
+                .build();
     }
 
     public SavedCodeResponse getSavedCode(String username, Long id) {

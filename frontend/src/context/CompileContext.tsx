@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react';
 import { compileAPI, codeAPI } from '../services/api';
 import type { CompileResponse } from '../types';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 interface CompileContextType {
   code: string;
@@ -20,7 +21,16 @@ interface CompileContextType {
   saveFile: (title: string, codeOverride?: string) => Promise<number>;
   loadFile: (id: number) => Promise<void>;
   newFile: () => void;
+  /** Check if unsaved changes exist — returns true if safe to proceed. */
   confirmDiscard: () => boolean;
+  /** Whether the "discard unsaved changes" dialog is currently open. */
+  discardDialogOpen: boolean;
+  /** Show the discard confirmation dialog and run `action` if confirmed. */
+  showDiscardDialog: (action: () => void) => void;
+  /** User confirmed discarding — close dialog and run the pending action. */
+  confirmDiscardAction: () => void;
+  /** User cancelled — close dialog without taking action. */
+  cancelDiscardAction: () => void;
 }
 
 const CompileContext = createContext<CompileContextType | undefined>(undefined);
@@ -55,16 +65,38 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastSavedCodeRef = useRef<string>(DEFAULT_CODE);
 
+  // ── Discard confirmation dialog state ──
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+  const pendingDiscardActionRef = useRef<(() => void) | null>(null);
+
+  const showDiscardDialog = useCallback((action: () => void) => {
+    pendingDiscardActionRef.current = action;
+    setDiscardDialogOpen(true);
+  }, []);
+
+  const confirmDiscardAction = useCallback(() => {
+    setDiscardDialogOpen(false);
+    if (pendingDiscardActionRef.current) {
+      pendingDiscardActionRef.current();
+      pendingDiscardActionRef.current = null;
+    }
+  }, []);
+
+  const cancelDiscardAction = useCallback(() => {
+    setDiscardDialogOpen(false);
+    pendingDiscardActionRef.current = null;
+  }, []);
+
   // Track dirty state: compare current code to last saved code
   const setCode = useCallback((newCode: string) => {
     setCodeState(newCode);
     setIsDirty(newCode !== lastSavedCodeRef.current);
   }, []);
 
-  // Check if there are unsaved changes — show confirmation dialog
+  // Check if there are unsaved changes — synchronous guard for simple cases.
+  // For async dialog flow, use showDiscardDialog() instead.
   const confirmDiscard = useCallback((): boolean => {
-    if (!isDirty) return true;
-    return window.confirm('You have unsaved changes. Discard them?');
+    return !isDirty;
   }, [isDirty]);
 
   const handleCompile = useCallback(async () => {
@@ -146,8 +178,21 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
       handleCompile, handleCancel,
       currentFileId, setCurrentFileId, currentFileName, setCurrentFileName,
       isDirty, saveFile, loadFile, newFile, confirmDiscard,
+      discardDialogOpen, showDiscardDialog, confirmDiscardAction, cancelDiscardAction,
     }}>
       {children}
+
+      {/* Global discard-unsaved-changes confirmation dialog */}
+      <ConfirmDialog
+        isOpen={discardDialogOpen}
+        title="Unsaved Changes"
+        message="You have unsaved changes. Discard them and continue?"
+        confirmText="DISCARD"
+        cancelText="KEEP EDITING"
+        onConfirm={confirmDiscardAction}
+        onCancel={cancelDiscardAction}
+        danger
+      />
     </CompileContext.Provider>
   );
 };

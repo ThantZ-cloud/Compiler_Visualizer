@@ -1,5 +1,6 @@
 package com.compilervisualizer.controller;
 
+import com.compilervisualizer.dto.PaginatedResponse;
 import com.compilervisualizer.dto.SaveCodeRequest;
 import com.compilervisualizer.dto.SavedCodeResponse;
 import com.compilervisualizer.service.CodeService;
@@ -8,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/code")
@@ -27,9 +26,11 @@ public class CodeController {
     }
 
     @GetMapping("/saved")
-    public ResponseEntity<List<SavedCodeResponse>> getSavedCodes(
-            Authentication authentication) {
-        return ResponseEntity.ok(codeService.getSavedCodes(authentication.getName()));
+    public ResponseEntity<PaginatedResponse<SavedCodeResponse>> getSavedCodes(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(codeService.getSavedCodes(authentication.getName(), page, size));
     }
 
     @GetMapping("/{id}")

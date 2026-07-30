@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, Circle, FilePlus } from 'lucide-react';
+import { toast } from 'sonner';
 import { useCompile } from '../context/CompileContext';
 import { codeAPI } from '../services/api';
 import type { SavedCode } from '../types';
+import ConfirmDialog from './ConfirmDialog';
 
 // ── Java file icon (stylized "J" in orange) ──
 
@@ -17,9 +20,11 @@ const JavaIcon: React.FC<{ size?: number }> = ({ size = 14 }) => (
 // ── Main component ──
 
 const FileBrowser: React.FC = () => {
+  const { t } = useTranslation();
   const {
     loadFile, saveFile, newFile, currentFileId,
-    setCurrentFileId, setCurrentFileName, isDirty, confirmDiscard,
+    setCurrentFileId, setCurrentFileName, isDirty,
+    showDiscardDialog,
   } = useCompile();
 
   const [files, setFiles] = useState<SavedCode[]>([]);
@@ -33,6 +38,11 @@ const FileBrowser: React.FC = () => {
   const [renamingId, setRenamingId] = useState<number | null>(null);
   const [renameValue, setRenameValue] = useState('');
 
+  // Delete confirmation dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const [pendingDeleteName, setPendingDeleteName] = useState('');
+
   // Refs
   const inputRef = useRef<HTMLInputElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
@@ -45,6 +55,7 @@ const FileBrowser: React.FC = () => {
       setFiles(res.data);
     } catch (err) {
       console.error('Failed to load files:', err);
+      toast.error('Failed to load files');
     }
   }, []);
 
@@ -71,23 +82,42 @@ const FileBrowser: React.FC = () => {
       setNewName('');
       setCreating(false);
       loadFiles();
+      toast.success('File created');
     } catch (err) {
       console.error('Failed to create file:', err);
+      toast.error('Failed to create file');
     }
   };
 
   // ── Delete file ──
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Delete this file?')) return;
+    const file = files.find(f => f.id === id);
+    setPendingDeleteId(id);
+    setPendingDeleteName(file?.title ?? 'this file');
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (pendingDeleteId === null) return;
     try {
-      await codeAPI.delete(id);
-      if (currentFileId === id) newFile();
-      if (selectedId === id) setSelectedId(null);
+      await codeAPI.delete(pendingDeleteId);
+      if (currentFileId === pendingDeleteId) newFile();
+      if (selectedId === pendingDeleteId) setSelectedId(null);
       loadFiles();
+      toast.success('File deleted');
     } catch (err) {
       console.error('Failed to delete file:', err);
+      toast.error('Failed to delete file');
+    } finally {
+      setDeleteDialogOpen(false);
+      setPendingDeleteId(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setPendingDeleteId(null);
   };
 
   // ── Rename file ──
@@ -102,8 +132,10 @@ const FileBrowser: React.FC = () => {
       if (currentFileId === id) setCurrentFileName(newTitle);
       setRenamingId(null);
       loadFiles();
+      toast.success('File renamed');
     } catch (err) {
       console.error('Failed to rename file:', err);
+      toast.error('Failed to rename file');
     }
   };
 
@@ -111,7 +143,17 @@ const FileBrowser: React.FC = () => {
 
   const handleSelectFile = async (file: SavedCode) => {
     if (currentFileId === file.id) return;
-    if (!confirmDiscard()) return;
+    if (isDirty) {
+      showDiscardDialog(async () => {
+        try {
+          await loadFile(file.id);
+          setSelectedId(file.id);
+        } catch (err) {
+          console.error('Failed to load file:', err);
+        }
+      });
+      return;
+    }
     try {
       await loadFile(file.id);
       setSelectedId(file.id);
@@ -123,7 +165,14 @@ const FileBrowser: React.FC = () => {
   // ── Start create ──
 
   const handleStartCreate = () => {
-    if (!confirmDiscard()) return;
+    if (isDirty) {
+      showDiscardDialog(() => {
+        newFile();
+        setCreating(true);
+        setNewName('');
+      });
+      return;
+    }
     newFile();
     setCreating(true);
     setNewName('');
@@ -137,9 +186,9 @@ const FileBrowser: React.FC = () => {
           className="text-[10px] font-bold text-[var(--color-text-dim)] tracking-[0.15em] uppercase"
           style={{ fontFamily: 'var(--font-display)' }}
         >
-          Explorer
+          {t('fileBrowser.explorer')}
         </span>
-        <button 
+        <button
           className="p-1.5  rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
           onClick={handleStartCreate}
           title="New File"
@@ -157,7 +206,7 @@ const FileBrowser: React.FC = () => {
             className="text-[11px]  font-bold text-[var(--color-text-dim)] tracking-wide flex-1 uppercase"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            Snippets
+            {t('fileBrowser.snippets')}
           </span>
         </div>
 
@@ -182,7 +231,7 @@ const FileBrowser: React.FC = () => {
                   if (!newName.trim()) setCreating(false);
                 }, 150);
               }}
-              placeholder="ClassName.java"
+              placeholder={t('fileBrowser.classNamePlaceholder')}
             />
           </div>
         )}
@@ -240,10 +289,22 @@ const FileBrowser: React.FC = () => {
 
         {files.length === 0 && !creating && (
           <div className="text-[11px] text-[var(--color-text-muted)] px-3 py-4" style={{ fontFamily: 'var(--font-mono)' }}>
-            No files yet
+            {t('fileBrowser.noFiles')}
           </div>
         )}
       </div>
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialogOpen}
+        title="Delete File"
+        message={`Are you sure you want to delete "${pendingDeleteName}"? This action cannot be undone.`}
+        confirmText="DELETE"
+        cancelText="CANCEL"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        danger
+      />
     </div>
   );
 };

@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCompile } from '../context/CompileContext';
 import { Database } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 interface SymbolRow {
   kind: string;
@@ -169,45 +171,47 @@ const SemanticPanel: React.FC = () => {
         </span>
       </div>
 
-      <div className="flex-1 overflow-auto border border-[var(--color-border)] bg-[var(--color-card)]">
-        <table className="w-full border-collapse text-xs font-mono">
-          <thead>
-            <tr className="sticky top-0 bg-[var(--color-surface-2)] border-b border-[var(--color-border)]">
-              <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Kind</th>
-              <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Name</th>
-              <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Modifiers</th>
-              <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Type</th>
-              <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Parent</th>
-              <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr
-                key={i}
-                className="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors"
-              >
-                <td className="px-4 py-2 whitespace-nowrap">
-                  <span
-                    className="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded"
-                    style={{
-                      color: KIND_COLORS[row.kind] || '#d4d4d4',
-                      background: `${KIND_COLORS[row.kind] || '#d4d4d4'}15`,
-                    }}
-                  >
-                    {row.kind}
-                  </span>
-                </td>
-                <td className="px-4 py-2 text-[var(--color-neon)] whitespace-nowrap">{row.name}</td>
-                <td className="px-4 py-2 text-[var(--color-text-dim)] whitespace-nowrap">{row.modifiers || '—'}</td>
-                <td className="px-4 py-2 text-[var(--color-cyan)] whitespace-nowrap">{row.type || '—'}</td>
-                <td className="px-4 py-2 text-[var(--color-text-muted)] whitespace-nowrap">{row.parent || '—'}</td>
-                <td className="px-4 py-2 text-[var(--color-text-muted)] whitespace-nowrap">{row.details || '—'}</td>
+      <ErrorBoundary name="Symbol Table" inline>
+        <div className="flex-1 overflow-auto border border-[var(--color-border)] bg-[var(--color-card)]">
+          <table className="w-full border-collapse text-xs font-mono">
+            <thead>
+              <tr className="sticky top-0 bg-[var(--color-surface-2)] border-b border-[var(--color-border)]">
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Kind</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Name</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Modifiers</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Type</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Parent</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Details</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((row, i) => (
+                <tr
+                  key={i}
+                  className="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors"
+                >
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    <span
+                      className="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded"
+                      style={{
+                        color: KIND_COLORS[row.kind] || '#d4d4d4',
+                        background: `${KIND_COLORS[row.kind] || '#d4d4d4'}15`,
+                      }}
+                    >
+                      {row.kind}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-[var(--color-neon)] whitespace-nowrap">{row.name}</td>
+                  <td className="px-4 py-2 text-[var(--color-text-dim)] whitespace-nowrap">{row.modifiers || '—'}</td>
+                  <td className="px-4 py-2 text-[var(--color-cyan)] whitespace-nowrap">{row.type || '—'}</td>
+                  <td className="px-4 py-2 text-[var(--color-text-muted)] whitespace-nowrap">{row.parent || '—'}</td>
+                  <td className="px-4 py-2 text-[var(--color-text-muted)] whitespace-nowrap">{row.details || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </ErrorBoundary>
     </div>
   );
 };

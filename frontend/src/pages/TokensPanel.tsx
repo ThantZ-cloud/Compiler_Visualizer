@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useCompile } from '../context/CompileContext';
 import { Eye, LayoutGrid, CircleDot } from 'lucide-react';
 import TokenChart from '../components/TokenChart';
 import Skeleton from '../components/Skeleton';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const TOKEN_BADGE_CLASSES: Record<string, string> = {
   KEYWORD: 'bg-[rgba(255,0,255,0.1)] text-[var(--color-magenta)] border border-[var(--color-magenta)]',
@@ -49,6 +51,7 @@ function getBorderClass(type: string): string {
 }
 
 const TokensPanel: React.FC = () => {
+  const { t } = useTranslation();
   const { result, loading } = useCompile();
   const [filter, setFilter] = useState('');
   const [view, setView] = useState<'chart' | 'grid'>('chart');
@@ -77,7 +80,7 @@ const TokensPanel: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">
         <CircleDot size={48} className="text-[var(--color-neon)] opacity-30 mb-4" />
-        No tokens generated
+        {t('tokens.noTokens')}
       </div>
     );
   }
@@ -139,32 +142,36 @@ const TokensPanel: React.FC = () => {
       </div>
 
       {view === 'chart' ? (
-        <TokenChart tokens={tokens} />
+        <ErrorBoundary name="Token Chart" inline>
+          <TokenChart tokens={tokens} />
+        </ErrorBoundary>
       ) : (
-        <motion.div
-          className="flex flex-wrap gap-1.5 overflow-auto"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.01 } },
-          }}
-        >
-          {filtered.map((token, index) => (
-            <motion.div
-              key={index}
-              className={`flex flex-col px-3 py-2 bg-[var(--color-card)] border-l-2 min-w-[120px] transition-all hover:border-[var(--color-cyan)] hover:shadow-[0_0_10px_var(--color-cyan-dim)] ${getBorderClass(token.type)}`}
-              variants={{
-                hidden: { opacity: 0, scale: 0.9 },
-                visible: { opacity: 1, scale: 1 },
-              }}
-            >
-              <span className="text-[9px] font-bold text-[var(--color-cyan)] uppercase tracking-[0.1em] mb-0.5 font-display">{token.type}</span>
-              <span className="text-xs text-[var(--color-amber)] font-mono break-all">"{token.value}"</span>
-              <span className="text-[9px] text-[var(--color-text-muted)] mt-0.5 font-mono">L{token.line}:C{token.column}</span>
-            </motion.div>
-          ))}
-        </motion.div>
+        <ErrorBoundary name="Token Grid" inline>
+          <motion.div
+            className="flex flex-wrap gap-1.5 overflow-auto"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.01 } },
+            }}
+          >
+            {filtered.map((token, index) => (
+              <motion.div
+                key={index}
+                className={`flex flex-col px-3 py-2 bg-[var(--color-card)] border-l-2 min-w-[120px] transition-all hover:border-[var(--color-cyan)] hover:shadow-[0_0_10px_var(--color-cyan-dim)] ${getBorderClass(token.type)}`}
+                variants={{
+                  hidden: { opacity: 0, scale: 0.9 },
+                  visible: { opacity: 1, scale: 1 },
+                }}
+              >
+                <span className="text-[9px] font-bold text-[var(--color-cyan)] uppercase tracking-[0.1em] mb-0.5 font-display">{token.type}</span>
+                <span className="text-xs text-[var(--color-amber)] font-mono break-all">"{token.value}"</span>
+                <span className="text-[9px] text-[var(--color-text-muted)] mt-0.5 font-mono">L{token.line}:C{token.column}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </ErrorBoundary>
       )}
     </div>
   );

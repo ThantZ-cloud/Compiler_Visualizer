@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 
 interface LoginModalProps {
@@ -26,7 +27,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
       await login(username, password);
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Check your credentials.');
+      const message = err.response?.data?.message || 'Login failed. Check your credentials.';
+      setError(message);
+      toast.error(err.response ? message : 'Connection failed');
     } finally {
       setLoading(false);
     }

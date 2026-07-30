@@ -1,37 +1,61 @@
 import React, { useCallback, useState } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Save, Loader2, Circle, Play, Square, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
+import ConfirmDialog from '../components/ConfirmDialog';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const EditorPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { code, setCode, result, loading, error, stdinInput, setStdinInput, saveFile, currentFileId, currentFileName, isDirty, handleCompile, handleCancel } = useCompile();
   const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState('');
+
+  // Save-as prompt dialog state
+  const [savePromptOpen, setSavePromptOpen] = useState(false);
+  const [savePromptValue, setSavePromptValue] = useState('');
 
   const handleSave = useCallback(async () => {
-    let title = currentFileName;
     if (!currentFileId) {
-      const name = window.prompt('Save as:', currentFileName);
-      if (!name) return;
-      title = name.endsWith('.java') ? name : name + '.java';
+      // New file — show prompt dialog for filename
+      setSavePromptValue(currentFileName);
+      setSavePromptOpen(true);
+      return;
     }
+    // Existing file — save directly
     setSaving(true);
-    setSaveMessage('');
     try {
-      await saveFile(title);
-      setSaveMessage('OK');
-      setTimeout(() => setSaveMessage(''), 2000);
+      await saveFile(currentFileName);
+      toast.success('Code saved');
     } catch {
-      setSaveMessage('FAIL');
-      setTimeout(() => setSaveMessage(''), 3000);
+      toast.error('Failed to save code');
     } finally {
       setSaving(false);
     }
   }, [saveFile, currentFileName, currentFileId]);
+
+  const handleSaveConfirm = useCallback(async (value?: string) => {
+    setSavePromptOpen(false);
+    const name = value ?? '';
+    if (!name) return;
+    const title = name.endsWith('.java') ? name : name + '.java';
+    setSaving(true);
+    try {
+      await saveFile(title);
+      toast.success('Code saved');
+    } catch {
+      toast.error('Failed to save code');
+    } finally {
+      setSaving(false);
+    }
+  }, [saveFile]);
+
+  const handleSaveCancel = useCallback(() => {
+    setSavePromptOpen(false);
+  }, []);
 
   const handleEditorMount: OnMount = useCallback((editor, monaco) => {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -57,13 +81,6 @@ const EditorPage: React.FC = () => {
               </span>
               {isDirty && <Circle size={8} className="fill-[var(--color-amber)] text-[var(--color-amber)]" />}
             </div>
-            {saveMessage && (
-              <span className={`text-[10px] font-bold tracking-wider ${
-                saveMessage === 'OK' ? 'text-[var(--color-neon)]' : 'text-[var(--color-rose)]'
-              }`} style={{ fontFamily: 'var(--font-display)' }}>
-                [{saveMessage}]
-              </span>
-            )}
           </div>
           <div className="flex items-center gap-3">
             {/* Save button */}
@@ -128,30 +145,32 @@ const EditorPage: React.FC = () => {
         </div>
 
         {/* Editor container */}
-        <div className="flex-1 min-h-0 border-b border-[var(--color-border)] overflow-hidden">
-          <Editor
-            height="100%"
-            defaultLanguage="java"
-            theme="vs-dark"
-            value={code}
-            onChange={(value) => setCode(value || '')}
-            onMount={handleEditorMount}
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-              lineNumbers: 'on',
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              padding: { top: 16 },
-              renderLineHighlight: 'gutter',
-              bracketPairColorization: { enabled: true },
-              smoothScrolling: true,
-              cursorBlinking: 'smooth',
-              cursorSmoothCaretAnimation: 'on',
-            }}
-          />
-        </div>
+        <ErrorBoundary name="Code Editor" inline>
+          <div className="flex-1 min-h-0 border-b border-[var(--color-border)] overflow-hidden">
+            <Editor
+              height="100%"
+              defaultLanguage="java"
+              theme="vs-dark"
+              value={code}
+              onChange={(value) => setCode(value || '')}
+              onMount={handleEditorMount}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                padding: { top: 16 },
+                renderLineHighlight: 'gutter',
+                bracketPairColorization: { enabled: true },
+                smoothScrolling: true,
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
+              }}
+            />
+          </div>
+        </ErrorBoundary>
       </div>
 
       {/* Terminal section */}
@@ -216,6 +235,20 @@ const EditorPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Save-as prompt dialog */}
+      <ConfirmDialog
+        isOpen={savePromptOpen}
+        title="Save File"
+        message="Enter a name for your file:"
+        confirmText="SAVE"
+        cancelText="CANCEL"
+        type="prompt"
+        promptPlaceholder="ClassName.java"
+        defaultValue={savePromptValue}
+        onConfirm={handleSaveConfirm}
+        onCancel={handleSaveCancel}
+      />
     </div>
   );
 };

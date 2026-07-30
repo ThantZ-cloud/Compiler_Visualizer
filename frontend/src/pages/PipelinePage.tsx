@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { pipelineSteps } from '../data/pipelineData';
 import PipelineStep from '../components/PipelineStep';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const PipelineScene = lazy(() => import('../components/PipelineScene'));
 
@@ -64,9 +65,11 @@ const PipelinePage: React.FC = () => {
         <section className="relative h-[85vh] flex flex-col items-center justify-center overflow-hidden">
           {/* Three.js background */}
           <div className="absolute inset-0 opacity-40">
-            <Suspense fallback={null}>
-              <PipelineScene activeStep={activeStep} />
-            </Suspense>
+            <ErrorBoundary name="Pipeline 3D Scene" inline>
+              <Suspense fallback={null}>
+                <PipelineScene activeStep={activeStep} />
+              </Suspense>
+            </ErrorBoundary>
           </div>
 
           {/* Gradient overlay */}

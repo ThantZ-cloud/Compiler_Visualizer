@@ -2,6 +2,7 @@ import React from 'react';
 import { useCompile } from '../context/CompileContext';
 import { Binary } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const BytecodePanel: React.FC = () => {
   const { result, loading } = useCompile();
@@ -35,9 +36,11 @@ const BytecodePanel: React.FC = () => {
           JVM Bytecode
         </h2>
       </div>
-      <pre className="flex-1 font-mono text-xs leading-[1.7] text-[var(--color-neon)] bg-[var(--color-card)] border border-[var(--color-border)] p-4 overflow-auto whitespace-pre-wrap break-all m-0 hover:border-[var(--color-neon)] hover:shadow-[0_0_10px_var(--color-neon-dim)]">
-        {result.bytecode}
-      </pre>
+      <ErrorBoundary name="Bytecode Viewer" inline>
+        <pre className="flex-1 font-mono text-xs leading-[1.7] text-[var(--color-neon)] bg-[var(--color-card)] border border-[var(--color-border)] p-4 overflow-auto whitespace-pre-wrap break-all m-0 hover:border-[var(--color-neon)] hover:shadow-[0_0_10px_var(--color-neon-dim)]">
+          {result.bytecode}
+        </pre>
+      </ErrorBoundary>
     </div>
   );
 };

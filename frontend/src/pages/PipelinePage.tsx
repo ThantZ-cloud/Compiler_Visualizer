@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { pipelineSteps } from '../data/pipelineData';
@@ -9,6 +10,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 const PipelineScene = lazy(() => import('../components/PipelineScene'));
 
 const PipelinePage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const backTarget = location.state?.from === '/compiler' ? '/compiler' : '/';
@@ -49,7 +51,7 @@ const PipelinePage: React.FC = () => {
           style={{ fontFamily: 'var(--font-mono)' }}
           onClick={() => navigate(backTarget)}
         >
-          {'<- BACK'}
+          {t('pipeline.back', '<- BACK')}
         </button>
         <span
           className="text-[10px] font-bold text-[var(--color-neon)] tracking-[0.3em] uppercase"
@@ -86,26 +88,25 @@ const PipelinePage: React.FC = () => {
               className="text-[10px] font-bold tracking-[0.4em] uppercase mb-4 text-[var(--color-neon)]"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              Compilation Pipeline
+              {t('pipeline.title')}
             </div>
             <h1
               className="text-4xl md:text-6xl lg:text-7xl font-black tracking-wider text-[var(--color-text)] mb-4"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              HOW JAVA COMPILES
+              {t('pipeline.subtitleLine1', 'HOW JAVA COMPILES')}
             </h1>
             <h2
               className="text-4xl md:text-6xl lg:text-7xl font-black tracking-wider neon-text mb-8"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              YOUR CODE
+              {t('pipeline.subtitleLine2', 'YOUR CODE')}
             </h2>
             <p
               className="text-sm text-[var(--color-text-dim)] max-w-xl mx-auto mb-12 leading-relaxed"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              Follow the journey from human-readable source code to machine-executable bytecode.
-              Six phases, each transforming your code into something the JVM can understand.
+              {t('pipeline.description')}
             </p>
 
             {/* Step indicators */}
@@ -165,28 +166,26 @@ const PipelinePage: React.FC = () => {
               className="text-[10px] font-bold tracking-[0.4em] uppercase mb-4 text-[var(--color-neon)]"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              Pipeline Complete
+              {t('pipeline.complete')}
             </div>
             <h2
               className="text-2xl md:text-3xl font-black tracking-wider text-[var(--color-text)] mb-6"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              FROM TEXT TO EXECUTION
+              {t('pipeline.completeHeadline', 'FROM TEXT TO EXECUTION')}
             </h2>
             <p
               className="text-sm text-[var(--color-text-dim)] max-w-lg mx-auto leading-relaxed mb-8"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              In just six phases, your Java source code is transformed from human-readable text
-              into bytecode that the JVM can execute on any platform. This is the magic behind
-              "write once, run anywhere."
+              {t('pipeline.completeDescription')}
             </p>
             <button
               className="btn-neon px-8 py-3 text-xs tracking-[0.15em]"
               style={{ fontFamily: 'var(--font-display)' }}
               onClick={() => navigate('/compiler')}
             >
-              <span>[ TRY IT YOURSELF ]</span>
+              <span>[ {t('pipeline.tryIt', 'TRY IT YOURSELF')} ]</span>
             </button>
           </motion.div>
         </section>

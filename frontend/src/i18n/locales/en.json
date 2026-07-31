@@ -89,9 +89,14 @@
   "pipeline": {
     "title": "Compilation Pipeline",
     "subtitle": "HOW JAVA COMPILES YOUR CODE",
+    "subtitleLine1": "HOW JAVA COMPILES",
+    "subtitleLine2": "YOUR CODE",
     "description": "Follow the journey from human-readable source code to machine-executable bytecode. Six phases, each transforming your code into something the JVM can understand.",
+    "back": "<- BACK",
     "complete": "Pipeline Complete",
-    "completeDescription": "In just six phases, your Java source code is transformed from human-readable text into bytecode that the JVM can execute on any platform. This is the magic behind \"write once, run anywhere.\""
+    "completeHeadline": "FROM TEXT TO EXECUTION",
+    "completeDescription": "In just six phases, your Java source code is transformed from human-readable text into bytecode that the JVM can execute on any platform. This is the magic behind \"write once, run anywhere.\"",
+    "tryIt": "TRY IT YOURSELF"
   },
   "modal": {
     "closeDialog": "Close dialog"

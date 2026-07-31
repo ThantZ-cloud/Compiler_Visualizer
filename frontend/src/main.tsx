@@ -17,6 +17,7 @@ import AstPanel from './pages/AstPanel'
 import SemanticPanel from './pages/SemanticPanel'
 import BytecodePanel from './pages/BytecodePanel'
 import CfgPanel from './pages/CfgPanel'
+import LexicalPanel from './pages/LexicalPanel'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -31,6 +32,7 @@ createRoot(document.getElementById('root')!).render(
                   <Route path="/pipeline" element={<PipelinePage />} />
                   <Route path="/compiler" element={<EditorPage />} />
                   <Route path="/visualize" element={<VisualizeLayout />}>
+                    <Route path="lexical" element={<LexicalPanel />} />
                     <Route path="tokens" element={<TokensPanel />} />
                     <Route path="ast" element={<AstPanel />} />
                     <Route path="semantic" element={<SemanticPanel />} />

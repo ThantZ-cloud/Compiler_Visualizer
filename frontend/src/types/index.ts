@@ -67,4 +67,4 @@ export interface User {
   email: string;
 }
 
-export type CompilationPhase = 'tokens' | 'ast' | 'semantic' | 'bytecode' | 'execution';
+export type CompilationPhase = 'lexical' | 'tokens' | 'ast' | 'semantic' | 'bytecode' | 'execution';

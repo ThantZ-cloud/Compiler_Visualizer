@@ -1,13 +1,14 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
-import { CircleDot, TreePine, Database, Binary, Eye, GitFork } from 'lucide-react';
+import { CircleDot, TreePine, Database, Binary, Eye, GitFork, Spline } from 'lucide-react';
 
 const VisualizeLayout: React.FC = () => {
   const { result } = useCompile();
   const navigate = useNavigate();
 
   const phases = [
+    { path: '/visualize/lexical', label: 'Lexical', icon: Spline },
     { path: '/visualize/tokens', label: 'Tokens', icon: CircleDot },
     { path: '/visualize/ast', label: 'AST', icon: TreePine },
     { path: '/visualize/semantic', label: 'Semantic', icon: Database },

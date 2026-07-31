@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
-import { pipelineSteps } from '../data/pipelineData';
+import type { PipelineStepData } from '../data/pipelineData';
 
 interface Props {
   activeStep: number;
+  steps: PipelineStepData[];
 }
 
 const NODE_SPACING = 2.8;
@@ -12,7 +13,7 @@ const RING_TUBE = 0.04;
 const PARTICLE_COUNT = 60;
 const AMBIENT_COUNT = 120;
 
-const PipelineScene: React.FC<Props> = ({ activeStep }) => {
+const PipelineScene: React.FC<Props> = ({ activeStep, steps: pipelineSteps }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string; color: string } | null>(null);
   const sceneRef = useRef<{

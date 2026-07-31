@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import { pipelineSteps } from '../data/pipelineData';
+import { getPipelineSteps } from '../data/pipelineData';
 import PipelineStep from '../components/PipelineStep';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -14,6 +14,7 @@ const PipelinePage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const backTarget = location.state?.from === '/compiler' ? '/compiler' : '/';
+  const pipelineSteps = getPipelineSteps(t);
   const [activeStep, setActiveStep] = useState(0);
   const stepRefs = useRef<(HTMLElement | null)[]>([]);
 
@@ -69,7 +70,7 @@ const PipelinePage: React.FC = () => {
           <div className="absolute inset-0 opacity-40">
             <ErrorBoundary name="Pipeline 3D Scene" inline>
               <Suspense fallback={null}>
-                <PipelineScene activeStep={activeStep} />
+                <PipelineScene activeStep={activeStep} steps={pipelineSteps} />
               </Suspense>
             </ErrorBoundary>
           </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, type Variants } from 'framer-motion';
 import {
   FileCode, Scan, TreePine, Search, Code2, Cpu,
@@ -27,6 +28,7 @@ interface Props {
 }
 
 const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
+  const { t } = useTranslation();
   const Icon = iconMap[step.icon] || FileCode;
 
   return (
@@ -67,7 +69,7 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
                 className="text-[10px] font-bold tracking-[0.3em] uppercase"
                 style={{ color: step.color, fontFamily: 'var(--font-display)' }}
               >
-                Phase {step.phase}
+                {t('pipeline.phaseLabel')} {step.phase}
               </div>
               <h2
                 className="text-2xl md:text-3xl font-black tracking-wider text-[var(--color-text)]"
@@ -87,7 +89,7 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
               className="text-[9px] font-bold tracking-[0.2em] uppercase mb-2"
               style={{ color: step.color, fontFamily: 'var(--font-mono)' }}
             >
-              Output
+              {t('pipeline.outputLabel')}
             </div>
             <pre
               className="text-[10px] leading-relaxed text-[var(--color-text-dim)] overflow-hidden max-h-40 overflow-y-auto"
@@ -138,7 +140,7 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
               className="text-[9px] font-bold tracking-[0.2em] uppercase mb-1"
               style={{ color: step.color, fontFamily: 'var(--font-display)' }}
             >
-              Java Concept
+              {t('pipeline.javaConceptLabel')}
             </div>
             <p
               className="text-xs leading-relaxed text-[var(--color-text-muted)]"
@@ -157,7 +159,7 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
               className="text-[9px] font-bold tracking-[0.2em] uppercase mb-1 text-[var(--color-text-muted)]"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              Input
+              {t('pipeline.inputLabel')}
             </div>
             <pre
               className="text-[10px] text-[var(--color-text-dim)] overflow-hidden max-h-20"

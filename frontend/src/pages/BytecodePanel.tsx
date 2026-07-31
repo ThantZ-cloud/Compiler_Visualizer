@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCompile } from '../context/CompileContext';
 import { Binary } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const BytecodePanel: React.FC = () => {
+  const { t } = useTranslation();
   const { result, loading } = useCompile();
 
   if (loading) {
@@ -24,7 +26,7 @@ const BytecodePanel: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">
         <Binary size={48} className="text-[var(--color-neon)] opacity-30 mb-4" />
-        No bytecode generated
+        {t('bytecode.noBytecode')}
       </div>
     );
   }

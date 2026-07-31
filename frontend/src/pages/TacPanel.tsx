@@ -1,9 +1,11 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCompile } from '../context/CompileContext';
 import { Code2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 
 const TacPanel: React.FC = () => {
+  const { t } = useTranslation();
   const { result, loading } = useCompile();
 
   if (loading) {
@@ -23,7 +25,7 @@ const TacPanel: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">
         <Code2 size={48} className="text-[var(--color-neon)] opacity-30 mb-4" />
-        No three-address code generated
+        {t('tac.noTac')}
       </div>
     );
   }

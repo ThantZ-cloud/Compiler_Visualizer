@@ -134,6 +134,7 @@ const KIND_COLORS: Record<string, string> = {
 };
 
 const SemanticPanel: React.FC = () => {
+  const { t } = useTranslation();
   const { result, loading } = useCompile();
 
   if (loading) {
@@ -153,7 +154,7 @@ const SemanticPanel: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">
         <Database size={48} className="text-[var(--color-neon)] opacity-30 mb-4" />
-        No symbol table generated
+        {t('semantic.noSymbolTable')}
       </div>
     );
   }

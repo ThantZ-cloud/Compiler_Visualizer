@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCompile } from '../context/CompileContext';
 import { GitFork } from 'lucide-react';
 import CfgGraph from '../components/CfgGraph';
 import Skeleton from '../components/Skeleton';
 
 const CfgPanel: React.FC = () => {
+  const { t } = useTranslation();
   const { result, loading } = useCompile();
 
   if (loading) {
@@ -25,7 +27,7 @@ const CfgPanel: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">
         <GitFork size={48} className="text-[var(--color-neon)] opacity-30 mb-4" />
-        No control flow graph generated
+        {t('cfg.noCfg')}
       </div>
     );
   }

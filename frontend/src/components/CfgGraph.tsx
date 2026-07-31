@@ -439,7 +439,6 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
           // Curved back-edge arc to the side
           const arcOffset = 180 + Math.abs(src.id - tgt.id) * 30;
           const ctrlX = Math.min(x1, x2) - arcOffset;
-          const ctrlY = (y1 + y2) / 2;
           return `M ${x1 - src.width / 2},${src.y!} C ${ctrlX},${y1} ${ctrlX},${y2} ${x2 - tgt.width / 2},${tgt.y!}`;
         }
 

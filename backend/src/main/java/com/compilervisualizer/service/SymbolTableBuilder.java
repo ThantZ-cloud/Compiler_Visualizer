@@ -183,6 +183,21 @@ public class SymbolTableBuilder {
             obj.set("throws", exceptions);
         }
 
+        // local variables in method scope
+        md.getBody().ifPresent(body -> {
+            ArrayNode localVars = mapper.createArrayNode();
+            body.findAll(VariableDeclarator.class).forEach(vd -> {
+                ObjectNode lv = mapper.createObjectNode();
+                lv.put("name", vd.getNameAsString());
+                lv.set("type", typeToJson(vd.getType()));
+                vd.getInitializer().ifPresent(init -> lv.put("initializerPresent", true));
+                localVars.add(lv);
+            });
+            if (!localVars.isEmpty()) {
+                obj.set("localVariables", localVars);
+            }
+        });
+
         return obj;
     }
 
@@ -209,6 +224,21 @@ public class SymbolTableBuilder {
             ArrayNode exceptions = mapper.createArrayNode();
             cd.getThrownExceptions().forEach(ex -> exceptions.add(ex.asString()));
             obj.set("throws", exceptions);
+        }
+
+        // local variables in constructor scope
+        if (cd.getBody() != null) {
+            ArrayNode localVars = mapper.createArrayNode();
+            cd.getBody().findAll(VariableDeclarator.class).forEach(vd -> {
+                ObjectNode lv = mapper.createObjectNode();
+                lv.put("name", vd.getNameAsString());
+                lv.set("type", typeToJson(vd.getType()));
+                vd.getInitializer().ifPresent(init -> lv.put("initializerPresent", true));
+                localVars.add(lv);
+            });
+            if (!localVars.isEmpty()) {
+                obj.set("localVariables", localVars);
+            }
         }
 
         return obj;

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useCompile } from '../context/CompileContext';
-import { Database, TreePine, Braces } from 'lucide-react';
+import { Database, TreePine, Table, Braces } from 'lucide-react';
 import SemanticTree from '../components/SemanticTree';
+import SemanticScopeTable from '../components/SemanticScopeTable';
 import Skeleton from '../components/Skeleton';
 
 const SemanticPanel: React.FC = () => {
   const { result, loading } = useCompile();
-  const [view, setView] = useState<'tree' | 'json'>('tree');
+  const [view, setView] = useState<'tree' | 'table' | 'json'>('table');
 
   if (loading) {
     return (
@@ -44,7 +45,16 @@ const SemanticPanel: React.FC = () => {
         <h2 className="text-sm font-bold text-[var(--color-text)] font-display tracking-[0.12em] uppercase">
           Symbol Table
         </h2>
-        <div className="flex gap-0.5">
+        <div className="flex gap-0.5 bg-[var(--color-card)] border border-[var(--color-border)] p-0.5">
+          <button
+            className={`px-3 py-[5px] text-[10px] font-bold tracking-[0.1em] bg-transparent border-none cursor-pointer transition-all font-display uppercase flex items-center gap-1 ${
+              view === 'table' ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+            }`}
+            onClick={() => setView('table')}
+          >
+            <Table size={10} />
+            Scope Table
+          </button>
           <button
             className={`px-3 py-[5px] text-[10px] font-bold tracking-[0.1em] bg-transparent border-none cursor-pointer transition-all font-display uppercase flex items-center gap-1 ${
               view === 'tree' ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
@@ -65,7 +75,9 @@ const SemanticPanel: React.FC = () => {
           </button>
         </div>
       </div>
-      {view === 'tree' ? (
+      {view === 'table' ? (
+        <SemanticScopeTable symbolTableJson={result.symbolTableJson} />
+      ) : view === 'tree' ? (
         <SemanticTree symbolTableJson={result.symbolTableJson} />
       ) : (
         <pre className="flex-1 font-mono text-xs leading-[1.7] text-[var(--color-neon)] bg-[var(--color-card)] border border-[var(--color-border)] p-4 overflow-auto whitespace-pre-wrap break-all m-0 hover:border-[var(--color-neon)] hover:shadow-[0_0_10px_var(--color-neon-dim)]">

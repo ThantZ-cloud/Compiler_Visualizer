@@ -21,6 +21,16 @@ const CfgPanel: React.FC = () => {
     );
   }
 
+  if (result?.cfgError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">
+        <GitFork size={48} className="text-[var(--color-neon)] opacity-30 mb-4" />
+        <span className="text-[var(--color-error)] font-bold mb-2">CFG Error</span>
+        <span>{result.cfgError}</span>
+      </div>
+    );
+  }
+
   if (!result?.cfgJson) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-[13px] font-mono">

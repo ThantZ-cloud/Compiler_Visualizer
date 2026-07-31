@@ -38,6 +38,7 @@ export interface CompileResponse {
   astJson: string;
   symbolTableJson: string;
   cfgJson: string;
+  cfgError?: string;
   bytecode: string;
   executionOutput: string;
   error?: string;

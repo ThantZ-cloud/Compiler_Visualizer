@@ -1,11 +1,17 @@
 {
   "nav": {
     "compiler": "COMPILER",
+    "pipeline": "Pipeline",
+    "visualizer": "Visualizer",
     "compile": "COMPILE",
     "compiling": "COMPILING...",
     "visualize": "VISUALIZE",
     "signIn": "SIGN IN",
-    "register": "REGISTER"
+    "register": "REGISTER",
+    "skipToContent": "Skip to main content",
+    "themeLabel": "Theme",
+    "switchToMyanmar": "Switch to Myanmar",
+    "switchToEnglish": "Switch to English"
   },
   "landing": {
     "statusBadge": "SYSTEM ONLINE",
@@ -56,7 +62,14 @@
     "visualize": "VISUALIZE",
     "cancel": "CANCEL",
     "saveOk": "Code saved",
-    "saveFail": "Failed to save code"
+    "saveFail": "Failed to save code",
+    "compiling": "Compiling",
+    "stdin": "STDIN:",
+    "stdinPlaceholder": "$ enter input...",
+    "output": "OUTPUT",
+    "clickCompile": "Click COMPILE to run your code.",
+    "saveFile": "Save File",
+    "enterFileName": "Enter a name for your file:"
   },
   "fileBrowser": {
     "explorer": "Explorer",

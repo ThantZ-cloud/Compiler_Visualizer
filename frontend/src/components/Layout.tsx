@@ -36,7 +36,7 @@ const Layout: React.FC = () => {
     <div className="flex flex-col h-screen overflow-hidden bg-[var(--color-void)]">
       {/* Skip link for keyboard navigation */}
       <a href="#main-content" className="skip-link">
-        Skip to main content
+        {t('nav.skipToContent')}
       </a>
 
       {/* Header — terminal HUD style */}
@@ -70,7 +70,7 @@ const Layout: React.FC = () => {
             onClick={() => navigate('/pipeline')}
           >
             <Workflow size={12} />
-            Pipeline
+            {t('nav.pipeline')}
           </button>
 
           {/* Compiler nav link */}
@@ -96,7 +96,7 @@ const Layout: React.FC = () => {
             onClick={() => navigate('/visualize/tokens')}
           >
             <Eye size={12} />
-            Visualizer
+            {t('nav.visualizer')}
           </button>
         </div>
 
@@ -108,7 +108,7 @@ const Layout: React.FC = () => {
           <button
             className="min-w-[44px] min-h-[44px] flex items-center justify-center text-[var(--color-text-dim)] hover:text-[var(--color-neon)] hover:bg-[var(--color-surface)] transition-colors"
             onClick={cycleTheme}
-            title={`Theme: ${theme}`}
+            title={`${t('nav.themeLabel')}: ${theme}`}
           >
             <ThemeIcon size={18} />
           </button>
@@ -118,7 +118,7 @@ const Layout: React.FC = () => {
             className="min-w-[44px] min-h-[44px] flex items-center justify-center text-xs font-bold text-[var(--color-text-dim)] hover:text-[var(--color-neon)] transition-colors tracking-wider"
             style={{ fontFamily: 'var(--font-display)' }}
             onClick={() => setLanguage(language === 'en' ? 'my' : 'en')}
-            title={language === 'en' ? 'Switch to Myanmar' : 'Switch to English'}
+            title={language === 'en' ? t('nav.switchToMyanmar') : t('nav.switchToEnglish')}
           >
             {language === 'en' ? 'မြန်မာ' : 'EN'}
           </button>

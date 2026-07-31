@@ -29,13 +29,13 @@ const EditorPage: React.FC = () => {
     setSaving(true);
     try {
       await saveFile(currentFileName);
-      toast.success('Code saved');
+      toast.success(t('editor.saveOk'));
     } catch {
-      toast.error('Failed to save code');
+      toast.error(t('editor.saveFail'));
     } finally {
       setSaving(false);
     }
-  }, [saveFile, currentFileName, currentFileId]);
+  }, [saveFile, currentFileName, currentFileId, t]);
 
   const handleSaveConfirm = useCallback(async (value?: string) => {
     setSavePromptOpen(false);
@@ -45,9 +45,9 @@ const EditorPage: React.FC = () => {
     setSaving(true);
     try {
       await saveFile(title);
-      toast.success('Code saved');
+      toast.success(t('editor.saveOk'));
     } catch {
-      toast.error('Failed to save code');
+      toast.error(t('editor.saveFail'));
     } finally {
       setSaving(false);
     }
@@ -118,7 +118,7 @@ const EditorPage: React.FC = () => {
                 onClick={handleCancel}
               >
                 <Square size={10} />
-                CANCEL
+                {t('editor.cancel')}
               </button>
             )}
 
@@ -129,14 +129,14 @@ const EditorPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <label htmlFor="stdin" className="text-[10px] text-[var(--color-text-muted)] tracking-wider"
                 style={{ fontFamily: 'var(--font-display)' }}>
-                STDIN:
+                {t('editor.stdin')}
               </label>
               <input
                 id="stdin"
                 type="text"
                 className="h-7 w-56 px-3 text-[11px] bg-[var(--color-void)] border border-[var(--color-border)] text-[var(--color-neon)] outline-none focus:border-[var(--color-neon)] transition-colors"
                 style={{ fontFamily: 'var(--font-mono)' }}
-                placeholder="$ enter input..."
+                placeholder={t('editor.stdinPlaceholder')}
                 value={stdinInput}
                 onChange={(e) => setStdinInput(e.target.value)}
               />
@@ -181,7 +181,7 @@ const EditorPage: React.FC = () => {
             <span className="w-2 h-2 bg-[var(--color-neon)]" />
             <span className="text-[10px] font-bold text-[var(--color-text-muted)] tracking-[0.2em] uppercase"
               style={{ fontFamily: 'var(--font-display)' }}>
-              OUTPUT
+              {t('editor.output')}
             </span>
             {result?.compilationTimeMs && (
               <span className="text-[9px] text-[var(--color-text-muted)]"
@@ -199,7 +199,7 @@ const EditorPage: React.FC = () => {
               onClick={() => navigate('/visualize/tokens')}
             >
               <Eye size={10} />
-              VISUALIZER
+              {t('editor.visualize')}
             </button>
           )}
         </div>
@@ -210,7 +210,7 @@ const EditorPage: React.FC = () => {
           {loading && (
             <div className="text-[var(--color-amber)] flex items-center gap-2">
               <Loader2 size={14} className="animate-spin" />
-              <span>Compiling<span className="animate-pulse">...</span></span>
+              <span>{t('editor.compiling')}<span className="animate-pulse">...</span></span>
             </div>
           )}
           {!loading && error && (
@@ -230,7 +230,7 @@ const EditorPage: React.FC = () => {
           )}
           {!loading && !error && !result && (
             <div className="text-[var(--color-text-muted)]">
-              <span className="text-[var(--color-neon)]">$</span> Click <span className="text-[var(--color-neon)]">COMPILE</span> to run your code.
+              <span className="text-[var(--color-neon)]">$</span> {t('editor.clickCompile')}
             </div>
           )}
         </div>
@@ -239,10 +239,10 @@ const EditorPage: React.FC = () => {
       {/* Save-as prompt dialog */}
       <ConfirmDialog
         isOpen={savePromptOpen}
-        title="Save File"
-        message="Enter a name for your file:"
-        confirmText="SAVE"
-        cancelText="CANCEL"
+        title={t('editor.saveFile')}
+        message={t('editor.enterFileName')}
+        confirmText={t('editor.save')}
+        cancelText={t('editor.cancel')}
         type="prompt"
         promptPlaceholder="ClassName.java"
         defaultValue={savePromptValue}

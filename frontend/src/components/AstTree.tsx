@@ -15,43 +15,43 @@ interface AstTreeProps {
   astJson: string;
 }
 
-// Colors matching VS Code theme
+// Pastel light palette, kept consistent with the shared token colors.
 const NODE_COLORS: Record<string, string> = {
-  'CompilationUnit': '#4ec9b0',
-  'PackageDeclaration': '#4ec9b0',
-  'ImportDeclaration': '#808080',
-  'ClassOrInterfaceDeclaration': '#4ec9b0',
-  'EnumDeclaration': '#4ec9b0',
-  'RecordDeclaration': '#4ec9b0',
-  'MethodDeclaration': '#dcdcaa',
-  'ConstructorDeclaration': '#dcdcaa',
-  'FieldDeclaration': '#569cd6',
-  'Parameter': '#9cdcfe',
-  'VariableDeclarator': '#9cdcfe',
-  'BlockStmt': '#569cd6',
-  'ExpressionStmt': '#d4d4d4',
-  'ReturnStmt': '#c586c0',
-  'IfStmt': '#c586c0',
-  'ForStmt': '#c586c0',
-  'WhileStmt': '#c586c0',
-  'MethodCallExpr': '#dcdcaa',
-  'NameExpr': '#9cdcfe',
-  'FieldAccessExpr': '#9cdcfe',
-  'StringLiteralExpr': '#ce9178',
-  'IntegerLiteralExpr': '#b5cea8',
-  'LongLiteralExpr': '#b5cea8',
-  'DoubleLiteralExpr': '#b5cea8',
-  'BooleanLiteralExpr': '#569cd6',
-  'CharLiteralExpr': '#ce9178',
-  'BinaryExpr': '#d4d4d4',
-  'UnaryExpr': '#d4d4d4',
-  'AssignExpr': '#d4d4d4',
-  'ObjectCreationExpr': '#4ec9b0',
-  'TypeDeclaration': '#4ec9b0',
+  'CompilationUnit': '#0F766E',
+  'PackageDeclaration': '#0F766E',
+  'ImportDeclaration': '#94A3B8',
+  'ClassOrInterfaceDeclaration': '#0F766E',
+  'EnumDeclaration': '#0F766E',
+  'RecordDeclaration': '#0F766E',
+  'MethodDeclaration': '#3B82F6',
+  'ConstructorDeclaration': '#3B82F6',
+  'FieldDeclaration': '#0E7490',
+  'Parameter': '#6366F1',
+  'VariableDeclarator': '#6366F1',
+  'BlockStmt': '#0E7490',
+  'ExpressionStmt': '#64748B',
+  'ReturnStmt': '#0F766E',
+  'IfStmt': '#0F766E',
+  'ForStmt': '#0F766E',
+  'WhileStmt': '#0F766E',
+  'MethodCallExpr': '#3B82F6',
+  'NameExpr': '#6366F1',
+  'FieldAccessExpr': '#6366F1',
+  'StringLiteralExpr': '#8B5CF6',
+  'IntegerLiteralExpr': '#059669',
+  'LongLiteralExpr': '#059669',
+  'DoubleLiteralExpr': '#059669',
+  'BooleanLiteralExpr': '#DB2777',
+  'CharLiteralExpr': '#8B5CF6',
+  'BinaryExpr': '#64748B',
+  'UnaryExpr': '#64748B',
+  'AssignExpr': '#64748B',
+  'ObjectCreationExpr': '#0F766E',
+  'TypeDeclaration': '#0F766E',
 };
 
 function getNodeColor(type: string): string {
-  return NODE_COLORS[type] || '#d4d4d4';
+  return NODE_COLORS[type] || '#64748B';
 }
 
 function getNodeLabel(type: string, name?: string): string {
@@ -205,7 +205,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
     nodes.append('circle')
       .attr('r', d => d.data.children ? 7 : 5)
       .attr('fill', d => getNodeColor(d.data.type))
-      .attr('stroke', '#1e1e1e')
+      .attr('stroke', 'var(--color-card)')
       .attr('stroke-width', 1.5);
 
     nodes.append('text')
@@ -217,7 +217,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
         const display = d.data.value ? `${label} = ${d.data.value}` : label;
         return display.length > 30 ? display.substring(0, 30) + '...' : display;
       })
-      .attr('fill', '#d4d4d4')
+      .attr('fill', 'var(--color-text)')
       .attr('font-size', '11px')
       .append('title')
       .text(d => {
@@ -258,7 +258,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
   }, [astJson, collapsedNodes, getNodeId, toggleCollapse]);
 
   if (!astJson) {
-    return <div className="ast-tree-container"><div className="ast-tree-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#808080', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>No AST data to display</div></div>;
+    return <div className="ast-tree-container"><div className="ast-tree-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>No AST data to display</div></div>;
   }
 
   return (

@@ -3,39 +3,10 @@ import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey';
 import type { SankeyNode, SankeyLink } from 'd3-sankey';
 import type { Token } from '../types';
+import { getTokenColor as getColor } from '../lib/colors';
 
 interface TokenFlowProps {
   tokens: Token[];
-}
-
-// Same color map as TokenChart so the two token views stay visually consistent.
-const TOKEN_COLORS: Record<string, string> = {
-  KEYWORD: '#c586c0',
-  TYPE: '#4ec9b0',
-  IDENTIFIER: '#9cdcfe',
-  STRING_LITERAL: '#ce9178',
-  CHAR_LITERAL: '#ce9178',
-  INTEGER_LITERAL: '#b5cea8',
-  LONG_LITERAL: '#b5cea8',
-  FLOAT_LITERAL: '#b5cea8',
-  DOUBLE_LITERAL: '#b5cea8',
-  BOOLEAN_LITERAL: '#569cd6',
-  NULL_LITERAL: '#569cd6',
-  SEPARATOR: '#d4d4d4',
-  OPERATOR: '#d4d4d4',
-  WHITESPACE: '#808080',
-  LINE_COMMENT: '#6a9955',
-  BLOCK_COMMENT: '#6a9955',
-  JAVADOC_COMMENT: '#6a9955',
-  ANNOTATION: '#dcdcaa',
-};
-
-function getColor(type: string): string {
-  const upper = type.toUpperCase();
-  for (const [key, color] of Object.entries(TOKEN_COLORS)) {
-    if (upper.includes(key)) return color;
-  }
-  return '#569cd6';
 }
 
 // Cap the number of left-side lexeme nodes so the diagram stays readable.

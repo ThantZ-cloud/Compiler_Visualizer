@@ -1,19 +1,63 @@
 {
   "nav": {
-    "compiler": "COMPILER",
-    "compile": "COMPILE",
-    "compiling": "COMPILING...",
-    "visualize": "VISUALIZE",
-    "signIn": "SIGN IN",
-    "register": "REGISTER"
+    "brand": "Compili",
+    "compiler": "Compiler",
+    "studio": "Studio",
+    "compile": "Compile",
+    "compiling": "Compiling…",
+    "visualize": "Visualizer",
+    "signIn": "Sign in",
+    "register": "Register",
+    "share": "Share Visualizer",
+    "help": "Help",
+    "tour": "Tour"
   },
   "landing": {
-    "statusBadge": "SYSTEM ONLINE",
-    "description": "// Write Java code. Watch the compiler dissect it — token by token, tree by tree, instruction by instruction.",
-    "begin": "BEGIN",
-    "openCompiler": "OPEN COMPILER",
-    "viewPipeline": "VIEW PIPELINE",
+    "heroBadge": "Learn how compilers work",
+    "heroTitleA": "See your code",
+    "heroTitleB": "come alive",
+    "description": "Compili walks your Java code through every stage of compilation — tokens, trees, analysis, and bytecode — with clear, interactive visuals.",
+    "begin": "Start learning",
+    "openCompiler": "Open the Studio",
+    "viewPipeline": "Explore the pipeline",
+    "stepLexer": "Lexer",
+    "stepParser": "Parser",
+    "stepSemantic": "Semantic",
+    "stepCodegen": "Code Gen",
     "contactUs": "Contact Us"
+  },
+  "presets": {
+    "label": "Select example",
+    "math": "Math Expression",
+    "ifelse": "If-Else Block",
+    "loop": "Loop Unrolling"
+  },
+  "studio": {
+    "compileStep": "Compile & Step",
+    "language": "Language",
+    "soon": "soon",
+    "output": "Output",
+    "stdinPlaceholder": "program input…",
+    "stdinLabel": "stdin",
+    "emptyCanvas": "Compile your code to see the visualization",
+    "runHint": "Press Compile & Step, then use the playback controls below."
+  },
+  "stages": {
+    "lexer": "Lexer",
+    "parser": "Parser",
+    "semantic": "Semantic Analysis",
+    "ir": "Intermediate Rep.",
+    "codegen": "Code Gen"
+  },
+  "playback": {
+    "reset": "Reset",
+    "stepBack": "Step back",
+    "play": "Play",
+    "pause": "Pause",
+    "stepForward": "Step forward",
+    "speed": "Speed",
+    "currentStep": "Current Step",
+    "ready": "Compile your code, then press Play to walk through it step by step."
   },
   "footer": {
     "tagline": "See how Java compiles your code — phase by phase, instruction by instruction.",
@@ -31,7 +75,7 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "license": "License (MIT)",
-    "copyright": "© 2026 Compilation Visualizer. Open source under MIT License.",
+    "copyright": "© 2026 Compili. Open source under MIT License.",
     "builtWith": "Built with React · Spring Boot · Java · D3.js · Three.js"
   },
   "auth": {
@@ -40,16 +84,16 @@
     "username": "Username",
     "loginTitle": "Sign In",
     "registerTitle": "Register",
-    "loginButton": "SIGN IN",
-    "registerButton": "REGISTER",
+    "loginButton": "Sign in",
+    "registerButton": "Register",
     "noAccount": "No account?",
     "hasAccount": "Already have an account?",
     "switchToRegister": "Register",
     "switchToLogin": "Sign in"
   },
   "editor": {
-    "save": "SAVE",
-    "saving": "SAVING...",
-    "visualize": "VISUALIZE"
+    "save": "Save",
+    "saving": "Saving…",
+    "visualize": "Visualize"
   }
 }

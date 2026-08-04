@@ -16,20 +16,20 @@
 .semantic-tree-header h3 {
   font-size: 14px;
   font-weight: 500;
-  color: #cccccc;
+  color: var(--color-text);
 }
 
 .semantic-tree-hint {
   font-size: 11px;
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .semantic-tree-wrapper {
   flex: 1;
   min-height: 0;
-  background-color: #1e1e1e;
-  border: 1px solid #3c3c3c;
-  border-radius: 6px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -46,7 +46,7 @@
 
 .semantic-tree-wrapper .link {
   fill: none;
-  stroke: #3c3c3c;
+  stroke: var(--color-border-bright);
   stroke-width: 1.5;
   stroke-opacity: 0.7;
 }
@@ -57,11 +57,11 @@
 }
 
 .semantic-tree-wrapper .node circle:hover {
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+  filter: drop-shadow(0 0 5px rgba(15, 23, 42, 0.25));
 }
 
 .semantic-tree-wrapper .node text {
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: 'Fira Code', 'Consolas', monospace;
   pointer-events: none;
   user-select: none;
 }
@@ -71,9 +71,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background-color: #252526;
-  border: 1px solid #3c3c3c;
-  border-radius: 6px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
   flex-shrink: 0;
 }
 
@@ -86,25 +86,25 @@
   font-weight: 600;
   text-transform: uppercase;
   padding: 2px 8px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  background-color: var(--color-surface);
+  border-radius: 6px;
 }
 
 .detail-name {
   font-size: 13px;
-  color: #ffffff;
+  color: var(--color-text);
   font-weight: 600;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: 'Fira Code', 'Consolas', monospace;
 }
 
 .detail-modifiers {
   font-size: 11px;
-  color: #c586c0;
-  font-family: 'Consolas', 'Monaco', monospace;
+  color: var(--color-magenta);
+  font-family: 'Fira Code', 'Consolas', monospace;
 }
 
 .detail-type {
   font-size: 11px;
-  color: #4ec9b0;
-  font-family: 'Consolas', 'Monaco', monospace;
+  color: var(--color-cyan);
+  font-family: 'Fira Code', 'Consolas', monospace;
 }

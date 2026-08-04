@@ -23,7 +23,7 @@ function resolve(theme: Theme): 'light' | 'dark' {
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem('cv-theme') as Theme | null;
-    return stored && ['light', 'dark', 'system'].includes(stored) ? stored : 'dark';
+    return stored && ['light', 'dark', 'system'].includes(stored) ? stored : 'light';
   });
 
   const [resolvedTheme, setResolved] = useState<'light' | 'dark'>(() => resolve(theme));

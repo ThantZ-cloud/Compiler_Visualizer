@@ -1,270 +1,157 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
-import BinaryRain from '../components/BinaryRain';
+import {
+  Sparkles,
+  ArrowRight,
+  Play,
+  ScanText,
+  Network,
+  SearchCheck,
+  GitFork,
+  Cpu,
+  MousePointerClick,
+  Route,
+  Lightbulb,
+} from 'lucide-react';
 
-// ── Typewriter hook ──
-function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 2000) {
-  const [display, setDisplay] = useState('');
-  const [textIdx, setTextIdx] = useState(0);
-  const [charIdx, setCharIdx] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
+const STAGES = [
+  { icon: ScanText, labelKey: 'landing.stepLexer' },
+  { icon: Network, labelKey: 'landing.stepParser' },
+  { icon: SearchCheck, labelKey: 'landing.stepSemantic' },
+  { icon: Cpu, labelKey: 'landing.stepCodegen' },
+];
 
-  useEffect(() => {
-    const current = texts[textIdx];
-    let timer: ReturnType<typeof setTimeout>;
-
-    if (!isDeleting && charIdx < current.length) {
-      timer = setTimeout(() => setCharIdx(c => c + 1), speed);
-    } else if (!isDeleting && charIdx === current.length) {
-      timer = setTimeout(() => setIsDeleting(true), pause);
-    } else if (isDeleting && charIdx > 0) {
-      timer = setTimeout(() => setCharIdx(c => c - 1), deleteSpeed);
-    } else if (isDeleting && charIdx === 0) {
-      setIsDeleting(false);
-      setTextIdx(t => (t + 1) % texts.length);
-    }
-
-    setDisplay(current.slice(0, charIdx));
-    return () => clearTimeout(timer);
-  }, [charIdx, isDeleting, textIdx, texts, speed, deleteSpeed, pause]);
-
-  return display;
-}
-
-// ── Floating binary strings ──
-function FloatingBinary() {
-  const [prefersReduced, setPrefersReduced] = useState(
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handler = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  const bits = useRef(
-    Array.from({ length: 18 }, (_, i) => ({
-      id: i,
-      text: Array.from({ length: 6 + Math.floor(Math.random() * 10) }, () => Math.random() > 0.5 ? '1' : '0').join(''),
-      left: Math.random() * 100,
-      delay: Math.random() * 20,
-      duration: 15 + Math.random() * 25,
-      size: 10 + Math.random() * 4,
-    }))
-  ).current;
-
-  if (prefersReduced) return null;
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {bits.map(b => (
-        <span
-          key={b.id}
-          className="absolute text-[var(--color-neon)] floating-binary-digit"
-          style={{
-            left: `${b.left}%`,
-            fontSize: `${b.size}px`,
-            fontFamily: 'var(--font-mono)',
-            animation: `float-up ${b.duration}s linear ${b.delay}s infinite`,
-            writingMode: 'vertical-rl',
-          }}
-        >
-          {b.text}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-// ── Boot sequence text ──
-function BootSequence({ onComplete }: { onComplete: () => void }) {
-  const [lines, setLines] = useState<string[]>([]);
-  const bootLines = useRef([
-    '[BOOT] Compilation Visualizer v2.0.0',
-    '[SYS]  Initializing JVM interface...',
-    '[OK]   JavaParser loaded',
-    '[OK]   D3.js visualization engine ready',
-    '[OK]   Monaco Compiler loaded',
-    '[SYS]  Scanning compilation pipeline...',
-    '[OK]   Phase 1: Lexer — online',
-    '[OK]   Phase 2: Parser — online',
-    '[OK]   Phase 3: AST Builder — online',
-    '[OK]   Phase 4: Semantic Analyzer — online',
-    '[OK]   Phase 5: Bytecode Generator — online',
-    '[SYS]  All systems operational.',
-    '[READY] Welcome, human.',
-  ]);
-
-  useEffect(() => {
-    let i = 0;
-    const timer = setInterval(() => {
-      if (i < bootLines.current.length) {
-        const line = bootLines.current[i];
-        i++;
-        setLines(prev => [...prev, line]);
-      } else {
-        clearInterval(timer);
-        setTimeout(onComplete, 400);
-      }
-    }, 90);
-    return () => clearInterval(timer);
-  }, [onComplete]);
-
-  return (
-    <div className="fixed inset-0 z-[200] bg-[var(--color-void)] flex items-center justify-center" role="log" aria-live="polite" aria-atomic="false">
-      <div className="max-w-lg w-full px-8">
-        {lines.map((line, i) => (
-          <div
-            key={i}
-            className="text-xs leading-relaxed"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              color: line.includes('[READY]') ? 'var(--color-neon)' :
-                     line.includes('[OK]') ? 'var(--color-text-dim)' :
-                     'var(--color-text-muted)',
-            }}
-          >
-            {line}
-            {i === lines.length - 1 && <span className="cursor-blink" />}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+const FEATURES = [
+  {
+    icon: MousePointerClick,
+    title: 'Step through every phase',
+    body: 'Play, pause, and step through tokenization, parsing, analysis, and code generation at your own pace.',
+    tint: 'var(--color-neon)',
+  },
+  {
+    icon: Route,
+    title: 'Interactive visual trees',
+    body: 'Explore the abstract syntax tree as soft, connected cards you can zoom and pan around.',
+    tint: 'var(--color-cyan)',
+  },
+  {
+    icon: Lightbulb,
+    title: 'Built for learning',
+    body: 'Friendly explanations describe exactly what the compiler is doing at each step.',
+    tint: 'var(--color-magenta)',
+  },
+];
 
 const LandingPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const [booted, setBooted] = useState(false);
-  const [showContent, setShowContent] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const typewriterTexts = useMemo(() => [
-    'javac Main.java',
-    'java -cp . Main',
-    'class Lexer { scan() }',
-    'public static void main',
-    'System.out.println("0101")',
-    'tokenize → parse → compile',
-  ], []);
-
-  const typed = useTypewriter(typewriterTexts, 70, 35, 1800);
-
-  // Boot sequence on mount
-  useEffect(() => {
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) {
-      setBooted(true);
-      setShowContent(true);
-      return;
-    }
-    // Skip boot after 3s max
-    const timeout = setTimeout(() => {
-      setBooted(true);
-      setShowContent(true);
-    }, 3200);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  const handleBootComplete = () => {
-    setBooted(true);
-    setTimeout(() => setShowContent(true), 100);
-  };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Boot sequence */}
-      {!booted && <BootSequence onComplete={handleBootComplete} />}
-
-      <div
-        ref={scrollContainerRef}
-        className={`relative flex-1 flex flex-col overflow-hidden bg-[var(--color-void)] transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
-      >
-        {/* Background — covers full page */}
-        <BinaryRain />
-        <FloatingBinary />
-
-        {/* ═══════ HERO ═══════ */}
-        <section className="relative flex-1 flex items-center justify-center overflow-hidden">
-
-          {/* Neon corner brackets */}
-          <div className="absolute top-6 left-6 md:top-8 md:left-8 w-12 h-12 md:w-16 md:h-16 border-t-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
-          <div className="absolute top-6 right-6 md:top-8 md:right-8 w-12 h-12 md:w-16 md:h-16 border-t-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
-          <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 w-12 h-12 md:w-16 md:h-16 border-b-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
-          <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 w-12 h-12 md:w-16 md:h-16 border-b-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
-
-          <div className="relative z-20 text-center px-6 max-w-5xl mx-auto">
-            {/* Status badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 border border-[var(--color-neon)] bg-[var(--color-neon)]/5">
-              <span className="w-1.5 h-1.5 bg-[var(--color-neon)] pulse-ring" />
-              <span className="text-[10px] font-bold text-[var(--color-neon)] tracking-[0.25em] uppercase"
-                style={{ fontFamily: 'var(--font-display)' }}>
-                {t('landing.statusBadge')}
-              </span>
-            </div>
-
-            {/* Main title — glitch effect */}
-            <h1 className="mb-2"
-              style={{ fontFamily: 'var(--font-display)' }}>
-              <span className="block text-5xl md:text-7xl lg:text-8xl font-black tracking-wider text-[var(--color-text)] text-glitch">
-                COMPILATION
-              </span>
-              <span className="block text-5xl md:text-7xl lg:text-8xl font-black tracking-wider neon-text mt-1">
-                VISUALIZER
-              </span>
-            </h1>
-
-            {/* Terminal-style subtitle */}
-            <div className="mt-8 mb-10 inline-block bg-[var(--color-card)] border border-[var(--color-border)] px-6 py-3">
-              <span className="text-[var(--color-neon)] font-bold" style={{ fontFamily: 'var(--font-mono)' }}>$ </span>
-              <span className="text-[var(--color-text)] text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
-                {typed}
-              </span>
-              <span className="cursor-blink" />
-            </div>
-
-            {/* Description */}
-            <p className="text-[var(--color-text-dim)] text-sm md:text-base max-w-xl mx-auto mb-12 leading-relaxed"
-              style={{ fontFamily: 'var(--font-mono)' }}>
-              {t('landing.description')}
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-              <button
-                className="btn-neon px-8 py-4 text-sm tracking-[0.15em] glitch-hover min-h-[48px]"
-                style={{ fontFamily: 'var(--font-display)' }}
-                onClick={() => navigate('/pipeline', { state: { from: '/' } })}
-              >
-                <span>{t('landing.viewPipeline')}</span>
-              </button>
-              <button
-                className="btn-neon px-10 py-4 text-sm tracking-[0.15em] glitch-hover min-h-[48px]"
-                onClick={() => navigate('/compiler')}
-              >
-                <span>[ {isAuthenticated ? t('landing.openCompiler') : t('landing.begin')} ]</span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════ FOOTER ═══════ */}
-        <div className="py-6 text-center shrink-0">
-          <p className="text-[11px] text-[var(--color-neon)] tracking-[0.1em] flex items-center justify-center gap-4"
-            style={{ fontFamily: 'var(--font-mono)' }}>
-            <span>© 2026 Compilation Visualizer</span>
-            <span className="text-[var(--color-border)]">•</span>
-            <span>{t('landing.contactUs', 'Contact Us')}</span>
-          </p>
+    <div className="dot-grid flex h-full flex-col overflow-y-auto">
+      {/* ── Hero ── */}
+      <section className="relative flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+        {/* Badge */}
+        <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-card)] px-4 py-1.5 shadow-[var(--shadow-card)]">
+          <Sparkles size={14} className="text-[var(--color-neon)]" />
+          <span className="text-[12.5px] font-medium text-[var(--color-text-dim)]">
+            {t('landing.heroBadge')}
+          </span>
         </div>
 
-      </div>
+        {/* Headline */}
+        <h1 className="max-w-3xl text-5xl font-extrabold leading-[1.05] tracking-tight text-[var(--color-text)] md:text-6xl">
+          {t('landing.heroTitleA')}{' '}
+          <span className="bg-gradient-to-r from-[#3B82F6] to-[#10B981] bg-clip-text text-transparent">
+            {t('landing.heroTitleB')}
+          </span>
+        </h1>
+
+        {/* Description */}
+        <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-[var(--color-text-dim)] md:text-base">
+          {t('landing.description')}
+        </p>
+
+        {/* CTAs */}
+        <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => navigate('/compiler')}
+            className="flex items-center gap-2 rounded-full bg-[var(--color-cyan)] px-7 py-3.5 text-[14.5px]
+              font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:bg-[#059669]"
+          >
+            <Play size={16} />
+            {t('landing.openCompiler')}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/pipeline', { state: { from: '/' } })}
+            className="flex items-center gap-2 rounded-full border border-[var(--color-neon)] bg-[var(--color-card)]
+              px-7 py-3.5 text-[14.5px] font-semibold text-[var(--color-neon)] transition-colors
+              hover:bg-[var(--color-neon)] hover:text-white"
+          >
+            {t('landing.viewPipeline')}
+            <ArrowRight size={16} />
+          </button>
+        </div>
+
+        {/* Animated pipeline preview */}
+        <div className="mt-16 flex items-center justify-center gap-2">
+          {STAGES.map((stage, i) => {
+            const Icon = stage.icon;
+            return (
+              <React.Fragment key={stage.labelKey}>
+                <div
+                  className="card-soft flex animate-pulse items-center gap-2 px-4 py-2.5"
+                  style={{ animationDelay: `${i * 0.5}s`, animationDuration: '3s' }}
+                >
+                  <span className="text-[var(--color-neon)]">
+                    <Icon size={16} />
+                  </span>
+                  <span className="text-[13px] font-medium text-[var(--color-text)]">
+                    {t(stage.labelKey)}
+                  </span>
+                </div>
+                {i < STAGES.length - 1 && (
+                  <ArrowRight size={15} className="shrink-0 text-[var(--color-border-bright)]" />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Feature cards ── */}
+      <section className="mx-auto w-full max-w-5xl px-6 pb-16">
+        <div className="grid gap-5 md:grid-cols-3">
+          {FEATURES.map(feature => {
+            const Icon = feature.icon;
+            return (
+              <div key={feature.title} className="card-soft p-6 text-left">
+                <span
+                  className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-[12px]"
+                  style={{ background: `color-mix(in srgb, ${feature.tint} 12%, transparent)`, color: feature.tint }}
+                >
+                  <Icon size={20} />
+                </span>
+                <h3 className="mb-1.5 text-[15px] font-semibold text-[var(--color-text)]">
+                  {feature.title}
+                </h3>
+                <p className="text-[13.5px] leading-relaxed text-[var(--color-text-dim)]">
+                  {feature.body}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-card)] py-5 text-center">
+        <p className="text-[12px] text-[var(--color-text-muted)]">
+          {t('footer.copyright')}
+        </p>
+      </footer>
     </div>
   );
 };

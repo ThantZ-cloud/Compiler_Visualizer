@@ -5,12 +5,13 @@ import './i18n'
 import './index.css'
 import { AuthProvider } from './context/AuthContext'
 import { CompileProvider } from './context/CompileContext'
+import { StepperProvider } from './context/StepperContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { LanguageProvider } from './context/LanguageContext'
 import Layout from './components/Layout'
 import LandingPage from './pages/LandingPage'
 import PipelinePage from './pages/PipelinePage'
-import EditorPage from './pages/EditorPage'
+import CompilerStudio from './pages/CompilerStudio'
 import VisualizeLayout from './pages/VisualizeLayout'
 import TokensPanel from './pages/TokensPanel'
 import AstPanel from './pages/AstPanel'
@@ -26,21 +27,23 @@ createRoot(document.getElementById('root')!).render(
         <LanguageProvider>
           <AuthProvider>
             <CompileProvider>
-              <Routes>
-                <Route element={<Layout />}>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/pipeline" element={<PipelinePage />} />
-                  <Route path="/compiler" element={<EditorPage />} />
-                  <Route path="/visualize" element={<VisualizeLayout />}>
-                    <Route path="lexical" element={<LexicalPanel />} />
-                    <Route path="tokens" element={<TokensPanel />} />
-                    <Route path="ast" element={<AstPanel />} />
-                    <Route path="semantic" element={<SemanticPanel />} />
-                    <Route path="bytecode" element={<BytecodePanel />} />
-                    <Route path="cfg" element={<CfgPanel />} />
+              <StepperProvider>
+                <Routes>
+                  <Route element={<Layout />}>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/pipeline" element={<PipelinePage />} />
+                    <Route path="/compiler" element={<CompilerStudio />} />
+                    <Route path="/visualize" element={<VisualizeLayout />}>
+                      <Route path="lexical" element={<LexicalPanel />} />
+                      <Route path="tokens" element={<TokensPanel />} />
+                      <Route path="ast" element={<AstPanel />} />
+                      <Route path="semantic" element={<SemanticPanel />} />
+                      <Route path="bytecode" element={<BytecodePanel />} />
+                      <Route path="cfg" element={<CfgPanel />} />
+                    </Route>
                   </Route>
-                </Route>
-              </Routes>
+                </Routes>
+              </StepperProvider>
             </CompileProvider>
           </AuthProvider>
         </LanguageProvider>

@@ -1,19 +1,63 @@
 {
   "nav": {
-    "compiler": "ကိုဒ် ဘာသာပြန်",
+    "brand": "Compili",
+    "compiler": "ဘာသာပြန်",
+    "studio": "စတူဒီယို",
     "compile": "ဘာသာပြန်ရန်",
-    "compiling": "ဘာသာပြန်နေသည်...",
+    "compiling": "ဘာသာပြန်နေသည်…",
     "visualize": "မြင်ကွင်းပြရန်",
     "signIn": "ဝင်ရောက်ရန်",
-    "register": "စာရင်းသွင်းရန်"
+    "register": "စာရင်းသွင်းရန်",
+    "share": "မျှဝေရန်",
+    "help": "အကူအညီ",
+    "tour": "လမ်းညွှန်"
   },
   "landing": {
-    "statusBadge": "စနစ်အဆင်သင့်ဖြစ်သည်",
-    "description": "// Java ကုဒ်ရေးပါ။ ဘာသာပြန်ကို ကြည့်ပါ — တစ်ခုချင်းစီ ခွဲခြမ်းစိတ်ဖြာသည်။",
-    "begin": "စတင်ရန်",
-    "openCompiler": "ဘာသာပြန်ဖွင့်ရန်",
+    "heroBadge": "ကွန်ပိုင်လာ အလုပ်လုပ်ပုံကို လေ့လာပါ",
+    "heroTitleA": "သင့်ကုဒ်ကို",
+    "heroTitleB": "အသက်သွင်းကြည့်ပါ",
+    "description": "Compili သည် သင့် Java ကုဒ်ကို ဘာသာပြန်ခြင်း၏ အဆင့်တိုင်းကို — token၊ tree၊ analysis နှင့် bytecode — ရှင်းလင်းသော မြင်ကွင်းများဖြင့် ပြသပေးသည်။",
+    "begin": "စတင်လေ့လာရန်",
+    "openCompiler": "စတူဒီယိုဖွင့်ရန်",
     "viewPipeline": "လုပ်ငန်းစဉ်ကြည့်ရန်",
+    "stepLexer": "Lexer",
+    "stepParser": "Parser",
+    "stepSemantic": "Semantic",
+    "stepCodegen": "Code Gen",
     "contactUs": "ဆက်သွယ်ရန်"
+  },
+  "presets": {
+    "label": "နမူနာရွေးရန်",
+    "math": "သင်္ချာ Expression",
+    "ifelse": "If-Else ပုံစံ",
+    "loop": "Loop ပုံစံ"
+  },
+  "studio": {
+    "compileStep": "ဘာသာပြပြီး အဆင့်ကြည့်ရန်",
+    "language": "ဘာသာစကား",
+    "soon": "မကြာမီ",
+    "output": "ရလဒ်",
+    "stdinPlaceholder": "program input…",
+    "stdinLabel": "stdin",
+    "emptyCanvas": "မြင်ကွင်းကြည့်ရန် ကုဒ်ကို ဘာသာပြန်ပါ",
+    "runHint": "Compile & Step ကိုနှိပ်ပြီး အောက်ပါ playback controls များကို အသုံးပြုပါ။"
+  },
+  "stages": {
+    "lexer": "Lexer",
+    "parser": "Parser",
+    "semantic": "Semantic Analysis",
+    "ir": "Intermediate Rep.",
+    "codegen": "Code Gen"
+  },
+  "playback": {
+    "reset": "ပြန်စရန်",
+    "stepBack": "နောက်သို့",
+    "play": "ဖွင့်ရန်",
+    "pause": "ရပ်ရန်",
+    "stepForward": "ရှေ့သို့",
+    "speed": "အမြန်နှုန်း",
+    "currentStep": "လက်ရှိအဆင့်",
+    "ready": "ကုဒ်ကို ဘာသာပြန်ပြီး Play ကိုနှိပ်ကာ အဆင့်လိုက်ကြည့်ပါ။"
   },
   "footer": {
     "tagline": "Java သည် သင့်ကုဒ်ကို ဘယ်လို ဘာသာပြန်သည်ကို ကြည့်ပါ — အဆင့်ဆင့်။",
@@ -31,7 +75,7 @@
     "privacyPolicy": "ကိုယ်ရေးမူဝါဒ",
     "termsOfService": "ဝန်ဆောင်မှုစည်းမျဉ်း",
     "license": "License (MIT)",
-    "copyright": "© 2026 Compilation Visualizer။ MIT License ဖြင့် ဖွင့်လင့်ထားသည်။",
+    "copyright": "© 2026 Compili။ MIT License ဖြင့် ဖွင့်လင့်ထားသည်။",
     "builtWith": "React · Spring Boot · Java · D3.js · Three.js ဖြင့် ဖန်တီးထားသည်"
   },
   "auth": {

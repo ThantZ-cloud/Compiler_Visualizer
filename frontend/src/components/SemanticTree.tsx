@@ -150,26 +150,26 @@ function convertMemberToTree(member: any): TreeNode {
 }
 
 const KIND_COLORS: Record<string, string> = {
-  'package': '#569cd6',
-  'imports': '#808080',
-  'import': '#6a9955',
-  'class': '#4ec9b0',
-  'interface': '#4ec9b0',
-  'enum': '#4ec9b0',
-  'record': '#4ec9b0',
-  'method': '#dcdcaa',
-  'constructor': '#dcdcaa',
-  'field': '#569cd6',
-  'field-group': '#569cd6',
-  'parameter': '#9cdcfe',
-  'inheritance': '#c586c0',
-  'enum-constant': '#b5cea8',
-  'initializer': '#c586c0',
-  'exception': '#f44747',
+  'package': '#3B82F6',
+  'imports': '#94A3B8',
+  'import': '#94A3B8',
+  'class': '#0F766E',
+  'interface': '#0F766E',
+  'enum': '#0F766E',
+  'record': '#0F766E',
+  'method': '#3B82F6',
+  'constructor': '#3B82F6',
+  'field': '#0E7490',
+  'field-group': '#0E7490',
+  'parameter': '#6366F1',
+  'inheritance': '#8B5CF6',
+  'enum-constant': '#059669',
+  'initializer': '#8B5CF6',
+  'exception': '#EF4444',
 };
 
 function getColor(kind: string): string {
-  return KIND_COLORS[kind] || '#d4d4d4';
+  return KIND_COLORS[kind] || '#64748B';
 }
 
 function getIcon(kind: string): string {
@@ -283,7 +283,7 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
     nodes.append('circle')
       .attr('r', d => d.data.children ? 7 : 5)
       .attr('fill', d => getColor(d.data.kind || ''))
-      .attr('stroke', '#1e1e1e')
+      .attr('stroke', 'var(--color-card)')
       .attr('stroke-width', 1.5);
 
     // Show collapsed count badge
@@ -302,7 +302,7 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
       .attr('x', d => d.children ? -12 : 12)
       .attr('text-anchor', d => d.children ? 'end' : 'start')
       .text(d => d.data.name.length > 30 ? d.data.name.substring(0, 30) + '...' : d.data.name)
-      .attr('fill', '#d4d4d4')
+      .attr('fill', 'var(--color-text)')
       .attr('font-size', '11px');
 
     labelText.append('title')
@@ -324,7 +324,7 @@ const SemanticTree: React.FC<SemanticTreeProps> = ({ symbolTableJson }) => {
   }, [symbolTableJson, collapsedNodes, getNodeId]);
 
   if (!symbolTableJson) {
-    return <div className="semantic-tree-container"><div className="semantic-tree-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#808080', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>No symbol table to display</div></div>;
+    return <div className="semantic-tree-container"><div className="semantic-tree-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>No symbol table to display</div></div>;
   }
 
   return (

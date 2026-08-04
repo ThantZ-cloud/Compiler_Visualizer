@@ -14,20 +14,20 @@
 .ast-tree-header h3 {
   font-size: 14px;
   font-weight: 500;
-  color: #cccccc;
+  color: var(--color-text);
 }
 
 .ast-tree-hint {
   font-size: 11px;
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .ast-tree-wrapper {
   flex: 1;
   min-height: 350px;
-  background-color: #1e1e1e;
-  border: 1px solid #3c3c3c;
-  border-radius: 4px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -43,9 +43,9 @@
 /* Links */
 .link {
   fill: none;
-  stroke: #3c3c3c;
+  stroke: var(--color-border-bright);
   stroke-width: 1.5;
-  stroke-opacity: 0.6;
+  stroke-opacity: 0.7;
 }
 
 /* Nodes */
@@ -56,11 +56,11 @@
 
 .node circle:hover {
   r: 8;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 4px rgba(15, 23, 42, 0.25));
 }
 
 .node text {
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: 'Fira Code', 'Consolas', monospace;
   pointer-events: none;
   user-select: none;
 }
@@ -71,38 +71,38 @@
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background-color: #252526;
-  border: 1px solid #3c3c3c;
-  border-radius: 4px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
 }
 
 .detail-label {
   font-size: 11px;
-  color: #808080;
+  color: var(--color-text-muted);
   text-transform: uppercase;
 }
 
 .detail-name {
   font-size: 13px;
-  color: #ffffff;
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .detail-type {
   font-size: 12px;
-  color: #569cd6;
+  color: var(--color-neon);
   padding: 2px 6px;
-  background-color: rgba(86, 156, 214, 0.15);
-  border-radius: 3px;
+  background-color: var(--color-neon-dim);
+  border-radius: 6px;
 }
 
 .detail-pos {
   font-size: 11px;
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .detail-value {
   font-size: 12px;
-  color: #ce9178;
-  font-family: 'Consolas', 'Monaco', monospace;
+  color: var(--color-magenta);
+  font-family: 'Fira Code', monospace;
 }

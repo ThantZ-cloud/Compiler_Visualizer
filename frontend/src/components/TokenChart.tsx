@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
+import { getTokenColor as getColor } from '../lib/colors';
 
 interface Token {
   type: string;
@@ -13,34 +14,7 @@ interface TokenChartProps {
   tokens: Token[];
 }
 
-const TOKEN_COLORS: Record<string, string> = {
-  'KEYWORD': '#c586c0',
-  'TYPE': '#4ec9b0',
-  'IDENTIFIER': '#9cdcfe',
-  'STRING_LITERAL': '#ce9178',
-  'CHAR_LITERAL': '#ce9178',
-  'INTEGER_LITERAL': '#b5cea8',
-  'LONG_LITERAL': '#b5cea8',
-  'FLOAT_LITERAL': '#b5cea8',
-  'DOUBLE_LITERAL': '#b5cea8',
-  'BOOLEAN_LITERAL': '#569cd6',
-  'NULL_LITERAL': '#569cd6',
-  'SEPARATOR': '#d4d4d4',
-  'OPERATOR': '#d4d4d4',
-  'WHITESPACE': '#808080',
-  'LINE_COMMENT': '#6a9955',
-  'BLOCK_COMMENT': '#6a9955',
-  'JAVADOC_COMMENT': '#6a9955',
-  'ANNOTATION': '#dcdcaa',
-};
-
-function getColor(type: string): string {
-  const upper = type.toUpperCase();
-  for (const [key, color] of Object.entries(TOKEN_COLORS)) {
-    if (upper.includes(key)) return color;
-  }
-  return '#569cd6';
-}
+const MONO_FONT = "'Fira Code', 'Consolas', 'Monaco', monospace";
 
 const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
   const barChartRef = useRef<SVGSVGElement>(null);
@@ -86,7 +60,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('width', 0)
       .attr('height', yScale.bandwidth())
       .attr('fill', d => getColor(d.type))
-      .attr('rx', 3)
+      .attr('rx', 5)
       .transition()
       .duration(600)
       .delay((_, i) => i * 50)
@@ -100,9 +74,9 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('y', d => (yScale(d.type) || 0) + yScale.bandwidth() / 2)
       .attr('dy', '0.35em')
       .attr('text-anchor', 'end')
-      .attr('fill', '#cccccc')
+      .attr('fill', 'var(--color-text-dim)')
       .attr('font-size', '11px')
-      .attr('font-family', "'Consolas', 'Monaco', monospace")
+      .attr('font-family', MONO_FONT)
       .text(d => d.type);
 
     g.selectAll('.count')
@@ -112,9 +86,9 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('x', d => xScale(d.count) + 6)
       .attr('y', d => (yScale(d.type) || 0) + yScale.bandwidth() / 2)
       .attr('dy', '0.35em')
-      .attr('fill', '#808080')
+      .attr('fill', 'var(--color-text-muted)')
       .attr('font-size', '11px')
-      .attr('font-family', "'Consolas', 'Monaco', monospace")
+      .attr('font-family', MONO_FONT)
       .text(d => d.count)
       .attr('opacity', 0)
       .transition()
@@ -169,17 +143,17 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('width', d => d.w - 1)
       .attr('height', 50)
       .attr('fill', d => getColor(d.type))
-      .attr('rx', 2)
+      .attr('rx', 3)
       .attr('opacity', 0)
       .style('cursor', 'pointer');
 
     rects.transition()
       .duration(400)
       .delay((_, i) => i * 8)
-      .attr('opacity', 0.85);
+      .attr('opacity', 0.9);
 
     rects.on('mouseover', function(_, d) {
-      d3.select(this).attr('opacity', 1).attr('stroke', '#ffffff').attr('stroke-width', 2);
+      d3.select(this).attr('opacity', 1).attr('stroke', 'var(--color-text)').attr('stroke-width', 1.5);
 
       const tooltip = g.append('g').attr('class', 'tooltip-group');
       tooltip.append('rect')
@@ -187,9 +161,9 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
         .attr('y', 100)
         .attr('width', 160)
         .attr('height', 50)
-        .attr('fill', '#252526')
-        .attr('stroke', '#3c3c3c')
-        .attr('rx', 4);
+        .attr('fill', 'var(--color-card)')
+        .attr('stroke', 'var(--color-border)')
+        .attr('rx', 8);
       tooltip.append('text')
         .attr('x', d.x + d.w / 2)
         .attr('y', 118)
@@ -197,19 +171,19 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
         .attr('fill', getColor(d.type))
         .attr('font-size', '10px')
         .attr('font-weight', 'bold')
-        .attr('font-family', "'Consolas', 'Monaco', monospace")
+        .attr('font-family', MONO_FONT)
         .text(d.type);
       tooltip.append('text')
         .attr('x', d.x + d.w / 2)
         .attr('y', 136)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#d4d4d4')
+        .attr('fill', 'var(--color-text)')
         .attr('font-size', '11px')
-        .attr('font-family', "'Consolas', 'Monaco', monospace")
+        .attr('font-family', MONO_FONT)
         .text(d.value.length > 18 ? d.value.substring(0, 18) + '...' : d.value);
     })
     .on('mouseout', function() {
-      d3.select(this).attr('opacity', 0.85).attr('stroke', 'none');
+      d3.select(this).attr('opacity', 0.9).attr('stroke', 'none');
       g.selectAll('.tooltip-group').remove();
     });
 
@@ -229,7 +203,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('x2', d => d.x)
       .attr('y1', 30)
       .attr('y2', 35)
-      .attr('stroke', '#808080')
+      .attr('stroke', 'var(--color-border-bright)')
       .attr('stroke-width', 1);
 
     g.selectAll('.line-label')
@@ -237,9 +211,9 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .join('text')
       .attr('x', d => d.x + 2)
       .attr('y', 25)
-      .attr('fill', '#808080')
+      .attr('fill', 'var(--color-text-muted)')
       .attr('font-size', '9px')
-      .attr('font-family', "'Consolas', 'Monaco', monospace")
+      .attr('font-family', MONO_FONT)
       .text(d => `L${d.line}`);
 
     return () => {
@@ -251,8 +225,8 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
   return (
     <div className="flex flex-col gap-6 h-full">
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-[#cccccc] m-0">Token Distribution by Type</h3>
-        <div className="bg-[#1e1e1e] border border-[#3c3c3c] rounded-[6px] p-3 overflow-x-auto">
+        <h3 className="text-sm font-medium text-[var(--color-text)] m-0">Token Distribution by Type</h3>
+        <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-[10px] p-3 overflow-x-auto">
           <svg
             ref={barChartRef}
             className="block"
@@ -262,8 +236,8 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-[#cccccc] m-0">Token Flow (source code sequence)</h3>
-        <div className="bg-[#1e1e1e] border border-[#3c3c3c] rounded-[6px] p-3 overflow-x-auto">
+        <h3 className="text-sm font-medium text-[var(--color-text)] m-0">Token Flow (source code sequence)</h3>
+        <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-[10px] p-3 overflow-x-auto">
           <svg
             ref={flowChartRef}
             className="block"
@@ -271,7 +245,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
             aria-label="Token flow visualization showing tokens as colored blocks in source code sequence. Hover over blocks to see details."
           />
         </div>
-        <div className="text-[11px] text-[#808080] text-right">Hover over tokens to see details</div>
+        <div className="text-[11px] text-[var(--color-text-muted)] text-right">Hover over tokens to see details</div>
       </div>
     </div>
   );

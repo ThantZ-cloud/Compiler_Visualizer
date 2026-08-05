@@ -19,7 +19,119 @@
     "begin": "စတင်ရန်",
     "openCompiler": "ဘာသာပြန်ဖွင့်ရန်",
     "viewPipeline": "လုပ်ငန်းစဉ်ကြည့်ရန်",
-    "contactUs": "ဆက်သွယ်ရန်"
+    "hero": {
+      "terminalTitle": "javac Main.java",
+      "phaseLabel": "အဆင့်"
+    },
+    "contactUs": "ဆက်သွယ်ရန်",
+    "why": {
+      "label": "// ဘာကြောင့်ဖန်တီးသလဲ",
+      "headline": "ဘာသာပြန်များသည် အမှောင်ခန်းများဖြစ်သည်။",
+      "headlineAccent": "သင့်အား ဖွင့်ပါ။",
+      "body": "အများစုသော ကိရိယာများသည် ဘာသာပြန်အောင်မြင်မှု သို့မဟုတ် အမှားကိုသာ ပြသည်။ ၎င်းက Java ဘယ်လို bytecode ဖြစ်သွားသည်ကို ပြသည် — lex, parse, AST, semantic analysis, bytecode generation — ထို့နောက် ရလဒ်ကို လုပ်ဆောင်သည်။",
+      "forLabel": "အတွက် ဖန်တီးထားသည်",
+      "forItems": {
+        "students": "CS ကျောင်းသားများ",
+        "educators": "ဆရာများ",
+        "developers": "စိတ်ဝင်စားသူများ"
+      }
+    },
+    "capabilities": {
+      "label": "// လုပ်ဆောင်ချက်များ",
+      "headline": "သင်လုပ်ဆောင်နိုင်သည်များ",
+      "features": [
+        {
+          "id": "0x01",
+          "title": "Java Editor အတက်ပြေး",
+          "description": "Browser တွင် Monaco-powered editor။ Java ကုဒ်ကို ချက်ချင်း ရေး၊ ပြင်၊ ဘာသာပြန်ပါ။"
+        },
+        {
+          "id": "0x02",
+          "title": "Token Stream",
+          "description": "Lexer က သင့်ကုဒ်ကို tokens များအဖြစ် ခွဲသည် — keywords, identifiers, literals, operators။"
+        },
+        {
+          "id": "0x03",
+          "title": "AST Explorer",
+          "description": "Abstract Syntax Tree ကို လှည့်ပတ်ပါ။ Collapse လုပ်နိုင်သော nodes၊ type information၊ full hierarchy။"
+        },
+        {
+          "id": "0x04",
+          "title": "Semantic Analysis",
+          "description": "Symbol tables, scope chains, type checking။ ဘာသာပြန်က သင့်ကုဒ်အကြောင်း ဘာသိသည်ကို ကြည့်ပါ။"
+        },
+        {
+          "id": "0x05",
+          "title": "Bytecode & CFG",
+          "description": "javap disassembly မှ JVM instructions။ Method analysis အတွက် Control flow graphs။"
+        },
+        {
+          "id": "0x06",
+          "title": "လုပ်ဆောင် & သိမ်း",
+          "description": "Compiled code ကို stdin ဖြင့် လုပ်ဆောင်ပါ။ Code snippets ကို သိမ်းရန် sign in ပါ။"
+        }
+      ]
+    },
+    "protocol": {
+      "label": "// လုပ်ငန်းစဉ်",
+      "headline": "ဘယ်လိုအလုပ်လုပ်သလဲ",
+      "steps": [
+        {
+          "id": "01",
+          "title": "ရေး",
+          "description": "Syntax highlighting နှင့် autocomplete ပါဝင်သော Monaco editor တွင် Java ကုဒ်ရေးပါ။"
+        },
+        {
+          "id": "02",
+          "title": "ဘာသာပြန်",
+          "description": "Compile ကို နှိပ်ပြီး visualizer တွင် အဆင့်တိုင်းကို စစ်ဆေးပါ — tokens, AST, semantic, bytecode။"
+        },
+        {
+          "id": "03",
+          "title": "လုပ်ဆောင်",
+          "description": "Custom stdin ဖြင့် သင့်ကုဒ်ကို လုပ်ဆောင်ပါ၊ သို့မဟုတ် 3D pipeline visualization ကို ရှာဖွေပါ။"
+        }
+      ]
+    },
+    "pipelineTeaser": {
+      "label": "// PIPELINE ကို ကြိုတင်ကြည့်ရှုမှု",
+      "headline": "အဆင့်ခြောက်ဆင့်။ ခရီးတစ်ခု။",
+      "phases": [
+        "Source",
+        "Lexical",
+        "Parse",
+        "Semantic",
+        "IR",
+        "Bytecode"
+      ],
+      "cta": "PIPELINE အပြည့်ကို ကြည့်ရန်",
+      "description": "လူဖတ်နိုင်သော source မှ JVM-executable bytecode အထိ။ အပြောင်းအလဲ အဆင့်တိုင်းကို လမ်းလျှောက်ပါ။"
+    },
+    "preview": {
+      "label": "// SYSTEM ကို ကြိုတင်ကြည့်ရှုမှု",
+      "headline": "လုပ်ဆောင်ပုံကို ကြည့်ပါ",
+      "panels": {
+        "editor": {
+          "title": "EDITOR",
+          "code": "public class Hello {\n  public static void main(String[] args) {\n    System.out.println(\"Hello\");\n  }\n}"
+        },
+        "ast": {
+          "title": "AST",
+          "content": "ClassDeclaration\n  └─ MethodDeclaration\n      └─ MethodCall\n          └─ \"Hello\""
+        },
+        "bytecode": {
+          "title": "BYTECODE",
+          "content": "0: getstatic #2\n3: ldc #3\n5: invokevirtual #4\n8: return"
+        }
+      }
+    },
+    "finalCta": {
+      "label": "// စတင်ရန် အဆင်သင့်",
+      "headline": "ဘာသာပြန်များကို စတင် ရှာဖွေပါ။",
+      "subline": "// အခမဲ့ စမ်းကြည့်ရန် · Code သိမ်းရန် sign in ပါ",
+      "primaryCta": "စတင်ရန်",
+      "secondaryCta": "PIPELINE ကြည့်ရန်"
+    }
   },
   "footer": {
     "tagline": "Java သည် သင့်ကုဒ်ကို ဘယ်လို ဘာသာပြန်သည်ကို ကြည့်ပါ — အဆင့်ဆင့်။",

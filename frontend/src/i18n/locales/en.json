@@ -19,7 +19,119 @@
     "begin": "BEGIN",
     "openCompiler": "OPEN COMPILER",
     "viewPipeline": "VIEW PIPELINE",
-    "contactUs": "Contact Us"
+    "hero": {
+      "terminalTitle": "javac Main.java",
+      "phaseLabel": "PHASE"
+    },
+    "contactUs": "Contact Us",
+    "why": {
+      "label": "// WHY_THIS_EXISTS",
+      "headline": "Compilers are black boxes.",
+      "headlineAccent": "Open yours.",
+      "body": "Most tools show compile success or failure. This one shows how Java becomes bytecode — lex, parse, AST, semantic analysis, bytecode generation — then runs the result.",
+      "forLabel": "BUILT FOR",
+      "forItems": {
+        "students": "CS Students",
+        "educators": "Educators",
+        "developers": "Curious Developers"
+      }
+    },
+    "capabilities": {
+      "label": "// CAPABILITIES",
+      "headline": "What you can do",
+      "features": [
+        {
+          "id": "0x01",
+          "title": "Live Java Editor",
+          "description": "Monaco-powered editor in your browser. Write, edit, and compile Java code instantly."
+        },
+        {
+          "id": "0x02",
+          "title": "Token Stream",
+          "description": "Watch the lexer break your code into tokens — keywords, identifiers, literals, operators."
+        },
+        {
+          "id": "0x03",
+          "title": "AST Explorer",
+          "description": "Navigate the Abstract Syntax Tree. Collapsible nodes, type information, full hierarchy."
+        },
+        {
+          "id": "0x04",
+          "title": "Semantic Analysis",
+          "description": "Symbol tables, scope chains, type checking. See what the compiler knows about your code."
+        },
+        {
+          "id": "0x05",
+          "title": "Bytecode & CFG",
+          "description": "JVM instructions via javap disassembly. Control flow graphs for method analysis."
+        },
+        {
+          "id": "0x06",
+          "title": "Execute & Save",
+          "description": "Run compiled code with stdin. Sign in to save and load your code snippets."
+        }
+      ]
+    },
+    "protocol": {
+      "label": "// PROTOCOL",
+      "headline": "How it works",
+      "steps": [
+        {
+          "id": "01",
+          "title": "WRITE",
+          "description": "Write Java code in the Monaco editor with syntax highlighting and autocomplete."
+        },
+        {
+          "id": "02",
+          "title": "COMPILE",
+          "description": "Click compile and inspect each phase in the visualizer — tokens, AST, semantic, bytecode."
+        },
+        {
+          "id": "03",
+          "title": "RUN",
+          "description": "Execute your code with custom stdin, or explore the 3D pipeline visualization."
+        }
+      ]
+    },
+    "pipelineTeaser": {
+      "label": "// PIPELINE_PREVIEW",
+      "headline": "Six phases. One journey.",
+      "phases": [
+        "Source",
+        "Lexical",
+        "Parse",
+        "Semantic",
+        "IR",
+        "Bytecode"
+      ],
+      "cta": "VIEW FULL PIPELINE",
+      "description": "From human-readable source to JVM-executable bytecode. Walk through every transformation step."
+    },
+    "preview": {
+      "label": "// SYSTEM_PREVIEW",
+      "headline": "See it in action",
+      "panels": {
+        "editor": {
+          "title": "EDITOR",
+          "code": "public class Hello {\n  public static void main(String[] args) {\n    System.out.println(\"Hello\");\n  }\n}"
+        },
+        "ast": {
+          "title": "AST",
+          "content": "ClassDeclaration\n  └─ MethodDeclaration\n      └─ MethodCall\n          └─ \"Hello\""
+        },
+        "bytecode": {
+          "title": "BYTECODE",
+          "content": "0: getstatic #2\n3: ldc #3\n5: invokevirtual #4\n8: return"
+        }
+      }
+    },
+    "finalCta": {
+      "label": "// READY_TO_START",
+      "headline": "Start exploring compilers.",
+      "subline": "// Free to try · Sign in to save code",
+      "primaryCta": "BEGIN",
+      "secondaryCta": "VIEW PIPELINE"
+    }
   },
   "footer": {
     "tagline": "See how Java compiles your code — phase by phase, instruction by instruction.",

@@ -18,4 +18,6 @@ public class CompileRequest {
     private String sourceCode;
 
     private String input;  // optional stdin for execution
+
+    private String entryClassName;  // optional: which class to execute (auto-detected if null)
 }

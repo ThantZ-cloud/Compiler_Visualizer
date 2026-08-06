@@ -6,6 +6,18 @@ A web application for visualizing the Java compilation pipeline. Write Java code
 
 > 🧑‍💻 **Team project** — see the [Collaborating with Teammates](#collaborating-with-teammates--github-setup-guide) section below for the workflow.
 
+## Screenshots
+
+| Screenshot | Description |
+|-----------|-------------|
+| [Landing Page](screenshots/01-landing-page.png) | Home page with BinaryRain animation, typewriter effect, and feature cards |
+| [Code Editor](screenshots/02-editor-page.png) | Monaco Editor with Java syntax highlighting and terminal output |
+| [3D Pipeline](screenshots/03-pipeline-3d.png) | Three.js 3D visualization of the compilation pipeline |
+| [Token Visualization](screenshots/04-tokens-visualization.png) | D3.js bar chart showing token types and token flow |
+| [AST Tree](screenshots/05-ast-tree.png) | D3.js collapsible Abstract Syntax Tree visualization |
+| [Symbol Table](screenshots/06-semantic-symbol-table.png) | D3.js collapsible tree showing class/method/field declarations |
+| [Bytecode Display](screenshots/07-bytecode-display.png) | JVM bytecode instructions from `javap` disassembly |
+
 ## Tech Stack
 
 ### Frontend

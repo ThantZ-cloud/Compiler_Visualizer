@@ -1,1 +1,0 @@
-- [UI/UX Reviewer](ui-ux-reviewer.md) — Frontend UI/UX audit agent (accessibility, responsiveness, visual consistency, UX)

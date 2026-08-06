@@ -43,6 +43,14 @@ export interface CompileResponse {
   executionOutput: string;
   error?: string;
   compilationTimeMs: number;
+  classes?: ClassInfo[];
+  allBytecode?: Record<string, string>;
+}
+
+export interface ClassInfo {
+  name: string;
+  hasMain: boolean;
+  isPublic: boolean;
 }
 
 export interface AuthResponse {

@@ -11,6 +11,8 @@ interface CompileContextType {
   error: string | null;
   stdinInput: string;
   setStdinInput: (input: string) => void;
+  selectedClass: string | null;
+  setSelectedClass: (name: string | null) => void;
   handleCompile: () => Promise<void>;
   handleCancel: () => void;
   currentFileId: number | null;
@@ -59,6 +61,7 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stdinInput, setStdinInput] = useState<string>('');
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [currentFileId, setCurrentFileId] = useState<number | null>(null);
   const [currentFileName, setCurrentFileName] = useState<string>('Main.java');
   const [isDirty, setIsDirty] = useState(false);
@@ -109,8 +112,12 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
     setLoading(true);
     setError(null);
     try {
-      const response = await compileAPI.compile(code, stdinInput, controller.signal);
+      const response = await compileAPI.compile(code, stdinInput, controller.signal, selectedClass ?? undefined);
       setResult(response.data);
+      // Auto-select first class if none selected
+      if (response.data.classes?.length && !selectedClass) {
+        setSelectedClass(response.data.classes[0].name);
+      }
     } catch (err: any) {
       if (err.name === 'CanceledError' || err.name === 'AbortError') {
         return;
@@ -119,7 +126,7 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
     } finally {
       setLoading(false);
     }
-  }, [code, stdinInput]);
+  }, [code, stdinInput, selectedClass]);
 
   const handleCancel = useCallback(() => {
     if (abortControllerRef.current) {
@@ -175,6 +182,7 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
       loading,
       error,
       stdinInput, setStdinInput,
+      selectedClass, setSelectedClass,
       handleCompile, handleCancel,
       currentFileId, setCurrentFileId, currentFileName, setCurrentFileName,
       isDirty, saveFile, loadFile, newFile, confirmDiscard,

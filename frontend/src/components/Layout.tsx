@@ -31,6 +31,7 @@ const Layout: React.FC = () => {
   const isCompiler = location.pathname === '/compiler';
   const isVisualizing = location.pathname.startsWith('/visualize');
   const isPipeline = location.pathname === '/pipeline';
+  const isLanding = location.pathname === '/';
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[var(--color-void)]">
@@ -152,7 +153,7 @@ const Layout: React.FC = () => {
       {/* Body */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {isAuthenticated && isCompiler && <FileBrowser />}
-        <main id="main-content" className="flex-1 flex flex-col min-h-0 overflow-hidden" role="main">
+        <main id="main-content" className={`flex-1 flex flex-col min-h-0 ${isLanding ? 'overflow-y-auto' : 'overflow-hidden'}`} role="main">
           <Outlet />
         </main>
       </div>

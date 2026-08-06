@@ -1,9 +1,11 @@
 package com.compilervisualizer.service;
 
 import com.compilervisualizer.dto.CompileResponse;
+import com.compilervisualizer.dto.CompileResponse.ClassInfo;
 import com.compilervisualizer.dto.TokenDto;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,14 +13,13 @@ import javax.tools.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -26,15 +27,13 @@ public class CompileService {
 
     private static final int TIMEOUT_SECONDS = 10;
     private static final int MAX_CACHE_SIZE = 128;
-    private static final Pattern PUBLIC_CLASS_PATTERN =
-        Pattern.compile("public\\s+class\\s+(\\w+)");
 
     private final ExecutorService compileExecutor = Executors.newFixedThreadPool(4);
 
     // Simple LRU-style cache: sourceCode+input → response
     private final ConcurrentHashMap<String, CompileResponse> cache = new ConcurrentHashMap<>();
 
-    public CompileResponse compileAndExecute(String sourceCode, String stdinInput) {
+    public CompileResponse compileAndExecute(String sourceCode, String stdinInput, String entryClassName) {
         // Check cache first
         String cacheKey = sourceCode + "\0" + (stdinInput != null ? stdinInput : "");
         CompileResponse cached = cache.get(cacheKey);
@@ -48,11 +47,20 @@ public class CompileService {
 
         try {
             tempDir = Files.createTempDirectory("compiler-visualizer");
-            String className = detectClassName(sourceCode);
-            Path sourceFile = tempDir.resolve(className + ".java");
+
+            // Parse AST first to detect all classes
+            CompilationUnit cuForDetection = StaticJavaParser.parse(sourceCode);
+            List<ClassInfo> detectedClasses = detectClasses(cuForDetection);
+
+            // Determine the file name: use public class, or class with main, or first class
+            String fileName = resolveFileName(detectedClasses);
+            Path sourceFile = tempDir.resolve(fileName + ".java");
             Files.writeString(sourceFile, sourceCode);
 
-            // Phase 1+2: Tokenization and AST run in parallel
+            // Determine entry class for execution
+            String className = resolveEntryClass(detectedClasses, entryClassName);
+
+            // Phase 1: Tokenization (run in parallel with AST reuse)
             long t0 = System.currentTimeMillis();
 
             CompletableFuture<List<TokenDto>> tokensFuture = CompletableFuture.supplyAsync(() -> {
@@ -63,32 +71,20 @@ public class CompileService {
                 return List.of();
             });
 
-            CompletableFuture<CompilationUnit> astFuture = CompletableFuture.supplyAsync(() -> {
-                return StaticJavaParser.parse(sourceCode);
-            }, compileExecutor).exceptionally(ex -> {
-                log.error("AST generation failed", ex);
-                return null;
-            });
-
-            // Wait for both to complete
-            List<TokenDto> tokens;
-            CompilationUnit cu;
+            // Reuse the AST already parsed for class detection
+            CompilationUnit cu = cuForDetection;
             String tokenError = null;
             String astError = null;
+
+            List<TokenDto> tokens;
             try {
                 tokens = tokensFuture.get();
             } catch (Exception e) {
                 tokens = List.of();
                 tokenError = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
             }
-            try {
-                cu = astFuture.get();
-            } catch (Exception e) {
-                cu = null;
-                astError = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            }
 
-            // Phase 2: Serialize AST (depends on AST parse)
+            // Phase 2: Serialize AST (reuse parsed AST)
             String astJson;
             try {
                 if (cu != null) {
@@ -136,7 +132,7 @@ public class CompileService {
             long cfgTime = System.currentTimeMillis() - tCfg;
 
             long parallelTime = System.currentTimeMillis() - t0;
-            long tokenTime = parallelTime; // both ran in parallel, same wall-clock
+            long tokenTime = parallelTime;
             long astTime = parallelTime;
 
             // Phase 3.5: Three-Address Code (reuses parsed AST)
@@ -156,14 +152,17 @@ public class CompileService {
             }
             long tacTime = System.currentTimeMillis() - t2;
 
-            // Phase 4: Compile to bytecode (javac + javap)
+            // Phase 4: Compile to bytecode (javac + javap for all classes)
             long t3 = System.currentTimeMillis();
+            Map<String, String> allBytecode;
             String bytecode;
             String compilationError = null;
             try {
-                bytecode = compileToBytecode(sourceFile, tempDir, className);
+                allBytecode = compileToBytecodeMulti(sourceFile, tempDir);
+                bytecode = allBytecode.getOrDefault(className, "");
             } catch (Exception e) {
                 log.error("Bytecode generation failed", e);
+                allBytecode = Map.of();
                 bytecode = "";
                 compilationError = e.getMessage();
             }
@@ -215,6 +214,8 @@ public class CompileService {
                 .executionTimeMs(executionTime)
                 .error(firstError)
                 .compilationTimeMs(totalTime)
+                .classes(detectedClasses)
+                .allBytecode(allBytecode)
                 .build();
 
             // Cache the result (evict oldest if at capacity)
@@ -239,26 +240,79 @@ public class CompileService {
         }
     }
 
-    // --- Class name detection ---
+    // --- Class name detection (using JavaParser AST) ---
 
-    private String detectClassName(String sourceCode) {
-        Matcher matcher = PUBLIC_CLASS_PATTERN.matcher(sourceCode);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        // fallback: find any class declaration
-        Pattern anyClass = Pattern.compile("class\\s+(\\w+)");
-        Matcher m2 = anyClass.matcher(sourceCode);
-        if (m2.find()) {
-            return m2.group(1);
-        }
-        // ultimate fallback
-        return "Main";
+    /**
+     * Detect all class declarations in the source using JavaParser.
+     */
+    private List<ClassInfo> detectClasses(CompilationUnit cu) {
+        List<ClassInfo> classes = new ArrayList<>();
+        cu.findAll(ClassOrInterfaceDeclaration.class).forEach(clazz -> {
+            String name = clazz.getNameAsString();
+            boolean isPublic = clazz.isPublic();
+            boolean hasMain = clazz.getMethodsByName("main").stream().anyMatch(method ->
+                method.isStatic() && method.isPublic()
+                    && method.getTypeAsString().equals("void")
+                    && method.getParameters().size() == 1
+                    && method.getParameter(0).getTypeAsString().equals("String[]")
+            );
+            classes.add(new ClassInfo(name, hasMain, isPublic));
+        });
+        return classes;
     }
 
-    // --- Phase 4: Bytecode ---
+    /**
+     * Resolve the source file name based on detected classes.
+     * Java requires the file to match the public class name.
+     */
+    private String resolveFileName(List<ClassInfo> classes) {
+        // Priority: public class > class with main > first class > "Main"
+        return classes.stream()
+            .filter(ClassInfo::isPublic)
+            .map(ClassInfo::getName)
+            .findFirst()
+            .orElseGet(() -> classes.stream()
+                .filter(ClassInfo::isHasMain)
+                .map(ClassInfo::getName)
+                .findFirst()
+                .orElseGet(() -> classes.stream()
+                    .map(ClassInfo::getName)
+                    .findFirst()
+                    .orElse("Main")));
+    }
 
-    private String compileToBytecode(Path sourceFile, Path tempDir, String className) throws Exception {
+    /**
+     * Resolve which class to execute.
+     * Priority: user-specified > class with main > public class > first class > "Main"
+     */
+    private String resolveEntryClass(List<ClassInfo> classes, String requestedEntry) {
+        if (requestedEntry != null && !requestedEntry.isBlank()) {
+            // Verify the requested class exists
+            boolean exists = classes.stream().anyMatch(c -> c.getName().equals(requestedEntry));
+            if (exists) return requestedEntry;
+        }
+        // Auto-detect: class with main > public class > first class > "Main"
+        return classes.stream()
+            .filter(ClassInfo::isHasMain)
+            .map(ClassInfo::getName)
+            .findFirst()
+            .orElseGet(() -> classes.stream()
+                .filter(ClassInfo::isPublic)
+                .map(ClassInfo::getName)
+                .findFirst()
+                .orElseGet(() -> classes.stream()
+                    .map(ClassInfo::getName)
+                    .findFirst()
+                    .orElse("Main")));
+    }
+
+    // --- Phase 4: Bytecode (multi-class) ---
+
+    /**
+     * Compile source and run javap on ALL generated .class files.
+     * Returns a map of className → javap output.
+     */
+    private Map<String, String> compileToBytecodeMulti(Path sourceFile, Path tempDir) throws Exception {
         // --- javac via javax.tools.JavaCompiler (in-process, no JVM fork) ---
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
@@ -287,29 +341,37 @@ public class CompileService {
             throw new RuntimeException(errors.toString());
         }
 
-        // --- javap via ProcessBuilder (no API equivalent) ---
-        Path classFile = tempDir.resolve(className + ".class");
-        if (!Files.exists(classFile)) {
-            throw new RuntimeException("Class file not found: " + className + ".class");
+        // --- javap on ALL .class files ---
+        Map<String, String> result = new LinkedHashMap<>();
+        try (Stream<Path> classFiles = Files.walk(tempDir)) {
+            classFiles
+                .filter(p -> p.toString().endsWith(".class"))
+                .sorted()
+                .forEach(classFile -> {
+                    String name = classFile.getFileName().toString().replace(".class", "");
+                    // Skip inner classes (contain $) for cleaner display
+                    if (name.contains("$")) return;
+
+                    try {
+                        ProcessBuilder pb = new ProcessBuilder("javap", "-c", "-p", classFile.toString());
+                        pb.redirectErrorStream(true);
+                        Process process = pb.start();
+                        String output = readStream(process.getInputStream());
+                        boolean finished = process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                        if (finished && process.exitValue() == 0) {
+                            result.put(name, output);
+                        }
+                    } catch (Exception e) {
+                        log.warn("javap failed for {}: {}", name, e.getMessage());
+                    }
+                });
         }
 
-        ProcessBuilder pb = new ProcessBuilder("javap", "-c", "-p", classFile.toString());
-        pb.redirectErrorStream(true);
-        Process process = pb.start();
-
-        String output = readStream(process.getInputStream());
-        boolean finished = process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-
-        if (!finished) {
-            process.destroyForcibly();
-            throw new RuntimeException("javap timed out after " + TIMEOUT_SECONDS + "s");
+        if (result.isEmpty()) {
+            throw new RuntimeException("No .class files generated after compilation");
         }
 
-        if (process.exitValue() != 0) {
-            throw new RuntimeException("javap failed:\n" + output);
-        }
-
-        return output;
+        return result;
     }
 
     // --- Phase 5: Execution ---

@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
             </div>
             <span className="text-xs font-bold text-[var(--color-text)] tracking-[0.12em]"
               style={{ fontFamily: 'var(--font-display)' }}>
-              Compilation Visualizer
+              Compiler Visualizer
             </span>
           </div>
 

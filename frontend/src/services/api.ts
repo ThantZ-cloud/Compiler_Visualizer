@@ -29,8 +29,8 @@ export const authAPI = {
 
 // Compile API
 export const compileAPI = {
-  compile: (sourceCode: string, input?: string, signal?: AbortSignal) =>
-    api.post('/compile', { sourceCode, input }, { signal }),
+  compile: (sourceCode: string, input?: string, signal?: AbortSignal, entryClassName?: string) =>
+    api.post('/compile', { sourceCode, input, entryClassName }, { signal }),
   compileTokens: (sourceCode: string, signal?: AbortSignal) =>
     api.post('/compile/tokens', { sourceCode }, { signal }),
   compileAst: (sourceCode: string, signal?: AbortSignal) =>

@@ -23,7 +23,7 @@ const FileBrowser: React.FC = () => {
   const { t } = useTranslation();
   const {
     loadFile, saveFile, newFile, currentFileId,
-    setCurrentFileId, setCurrentFileName, isDirty,
+    setCurrentFileName, isDirty,
     showDiscardDialog,
   } = useCompile();
 
@@ -52,7 +52,7 @@ const FileBrowser: React.FC = () => {
   const loadFiles = useCallback(async () => {
     try {
       const res = await codeAPI.getSaved();
-      setFiles(res.data);
+      setFiles(res.data.data ?? []);
     } catch (err) {
       console.error('Failed to load files:', err);
       toast.error('Failed to load files');
@@ -78,7 +78,6 @@ const FileBrowser: React.FC = () => {
     try {
       const title = newName.endsWith('.java') ? newName : newName + '.java';
       await saveFile(title);
-      setCurrentFileId(null);
       setNewName('');
       setCreating(false);
       loadFiles();

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -46,4 +47,21 @@ public class CompileResponse {
     private Long tacTimeMs;
     private Long bytecodeTimeMs;
     private Long executionTimeMs;
+
+    // Multi-class support
+    private List<ClassInfo> classes;
+    private Map<String, String> allBytecode;
+
+    /**
+     * Metadata about a class detected in the source code.
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ClassInfo {
+        private String name;
+        private boolean hasMain;
+        private boolean isPublic;
+    }
 }

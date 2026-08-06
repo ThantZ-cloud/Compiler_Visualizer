@@ -30,7 +30,7 @@ public class CompileController {
                 .body(Map.of("message", "Rate limit exceeded. Max 10 compiles per minute."));
         }
         CompileResponse response = compileService.compileAndExecute(
-            request.getSourceCode(), request.getInput());
+            request.getSourceCode(), request.getInput(), request.getEntryClassName());
         return ResponseEntity.ok(response);
     }
 
@@ -43,7 +43,7 @@ public class CompileController {
                 .body(Map.of("message", "Rate limit exceeded. Max 10 compiles per minute."));
         }
         CompileResponse response = compileService.compileAndExecute(
-            request.getSourceCode(), request.getInput());
+            request.getSourceCode(), request.getInput(), request.getEntryClassName());
         return ResponseEntity.ok(response);
     }
 
@@ -56,7 +56,7 @@ public class CompileController {
                 .body(Map.of("message", "Rate limit exceeded. Max 10 compiles per minute."));
         }
         CompileResponse response = compileService.compileAndExecute(
-            request.getSourceCode(), request.getInput());
+            request.getSourceCode(), request.getInput(), request.getEntryClassName());
         return ResponseEntity.ok(response);
     }
 
@@ -69,7 +69,7 @@ public class CompileController {
                 .body(Map.of("message", "Rate limit exceeded. Max 10 compiles per minute."));
         }
         CompileResponse response = compileService.compileAndExecute(
-            request.getSourceCode(), request.getInput());
+            request.getSourceCode(), request.getInput(), request.getEntryClassName());
         return ResponseEntity.ok(response);
     }
 
@@ -82,7 +82,7 @@ public class CompileController {
                 .body(Map.of("message", "Rate limit exceeded. Max 10 compiles per minute."));
         }
         CompileResponse response = compileService.compileAndExecute(
-            request.getSourceCode(), request.getInput());
+            request.getSourceCode(), request.getInput(), request.getEntryClassName());
         return ResponseEntity.ok(response);
     }
 }

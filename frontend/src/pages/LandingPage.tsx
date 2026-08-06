@@ -412,7 +412,7 @@ const LandingPage: React.FC = () => {
                   className="btn-neon px-8 py-4 text-sm min-h-[48px] w-full sm:w-auto"
                   onClick={() => navigate('/pipeline', { state: { from: '/' } })}
                 >
-                  {t('landing.viewPipeline')}
+                  <span>{t('landing.viewPipeline')}</span>
                 </button>
               </div>
 
@@ -625,7 +625,7 @@ const LandingPage: React.FC = () => {
                   className="btn-neon px-10 py-4 text-sm min-h-[48px] w-full sm:w-auto"
                   onClick={() => navigate('/pipeline')}
                 >
-                  {t('landing.finalCta.secondaryCta')}
+                  <span>{t('landing.finalCta.secondaryCta')}</span>
                 </button>
               </div>
             </Reveal>

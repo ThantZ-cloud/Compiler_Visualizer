@@ -5,12 +5,14 @@ import { toast } from 'sonner';
 import { Save, Loader2, Circle, Play, Square, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
+import { useTheme } from '../context/ThemeContext';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const EditorPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { resolvedTheme } = useTheme();
   const { code, setCode, result, loading, error, stdinInput, setStdinInput, saveFile, currentFileId, currentFileName, isDirty, handleCompile, handleCancel } = useCompile();
   const [saving, setSaving] = useState(false);
 
@@ -150,7 +152,7 @@ const EditorPage: React.FC = () => {
             <Editor
               height="100%"
               defaultLanguage="java"
-              theme="vs-dark"
+              theme={resolvedTheme === 'light' ? 'vs' : 'vs-dark'}
               value={code}
               onChange={(value) => setCode(value || '')}
               onMount={handleEditorMount}

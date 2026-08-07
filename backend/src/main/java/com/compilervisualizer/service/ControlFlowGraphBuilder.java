@@ -39,7 +39,7 @@ public class ControlFlowGraphBuilder {
             root.set("methods", methodsArr);
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
         } catch (Exception e) {
-            return "{\"error\": \"Failed to build CFG: " + escapeJson(e.getMessage()) + "\"}";
+            return JsonEscape.errorJson("Failed to build CFG: " + e.getMessage());
         }
     }
 
@@ -441,11 +441,6 @@ public class ControlFlowGraphBuilder {
 
     private static String formatReturn(ReturnStmt rs) {
         return rs.getExpression().map(e -> "return " + e).orElse("return");
-    }
-
-    private static String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     // --- Helper Models ---

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react';
 import { authAPI } from '../services/api';
 import type { AuthResponse, User } from '../types';
 
@@ -51,30 +51,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [token]);
 
-  const login = async (username: string, password: string) => {
+  const login = useCallback(async (username: string, password: string) => {
     const response = await authAPI.login({ username, password });
     const data: AuthResponse = response.data;
     localStorage.setItem('token', data.token);
     setToken(data.token);
     setUser({ id: data.userId || 0, username: data.username, email: data.email || '' });
-  };
+  }, []);
 
-  const register = async (username: string, email: string, password: string) => {
+  const register = useCallback(async (username: string, email: string, password: string) => {
     const response = await authAPI.register({ username, email, password });
     const data: AuthResponse = response.data;
     localStorage.setItem('token', data.token);
     setToken(data.token);
     setUser({ id: data.userId || 0, username: data.username, email: data.email || '' });
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({ user, token, isAuthenticated: !!token, login, register, logout, loading }),
+    [user, token, login, register, logout, loading],
+  );
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, login, register, logout, loading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

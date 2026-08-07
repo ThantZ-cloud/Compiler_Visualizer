@@ -1,244 +1,325 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import type { PipelineStepData } from '../data/pipelineData';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { VignetteShader } from 'three/examples/jsm/shaders/VignetteShader.js';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 interface Props {
-  activeStep: number;
-  steps: PipelineStepData[];
+  scrollProgress: number;
 }
 
-const NODE_SPACING = 2.8;
-const RING_RADIUS = 0.6;
-const RING_TUBE = 0.04;
-const PARTICLE_COUNT = 60;
-const AMBIENT_COUNT = 120;
+const STAR_COUNT = 2500;
+const CAMERA_START_X = -20;
+const CAMERA_END_X = 20;
 
-const PipelineScene: React.FC<Props> = ({ activeStep, steps: pipelineSteps }) => {
+/** Generate canvas texture for Saturn's surface (realistic golden/cream banding) */
+function createSaturnTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d')!;
+
+  // Realistic vertical banding: darker pale-tan poles, bright golden equator
+  const bands = [
+    { y: 0.00, color: '#8a7d63' },
+    { y: 0.08, color: '#9c8f73' },
+    { y: 0.16, color: '#b3a37f' },
+    { y: 0.26, color: '#c8b48a' },
+    { y: 0.36, color: '#d9c49a' },
+    { y: 0.46, color: '#cbb184' },
+    { y: 0.52, color: '#e0cfa6' },
+    { y: 0.58, color: '#cbb184' },
+    { y: 0.68, color: '#b39a6e' },
+    { y: 0.80, color: '#8a7d63' },
+    { y: 0.92, color: '#6e6350' },
+    { y: 1.00, color: '#574e3e' },
+  ];
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 512);
+  bands.forEach((b) => grad.addColorStop(b.y, b.color));
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1024, 512);
+
+  // Atmospheric turbulence streaks (faint wavy horizontal strokes)
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 60; i++) {
+    const y = 20 + Math.random() * 472;
+    const alpha = 0.02 + Math.random() * 0.07;
+    const light = Math.random() > 0.5;
+    ctx.strokeStyle = light ? `rgba(255, 250, 235, ${alpha})` : `rgba(90, 74, 50, ${alpha})`;
+    ctx.beginPath();
+    const x0 = Math.random() * 1024;
+    ctx.moveTo(x0, y);
+    ctx.bezierCurveTo(x0 + 200, y - 6 + Math.random() * 12, x0 + 500, y + 6 + Math.random() * 12, x0 + 900, y - 4 + Math.random() * 8);
+    ctx.stroke();
+  }
+
+  // Subtle darker oval storm near the equator
+  ctx.fillStyle = 'rgba(150, 120, 78, 0.16)';
+  ctx.beginPath();
+  ctx.ellipse(760, 250, 60, 18, -0.05, 0, Math.PI * 2);
+  ctx.fill();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+/** Generate canvas texture for Saturn's ring system (realistic band structure) */
+function createSaturnRingTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d')!;
+
+  // Real ring structure mapped along radius (x from inner to outer)
+  const grad = ctx.createLinearGradient(0, 0, 1024, 0);
+  grad.addColorStop(0.00, 'rgba(0, 0, 0, 0)');            // gap near planet
+  grad.addColorStop(0.05, 'rgba(130, 118, 100, 0.35)');   // C ring (faint, dusty)
+  grad.addColorStop(0.22, 'rgba(160, 145, 122, 0.45)');   // C ring
+  grad.addColorStop(0.30, 'rgba(60, 55, 46, 0.1)');       // small gap
+  grad.addColorStop(0.34, 'rgba(225, 208, 175, 0.95)');   // B ring (bright, wide)
+  grad.addColorStop(0.55, 'rgba(235, 218, 185, 1.0)');    // B ring core
+  grad.addColorStop(0.62, 'rgba(70, 62, 50, 0.08)');      // Cassini Division (dark gap)
+  grad.addColorStop(0.66, 'rgba(200, 183, 152, 0.85)');   // A ring
+  grad.addColorStop(0.80, 'rgba(190, 173, 143, 0.75)');   // A ring outer
+  grad.addColorStop(0.92, 'rgba(140, 128, 105, 0.25)');   // fade out
+  grad.addColorStop(1.00, 'rgba(0, 0, 0, 0)');
+
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1024, 64);
+
+  // Fine ringlet texture (thousands of tiny radial striations)
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+  for (let x = 0; x < 1024; x += 2) {
+    if (Math.random() > 0.35) ctx.fillRect(x, 0, 1, 64);
+  }
+  ctx.fillStyle = 'rgba(255, 248, 230, 0.06)';
+  for (let x = 0; x < 1024; x += 3) {
+    if (Math.random() > 0.7) ctx.fillRect(x, 0, 1, 64);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+/** Generate a soft round star sprite (avoids default square GL_POINTS) */
+function createStarSpriteTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  grad.addColorStop(0.25, 'rgba(255, 255, 255, 0.9)');
+  grad.addColorStop(0.55, 'rgba(255, 255, 255, 0.3)');
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 64, 64);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+type PlanetState = {
+  group: THREE.Group;
+  mesh: THREE.Mesh;
+  t: number;
+  duration: number;
+  y: number;
+  spin: number;
+  sweepHalf: number;
+};
+
+const PipelineScene: React.FC<Props> = ({ scrollProgress }) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string; color: string } | null>(null);
-  const sceneRef = useRef<{
-    renderer: THREE.WebGLRenderer;
-    scene: THREE.Scene;
-    camera: THREE.PerspectiveCamera;
-    startTime: number;
-    nodes: THREE.Group[];
-    particleSystems: THREE.Points[];
-    frameId: number;
-    disposed: boolean;
-  } | null>(null);
-  const activeStepRef = useRef(activeStep);
+  const scrollRef = useRef(0);
+  const prefersReduced = usePrefersReducedMotion();
+  const reducedMotionRef = useRef(prefersReduced);
 
   useEffect(() => {
-    activeStepRef.current = activeStep;
-  }, [activeStep]);
+    scrollRef.current = scrollProgress;
+  }, [scrollProgress]);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    const ctx = sceneRef.current;
-    if (!ctx) return;
-
-    const rect = ctx.renderer.domElement.getBoundingClientRect();
-    const mouse = new THREE.Vector2(
-      ((e.clientX - rect.left) / rect.width) * 2 - 1,
-      -((e.clientY - rect.top) / rect.height) * 2 + 1,
-    );
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, ctx.camera);
-
-    for (let i = 0; i < ctx.nodes.length; i++) {
-      const intersects = raycaster.intersectObjects(ctx.nodes[i].children, true);
-      if (intersects.length > 0) {
-        const step = pipelineSteps[i];
-        setTooltip({ x: e.clientX, y: e.clientY, label: `${step.title} — ${step.subtitle}`, color: step.color });
-        return;
-      }
-    }
-    setTooltip(null);
-  }, []);
+  useEffect(() => {
+    reducedMotionRef.current = prefersReduced;
+  }, [prefersReduced]);
 
   useEffect(() => {
     if (!mountRef.current) return;
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReduced = reducedMotionRef.current;
     const container = mountRef.current;
 
     // ── Renderer ──
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.0;
+    renderer.setClearColor(0x000000, 1);
     container.appendChild(renderer.domElement);
 
     // ── Scene ──
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x050510, 0.08);
 
     // ── Camera ──
     const camera = new THREE.PerspectiveCamera(
-      50,
+      55,
       container.clientWidth / container.clientHeight,
       0.1,
-      100,
+      1000,
     );
-    camera.position.set(3, 2, 5);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(CAMERA_START_X, 0, 45);
+    camera.lookAt(CAMERA_START_X, 0, 0);
 
-    // ── Lights ──
-    scene.add(new THREE.AmbientLight(0x222233, 0.6));
-    const topLight = new THREE.PointLight(0x8B5CF6, 1.5, 20);
-    topLight.position.set(2, 4, 3);
-    scene.add(topLight);
-    const bottomLight = new THREE.PointLight(0xFF3366, 1.5, 20);
-    bottomLight.position.set(-2, -4, 3);
-    scene.add(bottomLight);
+    // ── Lighting ──
+    // Near-black ambient (space is lit by a single sun)
+    scene.add(new THREE.AmbientLight(0x0a0a0a, 0.12));
 
-    // ── Build nodes (vertical, top to bottom) ──
-    const nodes: THREE.Group[] = [];
-    const nodeLights: THREE.PointLight[] = [];
-    const totalHeight = (pipelineSteps.length - 1) * NODE_SPACING;
+    // Distant Sun Light (directional key light producing realistic planet shadows)
+    const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.6);
+    sunLight.position.set(80, 40, 60);
+    scene.add(sunLight);
 
-    pipelineSteps.forEach((step, i) => {
-      const group = new THREE.Group();
-      const y = totalHeight / 2 - i * NODE_SPACING;
-      group.position.set(0, y, 0);
+    const disposables: Array<{ dispose(): void }> = [];
 
-      // Outer ring
-      const ringGeo = new THREE.TorusGeometry(RING_RADIUS, RING_TUBE, 16, 64);
-      const ringMat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(step.color),
-        emissive: new THREE.Color(step.color),
-        emissiveIntensity: 0.3,
-        metalness: 0.8,
-        roughness: 0.2,
-        transparent: true,
-        opacity: 0.9,
-      });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.rotation.x = Math.PI / 2;
-      group.add(ring);
+    // ── Star Field (two layers: faint dust + bright highlight stars) ──
+    const BRIGHT_STAR_COUNT = 140;
+    const starFieldGroup = new THREE.Group();
 
-      // Inner glow sphere
-      const glowGeo = new THREE.SphereGeometry(RING_RADIUS * 0.45, 16, 16);
-      const glowMat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(step.color),
-        emissive: new THREE.Color(step.color),
-        emissiveIntensity: 0.6,
-        transparent: true,
-        opacity: 0.15,
-      });
-      group.add(new THREE.Mesh(glowGeo, glowMat));
+    // Realistic stellar palette: white-dominant with subtle blue-white & warm tones
+    const colorPalette = [
+      new THREE.Color('#ffffff'),
+      new THREE.Color('#ffffff'),
+      new THREE.Color('#ffffff'),
+      new THREE.Color('#ffffff'),
+      new THREE.Color('#eaf2ff'),
+      new THREE.Color('#fff4e0'),
+    ];
 
-      // Wireframe icosahedron inside
-      const icoGeo = new THREE.IcosahedronGeometry(RING_RADIUS * 0.3, 0);
-      const icoMat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(step.color),
-        wireframe: true,
-        transparent: true,
-        opacity: 0.4,
-      });
-      group.add(new THREE.Mesh(icoGeo, icoMat));
-
-      // Node point light
-      const light = new THREE.PointLight(new THREE.Color(step.color), 0.5, 4);
-      group.add(light);
-      nodeLights.push(light);
-
-      scene.add(group);
-      nodes.push(group);
-    });
-
-    // ── Connecting lines ──
-    for (let i = 0; i < nodes.length - 1; i++) {
-      const start = nodes[i].position.clone();
-      const end = nodes[i + 1].position.clone();
-      const points = [start, end];
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-      const lineMat = new THREE.LineBasicMaterial({
-        color: 0x333355,
-        transparent: true,
-        opacity: 0.4,
-      });
-      scene.add(new THREE.Line(lineGeo, lineMat));
-    }
-
-    // ── Particle streams between nodes ──
-    const particleSystems: THREE.Points[] = [];
-
-    for (let seg = 0; seg < nodes.length - 1; seg++) {
-      const count = prefersReduced ? 15 : PARTICLE_COUNT;
+    const makeStars = (count: number, size: number, opacity: number) => {
       const positions = new Float32Array(count * 3);
       const colors = new Float32Array(count * 3);
-      const speeds: number[] = [];
-
-      const c1 = new THREE.Color(pipelineSteps[seg].color);
-      const c2 = new THREE.Color(pipelineSteps[seg + 1].color);
-      const startY = nodes[seg].position.y;
-      const endY = nodes[seg + 1].position.y;
-
-      for (let j = 0; j < count; j++) {
-        const t = Math.random();
-        positions[j * 3] = (Math.random() - 0.5) * 0.4;
-        positions[j * 3 + 1] = startY + (endY - startY) * t;
-        positions[j * 3 + 2] = (Math.random() - 0.5) * 0.4;
-
-        const c = c1.clone().lerp(c2, t);
-        colors[j * 3] = c.r;
-        colors[j * 3 + 1] = c.g;
-        colors[j * 3 + 2] = c.b;
-
-        speeds.push(0.3 + Math.random() * 0.7);
+      for (let i = 0; i < count; i++) {
+        const radius = 120 + Math.random() * 280;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+        positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+        positions[i * 3 + 2] = radius * Math.cos(phi);
+        const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+        colors[i * 3] = color.r;
+        colors[i * 3 + 1] = color.g;
+        colors[i * 3 + 2] = color.b;
       }
-
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
       const mat = new THREE.PointsMaterial({
-        size: 0.04,
+        size,
+        map: starSprite,
         vertexColors: true,
+        transparent: true,
+        opacity,
+        sizeAttenuation: true,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
-        transparent: true,
-        opacity: 0.8,
       });
-
       const points = new THREE.Points(geo, mat);
-      (points as any)._speeds = speeds;
-      (points as any)._startY = startY;
-      (points as any)._endY = endY;
-      scene.add(points);
-      particleSystems.push(points);
+      starFieldGroup.add(points);
+      disposables.push(geo, mat);
+      return points;
+    };
+
+    const starSprite = createStarSpriteTexture();
+    disposables.push(starSprite);
+
+    makeStars(STAR_COUNT, 1.4, 0.9); // faint dust
+    makeStars(BRIGHT_STAR_COUNT, 4.2, 1.0); // bright highlights (bloom)
+
+    scene.add(starFieldGroup);
+
+    // ── Saturn (single drifting planet with rings) ──
+    const createPlanet = (texture: THREE.CanvasTexture, radius: number, ringTexture?: THREE.CanvasTexture) => {
+      const group = new THREE.Group();
+      const geo = new THREE.SphereGeometry(radius, 48, 48);
+      const mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85, metalness: 0.05 });
+      const mesh = new THREE.Mesh(geo, mat);
+      group.add(mesh);
+      disposables.push(texture, geo, mat);
+
+      if (ringTexture) {
+        const ringGeo = new THREE.RingGeometry(radius * 1.25, radius * 2.3, 64);
+        const uvs = ringGeo.attributes.uv;
+        for (let i = 0; i < uvs.count; i++) {
+          uvs.setX(i, i % 2 === 0 ? 0 : 1);
+        }
+        uvs.needsUpdate = true;
+        const ringMat = new THREE.MeshStandardMaterial({
+          map: ringTexture,
+          transparent: true,
+          opacity: 0.9,
+          side: THREE.DoubleSide,
+          roughness: 0.9,
+        });
+        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+        ringMesh.rotation.x = Math.PI / 2.3;
+        group.add(ringMesh);
+        disposables.push(ringTexture, ringGeo, ringMat);
+      }
+
+      // Tilt the whole planet for a natural look
+      group.rotation.z = -0.35;
+      group.rotation.x = 0.18;
+
+      scene.add(group);
+      return { group, mesh };
+    };
+
+    const saturn: PlanetState = {
+      ...createPlanet(createSaturnTexture(), 4.2, createSaturnRingTexture()),
+      t: 0.35,
+      duration: 130,
+      y: 1,
+      spin: 0.05,
+      sweepHalf: 42,
+    };
+    saturn.group.position.set(camera.position.x - saturn.sweepHalf + 2 * saturn.sweepHalf * saturn.t, saturn.y, 10);
+
+    if (prefersReduced) {
+      // Reduced motion: park Saturn at a static, pleasant spot
+      saturn.group.position.set(15, 3, 5);
+      saturn.group.visible = true;
     }
 
-    // ── Ambient floating particles ──
-    const ambientPositions = new Float32Array(AMBIENT_COUNT * 3);
-    const ambientColors = new Float32Array(AMBIENT_COUNT * 3);
-    for (let i = 0; i < AMBIENT_COUNT; i++) {
-      ambientPositions[i * 3] = (Math.random() - 0.5) * 12;
-      ambientPositions[i * 3 + 1] = (Math.random() - 0.5) * totalHeight + 2;
-      ambientPositions[i * 3 + 2] = (Math.random() - 0.5) * 8 - 2;
+    // ── Post-processing ──
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
 
-      const c = new THREE.Color().setHSL(0.55 + Math.random() * 0.2, 0.8, 0.5);
-      ambientColors[i * 3] = c.r;
-      ambientColors[i * 3 + 1] = c.g;
-      ambientColors[i * 3 + 2] = c.b;
-    }
-    const ambientGeo = new THREE.BufferGeometry();
-    ambientGeo.setAttribute('position', new THREE.BufferAttribute(ambientPositions, 3));
-    ambientGeo.setAttribute('color', new THREE.BufferAttribute(ambientColors, 3));
-    const ambientMat = new THREE.PointsMaterial({
-      size: 0.03,
-      vertexColors: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      transparent: true,
-      opacity: 0.4,
-    });
-    scene.add(new THREE.Points(ambientGeo, ambientMat));
+    // Very subtle bloom for brightest star highlights
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(container.clientWidth / 2, container.clientHeight / 2),
+      0.15, // strength
+      0.3, // radius
+      0.6, // threshold (only bright highlights bloom)
+    );
+    composer.addPass(bloomPass);
 
-    // ── Mouse interaction ──
-    window.addEventListener('mousemove', handleMouseMove);
+    // Edge vignette for space depth frame
+    const vignette = new ShaderPass(VignetteShader);
+    vignette.uniforms['offset'].value = 0.5;
+    vignette.uniforms['darkness'].value = 1.0;
+    composer.addPass(vignette);
+
+    composer.addPass(new OutputPass());
 
     // ── Resize ──
     const onResize = () => {
@@ -247,130 +328,71 @@ const PipelineScene: React.FC<Props> = ({ activeStep, steps: pipelineSteps }) =>
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      composer.setSize(w, h);
+      bloomPass.setSize(w, h);
     };
     window.addEventListener('resize', onResize);
 
-    // ── Animation loop ──
+    // ── Animation Loop ──
+    let frameId = 0;
+    let disposed = false;
+    let prevElapsed = 0;
     const startTime = performance.now();
 
     const animate = () => {
-      if (sceneRef.current?.disposed) return;
+      if (disposed) return;
+      frameId = requestAnimationFrame(animate);
       const elapsed = (performance.now() - startTime) / 1000;
-      const currentActive = activeStepRef.current;
+      const dt = Math.min(elapsed - prevElapsed, 0.1);
+      prevElapsed = elapsed;
 
-      // Rotate node rings and inner shapes
-      nodes.forEach((group, i) => {
-        const ring = group.children[0] as THREE.Mesh;
-        const ico = group.children[2] as THREE.Mesh;
+      const progress = Math.min(Math.max(scrollRef.current, 0), 1);
 
-        if (!prefersReduced) {
-          ring.rotation.z = elapsed * 0.3 + i * 0.5;
-          ico.rotation.x = elapsed * 0.5 + i;
-          ico.rotation.y = elapsed * 0.3;
+      // Camera horizontal pan following scroll progress
+      const targetX = CAMERA_START_X + (CAMERA_END_X - CAMERA_START_X) * progress;
+      camera.position.x += (targetX - camera.position.x) * 0.05;
+
+      if (!reducedMotionRef.current) {
+        // Very subtle camera floating bob
+        camera.position.y = Math.sin(elapsed * 0.2) * 0.4;
+
+        // Star field gentle continuous rotation (slow drift through space)
+        starFieldGroup.rotation.y += dt * 0.012;
+        starFieldGroup.rotation.x = Math.sin(elapsed * 0.004) * 0.06;
+
+        // Saturn: drift across the screen (screen-right = +X), then loop back
+        saturn.t += dt / saturn.duration;
+        if (saturn.t > 1) {
+          saturn.t = 0;
+          saturn.duration = 120 + Math.random() * 60;
+          saturn.y = -8 + Math.random() * 17;
         }
-
-        // Active node glow
-        const isActive = i === currentActive;
-        const mat = ring.material as THREE.MeshStandardMaterial;
-        mat.emissiveIntensity = isActive ? 0.6 + Math.sin(elapsed * 3) * 0.3 : 0.3;
-        mat.opacity = isActive ? 1.0 : 0.7;
-
-        const icoMat = ico.material as THREE.MeshStandardMaterial;
-        icoMat.opacity = isActive ? 0.7 : 0.3;
-
-        nodeLights[i].intensity = isActive ? 1.5 + Math.sin(elapsed * 3) * 0.5 : 0.4;
-      });
-
-      // Animate particle streams (flow downward)
-      particleSystems.forEach((ps) => {
-        const posAttr = ps.geometry.getAttribute('position') as THREE.BufferAttribute;
-        const speeds = (ps as any)._speeds as number[];
-        const startY = (ps as any)._startY as number;
-        const endY = (ps as any)._endY as number;
-        const range = endY - startY; // negative (flowing down)
-
-        for (let j = 0; j < posAttr.count; j++) {
-          let y = posAttr.getY(j) + range * speeds[j] * 0.003;
-          if (y < endY) y = startY; // Reset to top when reaching bottom
-          if (y > startY) y = endY; // Safety wrap
-          posAttr.setY(j, y);
-
-          // Slight horizontal wobble
-          const x = posAttr.getX(j) + Math.sin(elapsed * 2 + j) * 0.0005;
-          posAttr.setX(j, x);
-        }
-        posAttr.needsUpdate = true;
-      });
-
-      // Camera follows active step smoothly
-      const targetY = totalHeight / 2 - currentActive * NODE_SPACING;
-      const targetCamY = targetY * 0.4;
-
-      if (!prefersReduced) {
-        camera.position.x = 3 + Math.sin(elapsed * 0.2) * 0.5;
-        camera.position.z = 5 + Math.cos(elapsed * 0.15) * 0.3;
+        const so = -saturn.sweepHalf + 2 * saturn.sweepHalf * saturn.t;
+        saturn.group.position.x = camera.position.x + so;
+        saturn.group.position.y = saturn.y;
+        saturn.group.position.z = 10;
+        saturn.mesh.rotation.y += saturn.spin;
       }
-      camera.position.y += (targetCamY - camera.position.y) * 0.02;
-      camera.lookAt(0, targetY * 0.3, 0);
 
-      renderer.render(scene, camera);
-      sceneRef.current!.frameId = requestAnimationFrame(animate);
+      composer.render();
     };
+    animate();
 
-    sceneRef.current = {
-      renderer,
-      scene,
-      camera,
-      startTime,
-      nodes,
-      particleSystems,
-      frameId: requestAnimationFrame(animate),
-      disposed: false,
-    };
-
+    // ── Cleanup ──
     return () => {
-      const ctx = sceneRef.current;
-      if (!ctx) return;
-      ctx.disposed = true;
-      cancelAnimationFrame(ctx.frameId);
+      disposed = true;
+      cancelAnimationFrame(frameId);
       window.removeEventListener('resize', onResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-
-      scene.traverse((obj) => {
-        if (obj instanceof THREE.Mesh || obj instanceof THREE.Line || obj instanceof THREE.Points) {
-          obj.geometry.dispose();
-          const mat = obj.material;
-          if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
-          else mat.dispose();
-        }
-      });
+      disposables.forEach((d) => d.dispose());
+      composer.dispose();
       renderer.dispose();
-      if (container.contains(renderer.domElement)) {
+      if (renderer.domElement.parentElement === container) {
         container.removeChild(renderer.domElement);
       }
-      sceneRef.current = null;
     };
-  }, [handleMouseMove]);
+  }, []);
 
-  return (
-    <div className="relative w-full h-full" ref={mountRef}>
-      {tooltip && (
-        <div
-          className="fixed z-50 pointer-events-none px-3 py-1.5 text-[10px] font-bold tracking-wider border"
-          style={{
-            left: tooltip.x + 16,
-            top: tooltip.y - 10,
-            fontFamily: 'var(--font-display)',
-            color: tooltip.color,
-            borderColor: tooltip.color,
-            background: 'var(--color-card)',
-          }}
-        >
-          {tooltip.label}
-        </div>
-      )}
-    </div>
-  );
+  return <div ref={mountRef} className="absolute inset-0" style={{ pointerEvents: 'none' }} />;
 };
 
 export default PipelineScene;

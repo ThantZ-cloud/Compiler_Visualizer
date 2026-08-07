@@ -168,7 +168,7 @@ const SemanticPanel: React.FC = () => {
           Symbol Table
         </h2>
         <span className="text-[10px] text-[var(--color-text-muted)] font-mono">
-          {rows.length} entries
+          {rows.length} {t('semantic.entries')}
         </span>
       </div>
 
@@ -177,12 +177,12 @@ const SemanticPanel: React.FC = () => {
           <table className="w-full border-collapse text-xs font-mono">
             <thead>
               <tr className="sticky top-0 bg-[var(--color-surface-2)] border-b border-[var(--color-border)]">
-                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Kind</th>
-                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Name</th>
-                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Modifiers</th>
-                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Type</th>
-                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Parent</th>
-                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">Details</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">{t('semantic.kind')}</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">{t('semantic.name')}</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">{t('semantic.modifiers')}</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">{t('semantic.type')}</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">{t('semantic.parent')}</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">{t('semantic.details')}</th>
               </tr>
             </thead>
             <tbody>

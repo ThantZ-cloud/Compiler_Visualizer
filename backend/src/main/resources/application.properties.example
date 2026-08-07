@@ -1,22 +1,24 @@
 # Server Configuration
 server.port=8080
 
-# MySQL Database Configuration
-spring.datasource.url=jdbc:mysql://localhost:3306/compilervisualizer?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
-
-# JPA Configuration
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
+# Default profile: use SQLite for development
+spring.profiles.active=dev
 
 # JWT Configuration
-# Set JWT_SECRET env var to a random 32+ char string in production
-jwt.secret=${JWT_SECRET:change-this-in-production}
+# REQUIRED: Set JWT_SECRET environment variable before starting the application.
+# Example (Linux/macOS): export JWT_SECRET=$(openssl rand -base64 48)
+# Example (PowerShell): $env:JWT_SECRET = [Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
+# Minimum length: 64 characters (recommended: 48 bytes / 64 base64 chars for HMAC-SHA256)
+# No fallback here: the dev profile has its own default, production must supply JWT_SECRET.
+jwt.secret=${JWT_SECRET}
 jwt.expiration=86400000
+
+# Compile pipeline
+# Timeout (seconds) for external processes (java execution, javap).
+compile.execution-timeout-seconds=10
+
+# JPA
+spring.jpa.open-in-view=false
 
 # File Upload Configuration
 spring.servlet.multipart.max-file-size=10MB

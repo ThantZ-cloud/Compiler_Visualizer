@@ -51,17 +51,17 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
           {/* Phase number + icon */}
           <motion.div variants={itemVariants} className="flex items-center gap-4">
             <div
-              className="w-16 h-16 rounded-full flex items-center justify-center border-2 relative"
+              className="w-16 h-16 rounded-full flex items-center justify-center border-2 relative bg-[var(--color-void)]/70"
               style={{
                 borderColor: step.color,
-                boxShadow: `0 0 20px ${step.color}33, inset 0 0 15px ${step.color}11`,
+                boxShadow: `0 0 25px ${step.color}44, inset 0 0 15px ${step.color}22`,
               }}
             >
               <Icon size={24} style={{ color: step.color }} />
               {/* Pulse ring */}
               <div
-                className="absolute inset-0 rounded-full pulse-ring"
-                style={{ boxShadow: `0 0 0 0 ${step.color}44` }}
+                className="absolute inset-0 rounded-full cyber-pulse"
+                style={{ '--pulse-color': step.color } as React.CSSProperties}
               />
             </div>
             <div className="text-left">
@@ -69,7 +69,7 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
                 className="text-[10px] font-bold tracking-[0.3em] uppercase"
                 style={{ color: step.color, fontFamily: 'var(--font-display)' }}
               >
-                {t('pipeline.phaseLabel')} {step.phase}
+                {'['} {t('pipeline.phaseLabel')} {String(step.phase).padStart(2, '0')} {' ]'}
               </div>
               <h2
                 className="text-2xl md:text-3xl font-black tracking-wider text-[var(--color-text)]"
@@ -80,16 +80,22 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
             </div>
           </motion.div>
 
-          {/* Input/Output mini preview */}
+          {/* Input/Output mini preview — terminal style */}
           <motion.div
             variants={itemVariants}
-            className="w-full max-w-md bg-[var(--color-card)] border border-[var(--color-border)] p-4"
+            className="w-full max-w-md cyber-panel"
+            style={{ borderColor: `${step.color}55` }}
           >
-            <div
-              className="text-[9px] font-bold tracking-[0.2em] uppercase mb-2"
-              style={{ color: step.color, fontFamily: 'var(--font-mono)' }}
-            >
-              {t('pipeline.outputLabel')}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-2 h-2 rounded-full" style={{ background: step.color }} />
+              <span className="w-2 h-2 rounded-full" style={{ background: `${step.color}88` }} />
+              <span className="w-2 h-2 rounded-full" style={{ background: `${step.color}44` }} />
+              <span
+                className="ml-2 text-[9px] font-bold tracking-[0.2em] uppercase"
+                style={{ color: step.color, fontFamily: 'var(--font-mono)' }}
+              >
+                {t('pipeline.outputLabel')}
+              </span>
             </div>
             <pre
               className="text-[10px] leading-relaxed text-[var(--color-text-dim)] overflow-hidden max-h-40 overflow-y-auto"
@@ -97,6 +103,11 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
             >
               {step.output.length > 400 ? step.output.slice(0, 400) + '\n// ...' : step.output}
             </pre>
+            <div className="mt-2 pt-2 border-t" style={{ borderColor: `${step.color}33` }}>
+              <span className="text-[10px]" style={{ color: step.color, fontFamily: 'var(--font-mono)' }}>
+                $ _  <span className="opacity-50 animate-pulse">▊</span>
+              </span>
+            </div>
           </motion.div>
         </motion.div>
 
@@ -114,7 +125,7 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
               className="text-xs font-bold tracking-[0.2em] uppercase"
               style={{ color: step.color, fontFamily: 'var(--font-mono)' }}
             >
-              {step.subtitle}
+              {'// '}{step.subtitle}
             </span>
           </motion.div>
 
@@ -153,7 +164,8 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
           {/* Input label */}
           <motion.div
             variants={itemVariants}
-            className="bg-[var(--color-surface)] border border-[var(--color-border)] p-3"
+            className="cyber-panel bg-[var(--color-surface)]"
+            style={{ borderColor: 'var(--color-border)' }}
           >
             <div
               className="text-[9px] font-bold tracking-[0.2em] uppercase mb-1 text-[var(--color-text-muted)]"

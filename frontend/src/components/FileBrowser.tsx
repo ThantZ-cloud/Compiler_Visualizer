@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash2, Circle, FilePlus } from 'lucide-react';
+import { Trash2, Circle, FilePlus, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCompile } from '../context/CompileContext';
 import { codeAPI } from '../services/api';
@@ -55,9 +55,9 @@ const FileBrowser: React.FC = () => {
       setFiles(res.data.data ?? []);
     } catch (err) {
       console.error('Failed to load files:', err);
-      toast.error('Failed to load files');
+      toast.error(t('fileBrowser.loadFail'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { loadFiles(); }, [loadFiles]);
 
@@ -81,10 +81,10 @@ const FileBrowser: React.FC = () => {
       setNewName('');
       setCreating(false);
       loadFiles();
-      toast.success('File created');
+      toast.success(t('fileBrowser.fileCreated'));
     } catch (err) {
       console.error('Failed to create file:', err);
-      toast.error('Failed to create file');
+      toast.error(t('fileBrowser.fileCreatedFail'));
     }
   };
 
@@ -93,7 +93,7 @@ const FileBrowser: React.FC = () => {
   const handleDelete = async (id: number) => {
     const file = files.find(f => f.id === id);
     setPendingDeleteId(id);
-    setPendingDeleteName(file?.title ?? 'this file');
+    setPendingDeleteName(file?.title ?? '');
     setDeleteDialogOpen(true);
   };
 
@@ -104,10 +104,10 @@ const FileBrowser: React.FC = () => {
       if (currentFileId === pendingDeleteId) newFile();
       if (selectedId === pendingDeleteId) setSelectedId(null);
       loadFiles();
-      toast.success('File deleted');
+      toast.success(t('fileBrowser.fileDeleted'));
     } catch (err) {
       console.error('Failed to delete file:', err);
-      toast.error('Failed to delete file');
+      toast.error(t('fileBrowser.fileDeletedFail'));
     } finally {
       setDeleteDialogOpen(false);
       setPendingDeleteId(null);
@@ -121,6 +121,11 @@ const FileBrowser: React.FC = () => {
 
   // ── Rename file ──
 
+  const handleStartRename = (file: SavedCode) => {
+    setRenamingId(file.id);
+    setRenameValue(file.title.replace(/\.java$/i, ''));
+  };
+
   const handleRename = async (id: number) => {
     if (!renameValue.trim()) { setRenamingId(null); return; }
     try {
@@ -131,10 +136,10 @@ const FileBrowser: React.FC = () => {
       if (currentFileId === id) setCurrentFileName(newTitle);
       setRenamingId(null);
       loadFiles();
-      toast.success('File renamed');
+      toast.success(t('fileBrowser.fileRenamed'));
     } catch (err) {
       console.error('Failed to rename file:', err);
-      toast.error('Failed to rename file');
+      toast.error(t('fileBrowser.fileRenamedFail'));
     }
   };
 
@@ -190,8 +195,8 @@ const FileBrowser: React.FC = () => {
         <button
           className="p-1.5  rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
           onClick={handleStartCreate}
-          title="New File"
-          aria-label="Create new file"
+          title={t('fileBrowser.newFile')}
+          aria-label={t('fileBrowser.newFile')}
         >
           <FilePlus size={15} />
         </button>
@@ -255,8 +260,10 @@ const FileBrowser: React.FC = () => {
                 ref={renameRef}
                 className="h-5 flex-1 text-[12px] px-1 bg-[var(--color-void)] border border-[var(--color-neon)] text-[var(--color-neon)] outline-none"
                 style={{ fontFamily: 'var(--font-mono)' }}
+                placeholder={t('fileBrowser.classNamePlaceholder')}
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
+                onFocus={(e) => e.currentTarget.select()}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleRename(file.id);
                   if (e.key === 'Escape') setRenamingId(null);
@@ -274,14 +281,24 @@ const FileBrowser: React.FC = () => {
             )}
 
             {!renamingId && (
-              <button
-                className="bg-transparent border-none p-1.5 mr-5 text-[var(--color-text-muted)] hover:text-[var(--color-rose)] transition-all shrink-0 opacity-0 group-hover:opacity-100"
-                onClick={(e) => { e.stopPropagation(); handleDelete(file.id); }}
-                title={`Delete ${file.title}`}
-                aria-label={`Delete ${file.title}`}
-              >
-                <Trash2 size={18} />
-              </button>
+              <div className="flex items-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  className="bg-transparent border-none p-1.5 ml-2 text-[var(--color-text-muted)] hover:text-[var(--color-neon)] transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleStartRename(file); }}
+                  title={t('fileBrowser.rename')}
+                  aria-label={t('fileBrowser.rename')}
+                >
+                  <Pencil size={13} />
+                </button>
+                <button
+                  className="bg-transparent border-none p-1.5 mr-5 text-[var(--color-text-muted)] hover:text-[var(--color-rose)] transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleDelete(file.id); }}
+                  title={`${t('fileBrowser.delete')} ${file.title}`}
+                  aria-label={`${t('fileBrowser.delete')} ${file.title}`}
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             )}
           </div>
         ))}
@@ -296,10 +313,10 @@ const FileBrowser: React.FC = () => {
       {/* Delete confirmation dialog */}
       <ConfirmDialog
         isOpen={deleteDialogOpen}
-        title="Delete File"
-        message={`Are you sure you want to delete "${pendingDeleteName}"? This action cannot be undone.`}
-        confirmText="DELETE"
-        cancelText="CANCEL"
+        title={t('fileBrowser.deleteConfirmTitle')}
+        message={t('fileBrowser.deleteConfirmMessage', { name: pendingDeleteName })}
+        confirmText={t('fileBrowser.deleteConfirmAction')}
+        cancelText={t('fileBrowser.cancel')}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
         danger

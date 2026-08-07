@@ -55,7 +55,7 @@ public class SymbolTableBuilder {
 
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
         } catch (Exception e) {
-            return "{\"error\": \"Failed to build symbol table: " + e.getMessage() + "\"}";
+            return JsonEscape.errorJson("Failed to build symbol table: " + e.getMessage());
         }
     }
 

@@ -80,7 +80,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Choose a username"
+              placeholder={t('auth.usernamePlaceholder')}
               required
               autoFocus
               className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
@@ -96,7 +96,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder={t('auth.emailPlaceholder')}
               required
               className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
             />
@@ -111,7 +111,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a password"
+              placeholder={t('auth.createPasswordPlaceholder')}
               required
               minLength={6}
               className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
@@ -120,14 +120,14 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="register-confirm" className="text-[10px] font-bold text-[var(--color-text-dim)] font-display tracking-[0.12em] uppercase">
-              Confirm Password
+              {t('auth.confirmPassword')}
             </label>
             <input
               id="register-confirm"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
+              placeholder={t('auth.confirmPasswordPlaceholder')}
               required
               minLength={6}
               className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"

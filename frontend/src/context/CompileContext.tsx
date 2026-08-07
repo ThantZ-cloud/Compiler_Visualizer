@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useMemo, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { compileAPI, codeAPI } from '../services/api';
 import type { CompileResponse } from '../types';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -16,15 +17,12 @@ interface CompileContextType {
   handleCompile: () => Promise<void>;
   handleCancel: () => void;
   currentFileId: number | null;
-  setCurrentFileId: (id: number | null) => void;
   currentFileName: string;
   setCurrentFileName: (name: string) => void;
   isDirty: boolean;
   saveFile: (title: string, codeOverride?: string) => Promise<number>;
   loadFile: (id: number) => Promise<void>;
   newFile: () => void;
-  /** Check if unsaved changes exist — returns true if safe to proceed. */
-  confirmDiscard: () => boolean;
   /** Whether the "discard unsaved changes" dialog is currently open. */
   discardDialogOpen: boolean;
   /** Show the discard confirmation dialog and run `action` if confirmed. */
@@ -56,6 +54,7 @@ const DEFAULT_CODE = `public class Main {
 }`;
 
 export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) => {
+  const { t } = useTranslation();
   const [code, setCodeState] = useState<string>(DEFAULT_CODE);
   const [result, setResult] = useState<CompileResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -98,10 +97,6 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
 
   // Check if there are unsaved changes — synchronous guard for simple cases.
   // For async dialog flow, use showDiscardDialog() instead.
-  const confirmDiscard = useCallback((): boolean => {
-    return !isDirty;
-  }, [isDirty]);
-
   const handleCompile = useCallback(async () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -175,28 +170,33 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
     setError(null);
   }, []);
 
+  const value = useMemo(() => ({
+    code, setCode,
+    result,
+    loading,
+    error,
+    stdinInput, setStdinInput,
+    selectedClass, setSelectedClass,
+    handleCompile, handleCancel,
+    currentFileId, currentFileName, setCurrentFileName,
+    isDirty, saveFile, loadFile, newFile,
+    discardDialogOpen, showDiscardDialog, confirmDiscardAction, cancelDiscardAction,
+  }), [code, setCode, result, loading, error, stdinInput, selectedClass,
+      handleCompile, handleCancel, currentFileId, currentFileName, setCurrentFileName,
+      isDirty, saveFile, loadFile, newFile,
+      discardDialogOpen, showDiscardDialog, confirmDiscardAction, cancelDiscardAction]);
+
   return (
-    <CompileContext.Provider value={{
-      code, setCode,
-      result,
-      loading,
-      error,
-      stdinInput, setStdinInput,
-      selectedClass, setSelectedClass,
-      handleCompile, handleCancel,
-      currentFileId, setCurrentFileId, currentFileName, setCurrentFileName,
-      isDirty, saveFile, loadFile, newFile, confirmDiscard,
-      discardDialogOpen, showDiscardDialog, confirmDiscardAction, cancelDiscardAction,
-    }}>
+    <CompileContext.Provider value={value}>
       {children}
 
       {/* Global discard-unsaved-changes confirmation dialog */}
       <ConfirmDialog
         isOpen={discardDialogOpen}
-        title="Unsaved Changes"
-        message="You have unsaved changes. Discard them and continue?"
-        confirmText="DISCARD"
-        cancelText="KEEP EDITING"
+        title={t('editor.unsavedChangesTitle')}
+        message={t('editor.unsavedChangesMessage')}
+        confirmText={t('editor.discard')}
+        cancelText={t('editor.keepEditing')}
         onConfirm={confirmDiscardAction}
         onCancel={cancelDiscardAction}
         danger

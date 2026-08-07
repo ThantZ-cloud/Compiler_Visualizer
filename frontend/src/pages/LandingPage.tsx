@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer
 import { useAuth } from '../context/AuthContext';
 import BinaryRain from '../components/BinaryRain';
 import Footer from '../components/Footer';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { Code, Layers, GitBranch, Search, Cpu, Save, PenLine, Play } from 'lucide-react';
 
 // ── Typewriter hook ──
@@ -38,16 +39,7 @@ function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 20
 
 // ── Floating binary strings (hero only) ──
 function FloatingBinary() {
-  const [prefersReduced, setPrefersReduced] = useState(
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handler = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
+  const prefersReduced = usePrefersReducedMotion();
 
   const bits = useRef(
     Array.from({ length: 14 }, (_, i) => ({
@@ -295,6 +287,7 @@ const LandingPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const prefersReduced = usePrefersReducedMotion();
   const [booted, setBooted] = useState(false);
   const [showContent, setShowContent] = useState(false);
 
@@ -311,7 +304,6 @@ const LandingPage: React.FC = () => {
 
   // Boot sequence — show on fresh page load (first visit / hard reload), skip on React Router nav
   useEffect(() => {
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced || hasBootedInSession) {
       setBooted(true);
       setShowContent(true);
@@ -325,7 +317,7 @@ const LandingPage: React.FC = () => {
       clearTimeout(timeout);
       hasBootedInSession = true;
     };
-  }, []);
+  }, [prefersReduced]);
 
   const handleBootComplete = () => {
     setBooted(true);

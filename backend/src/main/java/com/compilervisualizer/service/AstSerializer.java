@@ -27,7 +27,7 @@ public class AstSerializer {
             ObjectNode root = nodeToJson(cu);
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
         } catch (Exception e) {
-            return "{\"error\": \"Failed to serialize AST: " + e.getMessage() + "\"}";
+            return JsonEscape.errorJson("Failed to serialize AST: " + e.getMessage());
         }
     }
 

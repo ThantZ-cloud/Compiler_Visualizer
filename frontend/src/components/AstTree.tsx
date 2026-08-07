@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
+import { useTranslation } from 'react-i18next';
 import './AstTree.css';
 
 interface AstNode {
@@ -106,6 +107,7 @@ function convertToAstNode(obj: any): AstNode {
 }
 
 const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
+  const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedNode, setSelectedNode] = useState<AstNode | null>(null);
@@ -205,7 +207,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
     nodes.append('circle')
       .attr('r', d => d.data.children ? 7 : 5)
       .attr('fill', d => getNodeColor(d.data.type))
-      .attr('stroke', '#1e1e1e')
+      .attr('stroke', 'var(--color-card)')
       .attr('stroke-width', 1.5);
 
     nodes.append('text')
@@ -217,7 +219,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
         const display = d.data.value ? `${label} = ${d.data.value}` : label;
         return display.length > 30 ? display.substring(0, 30) + '...' : display;
       })
-      .attr('fill', '#d4d4d4')
+      .attr('fill', 'var(--color-text)')
       .attr('font-size', '11px')
       .append('title')
       .text(d => {
@@ -233,7 +235,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       .attr('x', 0)
       .attr('text-anchor', 'middle')
       .text(d => `[${d.data.children?.length}]`)
-      .attr('fill', '#ffffff')
+      .attr('fill', 'var(--color-text)')
       .attr('font-size', '8px')
       .attr('font-weight', 'bold')
       .append('title')
@@ -258,21 +260,21 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
   }, [astJson, collapsedNodes, getNodeId, toggleCollapse]);
 
   if (!astJson) {
-    return <div className="ast-tree-container"><div className="ast-tree-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#808080', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>No AST data to display</div></div>;
+    return <div className="ast-tree-container"><div className="ast-tree-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>{t('ast.noData')}</div></div>;
   }
 
   return (
     <div className="ast-tree-container">
       <div className="ast-tree-header">
-        <h3>Abstract Syntax Tree</h3>
-        <span className="ast-tree-hint">Click nodes to expand/collapse • Scroll to zoom • Drag to pan</span>
+        <h3>{t('ast.title')}</h3>
+        <span className="ast-tree-hint">{t('ast.hint')}</span>
       </div>
       <div className="ast-tree-wrapper" ref={containerRef}>
         <svg ref={svgRef} width="100%" height="100%" />
       </div>
       {selectedNode && (
         <div className="ast-node-detail">
-          <span className="detail-label">Selected:</span>
+          <span className="detail-label">{t('ast.selected')}</span>
           <span className="detail-type" style={{ backgroundColor: getNodeColor(selectedNode.type) + '33', color: getNodeColor(selectedNode.type) }}>
             {selectedNode.type}
           </span>

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
+import { useTranslation } from 'react-i18next';
 import { ZoomIn, ZoomOut, RotateCcw, GitFork, ArrowDown, ArrowUp } from 'lucide-react';
 import type { CfgMethod, CfgNode, CfgEdge } from '../types';
 
@@ -66,6 +67,7 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 }
 
 const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
+  const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
@@ -571,21 +573,21 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
             <button
               onClick={() => handleZoom(1.2)}
               className="p-1.5 text-[var(--color-text-dim)] hover:text-[var(--color-neon)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-2)] border border-[var(--color-border)] rounded transition-colors"
-              title="Zoom In"
+              title={t('cfg.zoomIn')}
             >
               <ZoomIn size={14} />
             </button>
             <button
               onClick={() => handleZoom(0.8)}
               className="p-1.5 text-[var(--color-text-dim)] hover:text-[var(--color-neon)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-2)] border border-[var(--color-border)] rounded transition-colors"
-              title="Zoom Out"
+              title={t('cfg.zoomOut')}
             >
               <ZoomOut size={14} />
             </button>
             <button
               onClick={handleResetZoom}
               className="p-1.5 text-[var(--color-text-dim)] hover:text-[var(--color-neon)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-2)] border border-[var(--color-border)] rounded transition-colors"
-              title="Reset View"
+              title={t('cfg.resetView')}
             >
               <RotateCcw size={14} />
             </button>
@@ -638,7 +640,7 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
               </span>
               <div className="p-3 bg-[var(--color-void)] border border-[var(--color-border)] rounded max-h-[140px] overflow-auto flex flex-col gap-1">
                 {selectedBlock.statements.length === 0 ? (
-                  <span className="text-[var(--color-text-muted)] italic">(empty basic block)</span>
+                  <span className="text-[var(--color-text-muted)] italic">{t('cfg.emptyBlock')}</span>
                 ) : (
                   selectedBlock.statements.map((stmt, idx) => (
                     <div key={idx} className="flex items-center gap-2">
@@ -657,12 +659,12 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
               </span>
               <div className="p-3 bg-[var(--color-void)] border border-[var(--color-border)] rounded max-h-[140px] overflow-auto flex flex-col gap-2 text-[11px]">
                 <div>
-                  <span className="text-[var(--color-cyan)] font-bold">In: </span>
-                  {incomingEdges.length === 0 ? 'None (Entry)' : incomingEdges.map(e => `B${e.from}${e.label ? ` [${e.label}]` : ''}`).join(', ')}
+                  <span className="text-[var(--color-cyan)] font-bold">{t('cfg.in')}</span>
+                  {incomingEdges.length === 0 ? t('cfg.noneEntry') : incomingEdges.map(e => `B${e.from}${e.label ? ` [${e.label}]` : ''}`).join(', ')}
                 </div>
                 <div>
-                  <span className="text-[var(--color-amber)] font-bold">Out: </span>
-                  {outgoingEdges.length === 0 ? 'None (Exit)' : outgoingEdges.map(e => `B${e.to}${e.label ? ` [${e.label}]` : ''}`).join(', ')}
+                  <span className="text-[var(--color-amber)] font-bold">{t('cfg.out')}</span>
+                  {outgoingEdges.length === 0 ? t('cfg.noneExit') : outgoingEdges.map(e => `B${e.to}${e.label ? ` [${e.label}]` : ''}`).join(', ')}
                 </div>
               </div>
             </div>

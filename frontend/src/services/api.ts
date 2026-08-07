@@ -31,20 +31,6 @@ export const authAPI = {
 export const compileAPI = {
   compile: (sourceCode: string, input?: string, signal?: AbortSignal, entryClassName?: string) =>
     api.post('/compile', { sourceCode, input, entryClassName }, { signal }),
-  compileTokens: (sourceCode: string, signal?: AbortSignal) =>
-    api.post('/compile/tokens', { sourceCode }, { signal }),
-  compileAst: (sourceCode: string, signal?: AbortSignal) =>
-    api.post('/compile/ast', { sourceCode }, { signal }),
-  compileSemantic: (sourceCode: string, signal?: AbortSignal) =>
-    api.post('/compile/semantic', { sourceCode }, { signal }),
-  compileBytecode: (sourceCode: string, signal?: AbortSignal) =>
-    api.post('/compile/bytecode', { sourceCode }, { signal }),
-};
-
-// Execute API
-export const executeAPI = {
-  execute: (sourceCode: string) =>
-    api.post('/execute', { sourceCode }),
 };
 
 // Code Management API

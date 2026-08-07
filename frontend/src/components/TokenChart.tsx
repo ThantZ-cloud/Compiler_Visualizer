@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
+import { useTranslation } from 'react-i18next';
 
 interface Token {
   type: string;
@@ -43,6 +44,7 @@ function getColor(type: string): string {
 }
 
 const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
+  const { t } = useTranslation();
   const barChartRef = useRef<SVGSVGElement>(null);
   const flowChartRef = useRef<SVGSVGElement>(null);
 
@@ -100,7 +102,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('y', d => (yScale(d.type) || 0) + yScale.bandwidth() / 2)
       .attr('dy', '0.35em')
       .attr('text-anchor', 'end')
-      .attr('fill', '#cccccc')
+      .attr('fill', 'var(--color-text-dim)')
       .attr('font-size', '11px')
       .attr('font-family', "'Consolas', 'Monaco', monospace")
       .text(d => d.type);
@@ -112,7 +114,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('x', d => xScale(d.count) + 6)
       .attr('y', d => (yScale(d.type) || 0) + yScale.bandwidth() / 2)
       .attr('dy', '0.35em')
-      .attr('fill', '#808080')
+      .attr('fill', 'var(--color-text-muted)')
       .attr('font-size', '11px')
       .attr('font-family', "'Consolas', 'Monaco', monospace")
       .text(d => d.count)
@@ -187,8 +189,8 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
         .attr('y', 100)
         .attr('width', 160)
         .attr('height', 50)
-        .attr('fill', '#252526')
-        .attr('stroke', '#3c3c3c')
+        .attr('fill', 'var(--color-surface-2)')
+        .attr('stroke', 'var(--color-border-bright)')
         .attr('rx', 4);
       tooltip.append('text')
         .attr('x', d.x + d.w / 2)
@@ -203,7 +205,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
         .attr('x', d.x + d.w / 2)
         .attr('y', 136)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#d4d4d4')
+        .attr('fill', 'var(--color-text)')
         .attr('font-size', '11px')
         .attr('font-family', "'Consolas', 'Monaco', monospace")
         .text(d.value.length > 18 ? d.value.substring(0, 18) + '...' : d.value);
@@ -229,7 +231,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('x2', d => d.x)
       .attr('y1', 30)
       .attr('y2', 35)
-      .attr('stroke', '#808080')
+      .attr('stroke', 'var(--color-text-muted)')
       .attr('stroke-width', 1);
 
     g.selectAll('.line-label')
@@ -237,7 +239,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .join('text')
       .attr('x', d => d.x + 2)
       .attr('y', 25)
-      .attr('fill', '#808080')
+      .attr('fill', 'var(--color-text-muted)')
       .attr('font-size', '9px')
       .attr('font-family', "'Consolas', 'Monaco', monospace")
       .text(d => `L${d.line}`);
@@ -251,27 +253,27 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
   return (
     <div className="flex flex-col gap-6 h-full">
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-[#cccccc] m-0">Token Distribution by Type</h3>
-        <div className="bg-[#1e1e1e] border border-[#3c3c3c] rounded-[6px] p-3 overflow-x-auto">
+        <h3 className="text-sm font-medium text-[var(--color-text)] m-0">{t('tokens.distributionTitle')}</h3>
+        <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-[6px] p-3 overflow-x-auto">
           <svg
             ref={barChartRef}
             className="block"
             role="img"
-            aria-label="Bar chart showing token count distribution by type"
+            aria-label={t('tokens.distributionTitle')}
           />
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-[#cccccc] m-0">Token Flow (source code sequence)</h3>
-        <div className="bg-[#1e1e1e] border border-[#3c3c3c] rounded-[6px] p-3 overflow-x-auto">
+        <h3 className="text-sm font-medium text-[var(--color-text)] m-0">{t('tokens.flowTitle')}</h3>
+        <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-[6px] p-3 overflow-x-auto">
           <svg
             ref={flowChartRef}
             className="block"
             role="img"
-            aria-label="Token flow visualization showing tokens as colored blocks in source code sequence. Hover over blocks to see details."
+            aria-label={t('tokens.flowTitle')}
           />
         </div>
-        <div className="text-[11px] text-[#808080] text-right">Hover over tokens to see details</div>
+        <div className="text-[11px] text-[var(--color-text-muted)] text-right">{t('tokens.hoverHint')}</div>
       </div>
     </div>
   );

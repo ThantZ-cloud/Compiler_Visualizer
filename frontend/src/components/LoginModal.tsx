@@ -72,7 +72,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
+              placeholder={t('auth.loginUsernamePlaceholder')}
               required
               autoFocus
               className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
@@ -88,7 +88,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t('auth.passwordPlaceholder')}
               required
               className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
             />

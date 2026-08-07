@@ -14,19 +14,19 @@
 .ast-tree-header h3 {
   font-size: 14px;
   font-weight: 500;
-  color: #cccccc;
+  color: var(--color-text);
 }
 
 .ast-tree-hint {
   font-size: 11px;
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .ast-tree-wrapper {
   flex: 1;
   min-height: 350px;
-  background-color: #1e1e1e;
-  border: 1px solid #3c3c3c;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -43,7 +43,7 @@
 /* Links */
 .link {
   fill: none;
-  stroke: #3c3c3c;
+  stroke: var(--color-border-bright);
   stroke-width: 1.5;
   stroke-opacity: 0.6;
 }
@@ -56,7 +56,7 @@
 
 .node circle:hover {
   r: 8;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 4px var(--color-neon-dim));
 }
 
 .node text {
@@ -71,20 +71,20 @@
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background-color: #252526;
-  border: 1px solid #3c3c3c;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
 }
 
 .detail-label {
   font-size: 11px;
-  color: #808080;
+  color: var(--color-text-muted);
   text-transform: uppercase;
 }
 
 .detail-name {
   font-size: 13px;
-  color: #ffffff;
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -98,11 +98,11 @@
 
 .detail-pos {
   font-size: 11px;
-  color: #808080;
+  color: var(--color-text-muted);
 }
 
 .detail-value {
   font-size: 12px;
-  color: #ce9178;
+  color: var(--color-cyan);
   font-family: 'Consolas', 'Monaco', monospace;
 }

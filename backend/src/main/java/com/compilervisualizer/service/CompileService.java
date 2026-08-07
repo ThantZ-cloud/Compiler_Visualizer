@@ -3,9 +3,12 @@ package com.compilervisualizer.service;
 import com.compilervisualizer.dto.CompileResponse;
 import com.compilervisualizer.dto.CompileResponse.ClassInfo;
 import com.compilervisualizer.dto.TokenDto;
+import com.compilervisualizer.service.CodeExecutor.ExecutionResult;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -14,29 +17,29 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CompileService {
 
-    private static final int TIMEOUT_SECONDS = 10;
-    private static final int MAX_CACHE_SIZE = 128;
+    private static final int PARALLEL_THREADS = 4;
 
-    private final ExecutorService compileExecutor = Executors.newFixedThreadPool(4);
+    // Memory cap for the child JVM that executes user code (sandbox hardening).
+    private static final String EXECUTION_JVM_MEMORY = "-Xmx64m";
 
-    // Simple LRU-style cache: sourceCode+input → response
-    private final ConcurrentHashMap<String, CompileResponse> cache = new ConcurrentHashMap<>();
+    private final ExecutorService compileExecutor = Executors.newFixedThreadPool(PARALLEL_THREADS);
+    private final CodeExecutor codeExecutor;
+    private final CompileResultCache compileResultCache;
 
     public CompileResponse compileAndExecute(String sourceCode, String stdinInput, String entryClassName) {
         // Check cache first
         String cacheKey = sourceCode + "\0" + (stdinInput != null ? stdinInput : "");
-        CompileResponse cached = cache.get(cacheKey);
+        CompileResponse cached = compileResultCache.get(cacheKey);
         if (cached != null) {
             log.debug("Cache hit for compilation");
             return cached;
@@ -73,16 +76,9 @@ public class CompileService {
 
             // Reuse the AST already parsed for class detection
             CompilationUnit cu = cuForDetection;
-            String tokenError = null;
             String astError = null;
 
-            List<TokenDto> tokens;
-            try {
-                tokens = tokensFuture.get();
-            } catch (Exception e) {
-                tokens = List.of();
-                tokenError = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            }
+            List<TokenDto> tokens = tokensFuture.join();
 
             // Phase 2: Serialize AST (reuse parsed AST)
             String astJson;
@@ -90,10 +86,10 @@ public class CompileService {
                 if (cu != null) {
                     astJson = AstSerializer.toJson(cu);
                 } else {
-                    astJson = "{\"error\": \"" + escapeJson(astError != null ? astError : "Parse failed") + "\"}";
+                    astJson = JsonEscape.errorJson(astError != null ? astError : "Parse failed");
                 }
             } catch (Exception e) {
-                astJson = "{\"error\": \"" + escapeJson(e.getMessage()) + "\"}";
+                astJson = JsonEscape.errorJson(e.getMessage());
                 astError = e.getMessage();
             }
 
@@ -109,7 +105,7 @@ public class CompileService {
                 }
             } catch (Exception e) {
                 log.error("Symbol table generation failed", e);
-                symbolTableJson = "{\"error\": \"" + escapeJson(e.getMessage()) + "\"}";
+                symbolTableJson = JsonEscape.errorJson(e.getMessage());
                 symbolTableError = e.getMessage();
             }
             long symbolTableTime = System.currentTimeMillis() - t1;
@@ -126,7 +122,7 @@ public class CompileService {
                 }
             } catch (Exception e) {
                 log.error("CFG generation failed", e);
-                cfgJson = "{\"error\": \"" + escapeJson(e.getMessage()) + "\"}";
+                cfgJson = JsonEscape.errorJson(e.getMessage());
                 cfgError = e.getMessage();
             }
             long cfgTime = System.currentTimeMillis() - tCfg;
@@ -175,9 +171,9 @@ public class CompileService {
             Integer exitCode = null;
             try {
                 ExecutionResult result = executeCode(tempDir, className, stdinInput);
-                executionOutput = result.stdout;
-                executionError = result.stderr.isEmpty() ? null : result.stderr;
-                exitCode = result.exitCode;
+                executionOutput = result.stdout();
+                executionError = result.stderr().isEmpty() ? null : result.stderr();
+                exitCode = result.exitCode();
             } catch (Exception e) {
                 log.error("Execution failed", e);
                 executionError = e.getMessage();
@@ -187,11 +183,10 @@ public class CompileService {
             long totalTime = System.currentTimeMillis() - pipelineStart;
 
             // Determine legacy error field
-            String firstError = firstNonNull(tokenError, astError, symbolTableError, tacError, cfgError, compilationError, executionError);
+            String firstError = firstNonNull(astError, symbolTableError, tacError, cfgError, compilationError, executionError);
 
             CompileResponse response = CompileResponse.builder()
                 .tokens(tokens)
-                .tokenError(tokenError)
                 .tokenTimeMs(tokenTime)
                 .astJson(astJson)
                 .astError(astError)
@@ -218,13 +213,8 @@ public class CompileService {
                 .allBytecode(allBytecode)
                 .build();
 
-            // Cache the result (evict oldest if at capacity)
-            if (cache.size() >= MAX_CACHE_SIZE) {
-                // Evict the oldest entry by insertion order
-                String oldestKey = cache.keySet().iterator().next();
-                cache.remove(oldestKey);
-            }
-            cache.put(cacheKey, response);
+            // Cache the result (LRU eviction when full)
+            compileResultCache.put(cacheKey, response);
 
             return response;
 
@@ -353,13 +343,13 @@ public class CompileService {
                     if (name.contains("$")) return;
 
                     try {
-                        ProcessBuilder pb = new ProcessBuilder("javap", "-c", "-p", classFile.toString());
-                        pb.redirectErrorStream(true);
-                        Process process = pb.start();
-                        String output = readStream(process.getInputStream());
-                        boolean finished = process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                        if (finished && process.exitValue() == 0) {
-                            result.put(name, output);
+                        ExecutionResult toolResult = codeExecutor.run(
+                            List.of(codeExecutor.javapExecutable(), "-c", "-p", classFile.toString()),
+                            tempDir, null);
+                        if (toolResult.stderr().isBlank() && toolResult.exitCode() == 0) {
+                            result.put(name, toolResult.stdout());
+                        } else {
+                            log.warn("javap failed for {}: {}", name, toolResult.stderr());
                         }
                     } catch (Exception e) {
                         log.warn("javap failed for {}: {}", name, e.getMessage());
@@ -376,47 +366,17 @@ public class CompileService {
 
     // --- Phase 5: Execution ---
 
-    private ExecutionResult executeCode(Path tempDir, String className, String stdinInput) throws Exception {
-        ProcessBuilder pb = new ProcessBuilder("java", "-cp", tempDir.toString(), className);
-        pb.redirectErrorStream(true); // merge stderr into stdout to prevent deadlock
-        Process process = pb.start();
-
-        // provide stdin if requested
-        if (stdinInput != null && !stdinInput.isEmpty()) {
-            try (OutputStream os = process.getOutputStream()) {
-                os.write(stdinInput.getBytes());
-                os.flush();
-            }
-        }
-
-        String output = readStream(process.getInputStream());
-        boolean finished = process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-
-        if (!finished) {
-            process.destroyForcibly();
-            return new ExecutionResult(
-                output,
-                "[Timed out after " + TIMEOUT_SECONDS + "s]",
-                -1
-            );
-        }
-
-        return new ExecutionResult(output, "", process.exitValue());
+    private ExecutionResult executeCode(Path tempDir, String className, String stdinInput) {
+        List<String> command = List.of(
+            codeExecutor.javaExecutable(),
+            EXECUTION_JVM_MEMORY,
+            "-Dfile.encoding=UTF-8",
+            "-cp", tempDir.toString(),
+            className);
+        return codeExecutor.run(command, tempDir, stdinInput);
     }
 
     // --- Helpers ---
-
-    private String readStream(InputStream is) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (sb.length() > 0) sb.append("\n");
-                sb.append(line);
-            }
-        }
-        return sb.toString();
-    }
 
     private void cleanupTempDir(Path tempDir) {
         if (tempDir == null) return;
@@ -432,8 +392,7 @@ public class CompileService {
     }
 
     private String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+        return JsonEscape.escape(s);
     }
 
     private String firstNonNull(String... values) {
@@ -443,5 +402,8 @@ public class CompileService {
         return null;
     }
 
-    private record ExecutionResult(String stdout, String stderr, int exitCode) {}
+    @PreDestroy
+    public void shutdown() {
+        compileExecutor.shutdownNow();
+    }
 }

@@ -156,6 +156,13 @@
     "email": "အီးမေးလ်",
     "password": "စကားဝှက်",
     "username": "အသုံးပြုသူအမည်",
+    "confirmPassword": "စကားဝှက် အတည်ပြုရန်",
+    "usernamePlaceholder": "အသုံးပြုသူအမည် ရွေးချယ်ပါ",
+    "emailPlaceholder": "အီးမေးလ် ထည့်ပါ",
+    "passwordPlaceholder": "စကားဝှက် ထည့်ပါ",
+    "loginUsernamePlaceholder": "အသုံးပြုသူအမည် ထည့်ပါ",
+    "createPasswordPlaceholder": "စကားဝှက် ဖန်တီးပါ",
+    "confirmPasswordPlaceholder": "စကားဝှက် အတည်ပြုပါ",
     "loginTitle": "ဝင်ရောက်ရန်",
     "registerTitle": "စာရင်းသွင်းရန်",
     "loginButton": "ဝင်ရောက်ရန်",
@@ -181,26 +188,62 @@
     "output": "ထွက်ရလဒ်",
     "clickCompile": "သင့်ကုဒ်ကို အောင်မြင်စွာ ဆောင်ရွက်ရန် COMPILE ကိုနှိပ်ပါ။",
     "saveFile": "ဖိုင် သိမ်းဆည်းရန်",
-    "enterFileName": "သင့်ဖိုင်အတွက် အမည်ထည့်ပါ:"
+    "enterFileName": "သင့်ဖိုင်အတွက် အမည်ထည့်ပါ:",
+    "unsavedChangesTitle": "သိမ်းမထားသော ပြောင်းလဲမှုများ",
+    "unsavedChangesMessage": "သင့်တွင် သိမ်းမထားသော ပြောင်းလဲမှုများရှိသည်။ ၎င်းတို့ကို ပယ်ဖျက်ပြီး ဆက်လက်လုပ်ဆောင်မလား?",
+    "discard": "ပယ်ဖျက်ရန်",
+    "keepEditing": "တည်းဖြတ်ဆက်လုပ်ရန်"
   },
   "fileBrowser": {
     "explorer": "စူးစမ်းရှာဖွေရန်",
     "snippets": "ကုဒ်များ",
     "noFiles": "ဖိုင်များ မရှိသေးပါ",
-    "classNamePlaceholder": "ClassName.java"
+    "classNamePlaceholder": "ClassName.java",
+    "newFile": "ဖိုင်အသစ်",
+    "rename": "အမည်ပြောင်း",
+    "delete": "ဖျက်",
+    "cancel": "ပယ်ဖျက်ရန်",
+    "deleteConfirmTitle": "ဖိုင် ဖျက်ရန်",
+    "deleteConfirmMessage": "\"{{name}}\" ကို ဖျက်မှာ သေချာပါသလား။ ဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍ မရပါ။",
+    "deleteConfirmAction": "ဖျက်မည်",
+    "fileCreated": "ဖိုင် ဖန်တီးပြီးပါပြီ",
+    "fileCreatedFail": "ဖိုင် ဖန်တီးမှု မအောင်မြင်ပါ",
+    "fileDeleted": "ဖိုင် ဖျက်ပြီးပါပြီ",
+    "fileDeletedFail": "ဖိုင် ဖျက်မှု မအောင်မြင်ပါ",
+    "fileRenamed": "ဖိုင် အမည် ပြောင်းပြီးပါပြီ",
+    "fileRenamedFail": "ဖိုင် အမည် ပြောင်းမှု မအောင်မြင်ပါ",
+    "loadFail": "ဖိုင်များ ဖွင့်ရန် မအောင်မြင်ပါ"
   },
   "visualize": {
     "noCompilationResults": "ဘာသာပြန် ရလဒ်များ မရှိပါ",
     "selectPhase": "Java ကုဒ်ရေးပြီး COMPILE ကိုနှိပ်ပြီး မြင်ကွင်းကို ကြည့်ပါ။"
   },
   "tokens": {
-    "noTokens": "တိုကင်များ မထုတ်လုပ်ပါ"
+    "noTokens": "တိုကင်များ မထုတ်လုပ်ပါ",
+    "distributionTitle": "အမျိုးအစားအလိုက် တိုကင် ဖြန့်ချီမှု",
+    "flowTitle": "တိုကင် စီးဆင်းမှု (ရင်းမြစ်ကုဒ် အစဉ်လိုက်)",
+    "hoverHint": "အသေးစိတ်ကြည့်ရန် တိုကင်များအပေါ် ရွှေ့ကြည့်ပါ",
+    "filterPlaceholder": "$ တိုကင်များ စစ်ရန်...",
+    "chartView": "ဇယားကွက်",
+    "gridView": "အမျိုးအစားစု",
+    "countSummary": "တိုကင်များ — {{total}} လုံး၊ {{shown}} ခု ပြထားသည်"
   },
   "ast": {
-    "noAst": "AST မထုတ်လုပ်ပါ"
+    "noAst": "AST မထုတ်လုပ်ပါ",
+    "title": "Abstract Syntax Tree",
+    "hint": "ချဲ့/ချုပ်ရန် node ကိုနှိပ်ပါ • Zoom လုပ်ရန် ရွှေ့ပါ • ဆွဲယူရန် drag လုပ်ပါ",
+    "noData": "AST ဒေတာ ပြရန် မရှိပါ",
+    "selected": "ရွေးချယ်ထားသည်:"
   },
   "semantic": {
-    "noSymbolTable": "သင်္ကေတ ဇယား မထုတ်လုပ်ပါ"
+    "noSymbolTable": "သင်္ကေတ ဇယား မထုတ်လုပ်ပါ",
+    "kind": "အမျိုးအစား",
+    "name": "အမည်",
+    "modifiers": "Modifiers",
+    "type": "Type",
+    "parent": "Parent",
+    "details": "အသေးစိတ်",
+    "entries": "ခု"
   },
   "bytecode": {
     "noBytecode": "ဘိုက်ကုဒ် မထုတ်လုပ်ပါ"
@@ -209,7 +252,15 @@
     "noTac": "သုံးလုံးတန်းကုဒ် မထုတ်လုပ်ပါ"
   },
   "cfg": {
-    "noCfg": "ထိန်းချုပ်မှု စီးဆင်းမှု ဇယား မထုတ်လုပ်ပါ"
+    "noCfg": "ထိန်းချုပ်မှု စီးဆင်းမှု ဇယား မထုတ်လုပ်ပါ",
+    "emptyBlock": "(အလွတ် basic block)",
+    "in": "In: ",
+    "out": "Out: ",
+    "noneEntry": "မရှိ (Entry)",
+    "noneExit": "မရှိ (Exit)",
+    "zoomIn": "ချဲ့ရန်",
+    "zoomOut": "ချုံ့ရန်",
+    "resetView": "မြင်ကွင်း ပြန်သတ်ရန်"
   },
   "pipeline": {
     "title": "ဘာသာပြန် လုပ်ငန်းစဉ်",

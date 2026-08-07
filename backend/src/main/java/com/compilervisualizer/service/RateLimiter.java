@@ -2,72 +2,68 @@ package com.compilervisualizer.service;
 
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class RateLimiter {
 
+    public static final int WINDOW_SECONDS = 60;
     private static final int MAX_REQUESTS = 10;
-    private static final long WINDOW_MS = 60_000; // 1 minute
+    // Purge keys that have gone idle past this threshold to avoid unbounded growth.
+    private static final long MAX_IDLE_MS = 10 * 60_000L;
 
     private final ConcurrentHashMap<String, long[]> requests = new ConcurrentHashMap<>();
 
     public boolean tryAcquire(String key) {
-        long now = System.currentTimeMillis();
-        long[] timestamps = requests.compute(key, (k, v) -> {
-            if (v == null) return new long[]{now};
-
-            // Remove expired entries
-            int count = 0;
-            for (long ts : v) {
-                if (now - ts < WINDOW_MS) count++;
-            }
-
-            if (count >= MAX_REQUESTS) return v;
-
-            long[] updated = new long[count + 1];
-            int i = 0;
-            for (long ts : v) {
-                if (now - ts < WINDOW_MS) updated[i++] = ts;
-            }
-            updated[i] = now;
-            return updated;
-        });
-
-        int count = 0;
-        for (long ts : timestamps) {
-            if (now - ts < WINDOW_MS) count++;
-        }
-        return count <= MAX_REQUESTS;
+        return tryAcquire(key, MAX_REQUESTS, WINDOW_SECONDS);
     }
 
     public boolean tryAcquire(String key, int maxRequests, int windowSeconds) {
         long now = System.currentTimeMillis();
         long windowMs = windowSeconds * 1000L;
-        long[] timestamps = requests.compute(key, (k, v) -> {
-            if (v == null) return new long[]{now};
+        AtomicBoolean allowed = new AtomicBoolean(false);
 
-            // Remove expired entries
+        requests.compute(key, (k, v) -> {
+            long[] recent = new long[16];
             int count = 0;
-            for (long ts : v) {
-                if (now - ts < windowMs) count++;
+            if (v != null) {
+                for (long ts : v) {
+                    if (now - ts < windowMs) {
+                        if (count == recent.length) recent = Arrays.copyOf(recent, recent.length * 2);
+                        recent[count++] = ts;
+                    }
+                }
             }
 
-            if (count >= maxRequests) return v;
-
-            long[] updated = new long[count + 1];
-            int i = 0;
-            for (long ts : v) {
-                if (now - ts < windowMs) updated[i++] = ts;
+            if (count >= maxRequests) {
+                allowed.set(false);
+                return Arrays.copyOf(recent, count);
             }
-            updated[i] = now;
+
+            long[] updated = Arrays.copyOf(recent, count + 1);
+            updated[count] = now;
+            allowed.set(true);
             return updated;
         });
 
-        int count = 0;
-        for (long ts : timestamps) {
-            if (now - ts < windowMs) count++;
+        maybePurgeIdleKeys(now);
+        return allowed.get();
+    }
+
+    private void maybePurgeIdleKeys(long now) {
+        if (requests.size() < 1000) {
+            return;
         }
-        return count <= maxRequests;
+        requests.entrySet().removeIf(e -> {
+            long[] ts = e.getValue();
+            for (long t : ts) {
+                if (now - t < MAX_IDLE_MS) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }
 }

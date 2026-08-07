@@ -17,5 +17,7 @@ public class SaveCodeRequest {
     @Size(max = 100, message = "Title must be less than 100 characters")
     private String title;
 
+    @NotBlank(message = "Source code is required")
+    @Size(max = 50000, message = "Source code too large (max 50,000 characters)")
     private String sourceCode;
 }

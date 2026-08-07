@@ -156,6 +156,13 @@
     "email": "Email",
     "password": "Password",
     "username": "Username",
+    "confirmPassword": "Confirm Password",
+    "usernamePlaceholder": "Choose a username",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "loginUsernamePlaceholder": "Enter your username",
+    "createPasswordPlaceholder": "Create a password",
+    "confirmPasswordPlaceholder": "Confirm your password",
     "loginTitle": "Sign In",
     "registerTitle": "Register",
     "loginButton": "SIGN IN",
@@ -181,26 +188,62 @@
     "output": "OUTPUT",
     "clickCompile": "Click COMPILE to run your code.",
     "saveFile": "Save File",
-    "enterFileName": "Enter a name for your file:"
+    "enterFileName": "Enter a name for your file:",
+    "unsavedChangesTitle": "Unsaved Changes",
+    "unsavedChangesMessage": "You have unsaved changes. Discard them and continue?",
+    "discard": "DISCARD",
+    "keepEditing": "KEEP EDITING"
   },
   "fileBrowser": {
     "explorer": "Explorer",
     "snippets": "Snippets",
     "noFiles": "No files yet",
-    "classNamePlaceholder": "ClassName.java"
+    "classNamePlaceholder": "ClassName.java",
+    "newFile": "New file",
+    "rename": "Rename",
+    "delete": "Delete",
+    "cancel": "CANCEL",
+    "deleteConfirmTitle": "DELETE FILE",
+    "deleteConfirmMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "deleteConfirmAction": "DELETE",
+    "fileCreated": "File created",
+    "fileCreatedFail": "Failed to create file",
+    "fileDeleted": "File deleted",
+    "fileDeletedFail": "Failed to delete file",
+    "fileRenamed": "File renamed",
+    "fileRenamedFail": "Failed to rename file",
+    "loadFail": "Failed to load files"
   },
   "visualize": {
     "noCompilationResults": "No Compilation Results",
     "selectPhase": "Write some Java code and click COMPILE to see the visualization."
   },
   "tokens": {
-    "noTokens": "No tokens generated"
+    "noTokens": "No tokens generated",
+    "distributionTitle": "Token Distribution by Type",
+    "flowTitle": "Token Flow (source code sequence)",
+    "hoverHint": "Hover over tokens to see details",
+    "filterPlaceholder": "$ filter tokens...",
+    "chartView": "Chart",
+    "gridView": "Grid",
+    "countSummary": "Tokens — {{total}} total, {{shown}} shown"
   },
   "ast": {
-    "noAst": "No AST generated"
+    "noAst": "No AST generated",
+    "title": "Abstract Syntax Tree",
+    "hint": "Click nodes to expand/collapse • Scroll to zoom • Drag to pan",
+    "noData": "No AST data to display",
+    "selected": "Selected:"
   },
   "semantic": {
-    "noSymbolTable": "No symbol table generated"
+    "noSymbolTable": "No symbol table generated",
+    "kind": "Kind",
+    "name": "Name",
+    "modifiers": "Modifiers",
+    "type": "Type",
+    "parent": "Parent",
+    "details": "Details",
+    "entries": "entries"
   },
   "bytecode": {
     "noBytecode": "No bytecode generated"
@@ -209,7 +252,15 @@
     "noTac": "No three-address code generated"
   },
   "cfg": {
-    "noCfg": "No control flow graph generated"
+    "noCfg": "No control flow graph generated",
+    "emptyBlock": "(empty basic block)",
+    "in": "In: ",
+    "out": "Out: ",
+    "noneEntry": "None (Entry)",
+    "noneExit": "None (Exit)",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "resetView": "Reset View"
   },
   "pipeline": {
     "title": "Compilation Pipeline",

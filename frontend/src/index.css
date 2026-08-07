@@ -24,7 +24,7 @@
   --color-rose-dim: #FF336622;
   --color-text: #E0E0F0;
   --color-text-dim: #8888AA;
-  --color-text-muted: #555570;
+  --color-text-muted: #9A9AB8;
   --color-binary: #00FF8844;
   --font-display: 'Orbitron', monospace;
   --font-body: 'JetBrains Mono', 'Fira Code', monospace;
@@ -42,10 +42,10 @@
   --color-surface-2: #E0E0EA;
   --color-surface-3: #D0D0DD;
   --color-border: #C8C8D8;
-  --color-border-bright: #A8A8C0;
+  --color-border-bright: #B8B8D0;
   --color-text: #1A1A2E;
   --color-text-dim: #4A4A6A;
-  --color-text-muted: #7A7A98;
+  --color-text-muted: #5E5E7A;
   --color-binary: #00CC6A22;
   /* Toned-down accent colors for light mode */
   --color-neon: #008A4C;
@@ -496,4 +496,42 @@ button:active:not(:disabled) {
 
 .skip-link:focus {
   top: 0;
+}
+
+/* ── Cyberpunk pipeline ── */
+
+/* Per-step pulsing ring (uses --pulse-color set inline) */
+@keyframes cyber-pulse {
+  0% { box-shadow: 0 0 0 0 var(--pulse-color, var(--color-neon)) 66; }
+  70% { box-shadow: 0 0 0 14px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.cyber-pulse {
+  animation: cyber-pulse 2s ease-out infinite;
+}
+
+/* Terminal-style panel with scanlines + corner glow */
+.cyber-panel {
+  position: relative;
+  background: linear-gradient(180deg, rgba(5, 5, 16, 0.92), rgba(10, 10, 18, 0.9));
+  border: 1px solid var(--color-border);
+  box-shadow: 0 0 18px var(--color-neon-dim), inset 0 0 30px rgba(0, 0, 0, 0.6);
+  padding: 14px 16px;
+  overflow: hidden;
+}
+
+.cyber-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.18) 3px,
+    rgba(0, 0, 0, 0.18) 4px
+  );
+  opacity: 0.6;
 }

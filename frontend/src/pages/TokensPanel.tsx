@@ -100,7 +100,7 @@ const TokensPanel: React.FC = () => {
     <div className="flex flex-col h-full gap-4">
       <div className="flex justify-between items-center">
         <h2 className="text-sm font-bold text-[var(--color-text)] font-display tracking-[0.12em] uppercase">
-          Tokens — {tokens.length} total, {filtered.length} shown
+          {t('tokens.countSummary', { total: tokens.length, shown: filtered.length })}
         </h2>
         <div className="flex items-center gap-3">
           <div className="flex gap-0.5 bg-[var(--color-card)] border border-[var(--color-border)] p-0.5">
@@ -111,7 +111,7 @@ const TokensPanel: React.FC = () => {
               onClick={() => setView('chart')}
             >
               <Eye size={10} />
-              Chart
+              {t('tokens.chartView')}
             </button>
             <button
               className={`px-3 py-[5px] text-[10px] font-bold tracking-[0.1em] bg-transparent border-none cursor-pointer transition-all font-display uppercase flex items-center gap-1 ${
@@ -120,13 +120,13 @@ const TokensPanel: React.FC = () => {
               onClick={() => setView('grid')}
             >
               <LayoutGrid size={10} />
-              Grid
+              {t('tokens.gridView')}
             </button>
           </div>
           <input
             type="text"
             className="px-3 py-[5px] text-[11px] text-[var(--color-neon)] bg-[var(--color-card)] border border-[var(--color-border)] w-[250px] font-mono placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_8px_var(--color-neon-dim)]"
-            placeholder="$ filter tokens..."
+            placeholder={t('tokens.filterPlaceholder')}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />

@@ -104,7 +104,8 @@ All styling uses Tailwind CSS v4 with custom `@theme` tokens defined in `fronten
 |  |  - Files         |  |  / -> LandingPage (BinaryRain hero)    | |
 |  |  (flat list)     |  |  /compiler -> EditorPage               | |
 |  |  (auth only)     |  |  /pipeline -> PipelinePage (Three.js)  | |
-|  +------------------+  |  /visualize/tokens -> TokenChart       | |
+|  +------------------+  |  /visualize/lexical -> LexicalAnalysis   | |
+|                        |    (4-step pipeline / token browser)     | |
 |                        |  /visualize/ast -> AstTree (D3.js)      | |
 |                        |  /visualize/semantic -> SemanticTree    | |
 |                        |  /visualize/bytecode -> BytecodePanel   | |
@@ -183,8 +184,21 @@ frontend/src/
     RegisterModal.tsx        # Modal dialog for user registration
     UserMenu.tsx             # Dropdown menu for user profile and logout
     Footer.tsx               # Footer component (defined but currently unused)
+    lexical/
+      StepControls.tsx       # Icon-only play/pause/next/prev/restart bar (sticky bottom)
+      PipelineConnector.tsx  # Animated flowing connectors between pipeline steps
+      RegexTable.tsx         # Step 1: token type → regex pattern table
+      NfaGraph.tsx           # Step 2: D3.js NFA state diagram (Thompson construction)
+      DfaGraph.tsx           # Step 3: D3.js DFA graph + subset construction log
+      ScannerAnimation.tsx   # Step 4: char-by-char scanner with token emission
   lib/
     utils.ts                 # cn() utility for merging Tailwind classnames
+    lexer/
+      types.ts               # NFA/DFA/scanner step types
+      tokenGroups.ts         # 8 grouped token categories + regex patterns
+      thompson.ts            # Regex → NFA conversion (Thompson construction)
+      subsetConstruction.ts  # NFA → DFA conversion (fixed point / subset construction)
+      scanner.ts             # DFA scanner simulation over source code
     ui/
       button.tsx             # shadcn/ui button
       input.tsx              # shadcn/ui input
@@ -198,8 +212,9 @@ frontend/src/
     LandingPage.tsx          # Hero with BinaryRain, typewriter, CTA buttons, copyright
     EditorPage.tsx           # Monaco editor + terminal output
     PipelinePage.tsx         # Full-page Three.js 3D pipeline visualization
-    VisualizeLayout.tsx      # Nav bar with phase links + Outlet
-    TokensPanel.tsx          # Token visualization with chart/grid toggle
+    VisualizeLayout.tsx      # Nav bar with phase links + Dynamic/Static toggle + Outlet
+    LexicalAnalysisPanel.tsx # 4-step pipeline (Dynamic) + token browser (Static)
+    TokensPanel.tsx          # Token visualization with chart/grid toggle (Static view)
     AstPanel.tsx             # Full-screen AST tree
     SemanticPanel.tsx        # Symbol table with tree/JSON toggle
     BytecodePanel.tsx        # Full-screen bytecode display
@@ -220,8 +235,9 @@ frontend/src/
 | `/` | LandingPage | Hero section with BinaryRain background, typewriter effect, CTA buttons, copyright at bottom |
 | `/pipeline` | PipelinePage | Three.js 3D interactive pipeline visualization (lazy-loaded) |
 | `/compiler` | EditorPage | Monaco editor, file sidebar (when logged in), terminal output |
-| `/visualize` | VisualizeLayout | Phase nav bar + Outlet for child routes |
-| `/visualize/tokens` | TokensPanel | D3.js bar chart + token grid with filter |
+| `/visualize` | VisualizeLayout | Phase nav bar + Dynamic/Static toggle + Outlet for child routes |
+| `/visualize/lexical` | LexicalAnalysisPanel | 4-step pipeline (Dynamic) + token browser (Static); `?view=static` switches views |
+| `/visualize/tokens` | LexicalAnalysisPanel | Legacy alias, redirects to the same component |
 | `/visualize/ast` | AstPanel | D3.js collapsible tree |
 | `/visualize/semantic` | SemanticPanel | D3.js collapsible symbol table |
 | `/visualize/bytecode` | BytecodePanel | Raw bytecode display |
@@ -311,6 +327,22 @@ Output: [
 ]
 ```
 **How:** `JavaLexer` uses JavaParser's AST visitor to walk the tree and extract tokens.
+
+#### Step-by-Step Visualization (Dynamic view)
+
+The lexical phase is visualized as a top-to-bottom educational pipeline computed **100% on the frontend** from the backend's token data (no Java changes):
+
+| Step | Title | What It Shows |
+|---|---|---|
+| 1 | Regular Expressions | Table of 8 grouped token patterns (KEYWORD, IDENTIFIER, STRING, NUMBER, OPERATOR, SEPARATOR, WHITESPACE, COMMENT); rows highlight which types actually appear in the user's code |
+| 2 | Finite Automaton (NFA) | D3.js diagram built via Thompson construction (`thompson.ts`); states/transitions animate in progressively; epsilon transitions shown |
+| 3 | Fixed Point (NFA → DFA) | Subset construction (`subsetConstruction.ts`) with a side-panel step log; the algorithm iterates until no new DFA states are discovered — the fixed point |
+| 4 | Scanner | Char-by-char scan of the user's source code through the DFA (`scanner.ts`); live DFA state indicator + emitted tokens list animates |
+
+- Pipeline layout: all 4 sections stacked vertically on one scrollable page, connected by **animated flowing connectors** (`PipelineConnector.tsx`)
+- Controls: sticky bottom **icon-only bar** (Prev / Play-Pause / Next / Restart) with horizontal Regex-NFA-DFA-Scanner step dots; **Autoplay** scrolls and animates through all steps, or step through manually
+- Grouping: `tokenGroups.ts` maps backend token types into the 8 simplified groups for a clean diagram
+- View toggle: "Dynamic" (pipeline) / "Static" (token browser) switch lives in the top nav bar (URL param `?view=static`)
 
 ### Phase 2: Syntax Analysis (Parsing)
 **How:** `StaticJavaParser.parse()` builds the tree, `AstSerializer.toJson()` converts to JSON.
@@ -438,16 +470,27 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 +--------------------------------------------------------------+
 | [Logo] Compilation Visualizer | COMPILER | ...               |
 +--------------------------------------------------------------+
-| <- COMPILER | [Tokens] [AST] [Semantic] [Bytecode] |  info  |
+| <- COMPILER | [Lexical] [AST] [Semantic] [TAC] [Bytecode]    |
+|              [CFG]             [DYNAMIC|STATIC]  info        |
 +--------------------------------------------------------------+
 |                                                              |
 |  [Full-screen D3.js visualization]                           |
 |                                                              |
 +--------------------------------------------------------------+
+|  [<<] [▶] [>>] [↻]        ● ─ ● ─ ○ ─ ○    (lexical only)  |
++--------------------------------------------------------------+
 ```
-- **Phase nav bar**: "COMPILER" back button + Lucide icons (CircleDot, TreePine, Database, Binary) + phase names
+- **Phase nav bar**: "COMPILER" back button + Lucide icons + phase names. First tab is now **LEXICAL** (Braces icon, was "Tokens"), route `/visualize/lexical`
+- **Dynamic/Static toggle**: On the lexical route only, a segmented `DYNAMIC | STATIC` control sits in the top-right of the nav bar (before the token-count info). "Dynamic" = step-by-step pipeline, "Static" = token browser. State syncs via `?view=static` query param
 - Active phase shows neon green border with glow shadow
 - Phase info (token count, compilation time) shown on right when results exist
+
+### Lexical Pipeline (`/visualize/lexical`, Dynamic view)
+- Vertical scrollable pipeline: **Regular Expressions → NFA → DFA (fixed point) → Scanner** with animated flowing connectors between sections
+- **StepControls** (sticky bottom, ~36px, icon-only): Prev / Play-Pause / Next / Restart + horizontal step dots labelled Regex–NFA–DFA–Scanner
+- **Autoplay**: Play scrolls to Section 1, animates it, then advances through the remaining sections automatically. User can also scroll freely (step dots update from scroll position), or step manually with Prev/Next
+- Play/Pause starts a new run from the top and clears completed state
+- Content area uses `px-4 py-3` to maximize vertical space for the visualizations
 
 ### Theme System
 - Three modes: dark (default), light, system
@@ -461,7 +504,7 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 - Translation files at `src/i18n/locales/en.json` and `src/i18n/locales/my.json`
 - Stored in `localStorage` as `cv-lang`
 - Toggled via button showing "EN" or Myanmar script in the header bar
-- Keys organized by section: `nav.*`, `landing.*`, `footer.*`, `auth.*`, `editor.*`
+- Keys organized by section: `nav.*`, `landing.*`, `footer.*`, `auth.*`, `editor.*`, `lexical.*` (tabs, controls, and step 1-4 descriptions)
 
 ---
 
@@ -550,7 +593,20 @@ ThemeProvider
 - Boot sequence animation on landing page
 - Visualizer nav link added to header
 
+### Week 7: Lexical Analysis Visualization -- Done
+- Nav tab renamed "Tokens" → "Lexical" (`/visualize/lexical`, Braces icon; `/visualize/tokens` kept as alias)
+- **4-step educational pipeline** (frontend-only, computed from backend token data):
+  - Step 1: Regex table — 8 grouped token patterns (Keyword, Identifier, String, Number, Operator, Separator, Whitespace, Comment), rows highlight groups present in the user's code
+  - Step 2: NFA state diagram — D3.js graph from Thompson construction (`lib/lexer/thompson.ts`)
+  - Step 3: DFA via fixed point — subset construction with animated step log (`lib/lexer/subsetConstruction.ts`)
+  - Step 4: Scanner — char-by-char DFA scan of the source code with live state + emitted tokens (`lib/lexer/scanner.ts`)
+- Top-to-bottom scrollable pipeline with **animated flowing connectors** (`PipelineConnector.tsx`)
+- **Dynamic / Static** view toggle (segmented control in nav bar, synced via `?view=static`); Static = existing token browser
+- Sticky bottom **icon-only step controls** (Prev / Play-Pause / Next / Restart + Regex–NFA–DFA–Scanner dots); autoplay + manual step-through
+- Full en/my i18n (`lexical.*` namespace)
+
 ### Future Work
+- Step-by-step live visualization for the remaining phases (Syntax Analysis / AST, Semantic Analysis, Code Generation, Bytecode) — same top-to-bottom pattern as the lexical pipeline
 - Compilation history backend + UI
 - Side-by-side source -> bytecode view
 - Responsive design

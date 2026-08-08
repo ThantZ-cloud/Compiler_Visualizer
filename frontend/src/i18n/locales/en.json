@@ -218,6 +218,56 @@
     "noCompilationResults": "No Compilation Results",
     "selectPhase": "Write some Java code and click COMPILE to see the visualization."
   },
+  "lexical": {
+    "tabs": {
+      "pipeline": "Dynamic",
+      "tokenBrowser": "Static"
+    },
+    "controls": {
+      "play": "Play",
+      "pause": "Pause",
+      "prev": "Previous",
+      "next": "Next",
+      "restart": "Restart",
+      "step": "Step {{current}} of {{total}}"
+    },
+    "step1": {
+      "title": "Regular Expressions",
+      "description": "Each token type is defined by a regex pattern. These patterns describe what valid tokens look like in Java.",
+      "columnType": "Token Type",
+      "columnRegex": "Regular Expression",
+      "columnCount": "Count",
+      "foundInCode": "Found in your code",
+      "notFoundInCode": "Not present"
+    },
+    "step2": {
+      "title": "Finite Automaton (NFA)",
+      "description": "Using Thompson construction, each regex pattern is converted into a Non-deterministic Finite Automaton. States and transitions form a machine that can recognize tokens.",
+      "startState": "Start",
+      "acceptState": "Accept",
+      "epsilon": "\u03B5"
+    },
+    "step3": {
+      "title": "Fixed Point (NFA \u2192 DFA)",
+      "description": "Subset construction converts the NFA into a deterministic Finite Automaton. The algorithm iterates until no new states are discovered \u2014 this is the fixed point.",
+      "epsilonClosure": "\u03B5-closure",
+      "newState": "NEW STATE",
+      "existingState": "existing",
+      "fixedPointReached": "Fixed point reached",
+      "dfaStates": "DFA states",
+      "subsetLog": "Subset Construction Log"
+    },
+    "step4": {
+      "title": "Scanner",
+      "description": "The DFA scanner reads your source code character by character, transitioning between states. When an accept state is reached, a token is emitted.",
+      "sourceCode": "Source Code",
+      "dfaState": "DFA State",
+      "tokensEmitted": "Tokens Emitted",
+      "scanning": "Scanning...",
+      "complete": "Scanning complete",
+      "charPosition": "Char {{pos}}: '{{char}}'"
+    }
+  },
   "tokens": {
     "noTokens": "No tokens generated",
     "distributionTitle": "Token Distribution by Type",

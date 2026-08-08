@@ -1,16 +1,31 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
-import { CircleDot, TreePine, Database, Code2, Binary, Eye, GitFork } from 'lucide-react';
+import { Braces, TreePine, Database, Code2, Binary, Eye, GitFork } from 'lucide-react';
 
 const VisualizeLayout: React.FC = () => {
   const { t } = useTranslation();
   const { result } = useCompile();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isLexical = location.pathname.startsWith('/visualize/lexical') || location.pathname.startsWith('/visualize/tokens');
+  const activeView = searchParams.get('view') === 'static' ? 'static' : 'dynamic';
+
+  const setView = (view: 'dynamic' | 'static') => {
+    const next = new URLSearchParams(searchParams);
+    if (view === 'dynamic') {
+      next.delete('view');
+    } else {
+      next.set('view', 'static');
+    }
+    setSearchParams(next, { replace: true });
+  };
 
   const phases = [
-    { path: '/visualize/tokens', label: 'Tokens', icon: CircleDot },
+    { path: '/visualize/lexical', label: 'Lexical', icon: Braces },
     { path: '/visualize/ast', label: 'AST', icon: TreePine },
     { path: '/visualize/semantic', label: 'Sym Table', icon: Database },
     { path: '/visualize/tac', label: 'TAC', icon: Code2 },
@@ -46,8 +61,32 @@ const VisualizeLayout: React.FC = () => {
             </NavLink>
           ))}
         </div>
+        {isLexical && (
+          <div className="ml-auto flex items-center gap-0.5 bg-[var(--color-card)] border border-[var(--color-border)] p-0.5 shrink-0">
+            <button
+              onClick={() => setView('dynamic')}
+              className={`px-3 py-[4px] text-[9px] font-bold tracking-[0.1em] uppercase font-display border-none cursor-pointer transition-all ${
+                activeView === 'dynamic'
+                  ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)] shadow-[0_0_8px_var(--color-neon-dim)]'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              {t('lexical.tabs.pipeline')}
+            </button>
+            <button
+              onClick={() => setView('static')}
+              className={`px-3 py-[4px] text-[9px] font-bold tracking-[0.1em] uppercase font-display border-none cursor-pointer transition-all ${
+                activeView === 'static'
+                  ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)] shadow-[0_0_8px_var(--color-neon-dim)]'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              {t('lexical.tabs.tokenBrowser')}
+            </button>
+          </div>
+        )}
         {result && (
-          <div className="ml-auto text-[10px] text-[var(--color-text-muted)] whitespace-nowrap font-mono">
+          <div className="ml-3 text-[10px] text-[var(--color-text-muted)] whitespace-nowrap font-mono">
             {result.tokens?.length} tokens • {result.compilationTimeMs}ms
           </div>
         )}

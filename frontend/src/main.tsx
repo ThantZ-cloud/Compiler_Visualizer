@@ -13,7 +13,7 @@ import LandingPage from './pages/LandingPage'
 import PipelinePage from './pages/PipelinePage'
 import EditorPage from './pages/EditorPage'
 import VisualizeLayout from './pages/VisualizeLayout'
-import TokensPanel from './pages/TokensPanel'
+import LexicalAnalysisPanel from './pages/LexicalAnalysisPanel'
 import AstPanel from './pages/AstPanel'
 import SemanticPanel from './pages/SemanticPanel'
 import TacPanel from './pages/TacPanel'
@@ -34,7 +34,8 @@ createRoot(document.getElementById('root')!).render(
                   <Route path="/pipeline" element={<PipelinePage />} />
                   <Route path="/compiler" element={<EditorPage />} />
                   <Route path="/visualize" element={<VisualizeLayout />}>
-                    <Route path="tokens" element={<TokensPanel />} />
+                    <Route path="lexical" element={<LexicalAnalysisPanel />} />
+                    <Route path="tokens" element={<LexicalAnalysisPanel />} />
                     <Route path="ast" element={<AstPanel />} />
                     <Route path="semantic" element={<SemanticPanel />} />
                     <Route path="tac" element={<TacPanel />} />

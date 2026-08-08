@@ -218,6 +218,56 @@
     "noCompilationResults": "ဘာသာပြန် ရလဒ်များ မရှိပါ",
     "selectPhase": "Java ကုဒ်ရေးပြီး COMPILE ကိုနှိပ်ပြီး မြင်ကွင်းကို ကြည့်ပါ။"
   },
+  "lexical": {
+    "tabs": {
+      "pipeline": "Dynamic",
+      "tokenBrowser": "Static"
+    },
+    "controls": {
+      "play": "ဖွင့်ပါ",
+      "pause": "ရပ်ပါ",
+      "prev": "နောက်သို့",
+      "next": "ရှေ့သို့",
+      "restart": "ပြန်စပါ",
+      "step": "အဆင့် {{current}} / {{total}}"
+    },
+    "step1": {
+      "title": "Regular Expressions",
+      "description": "တိုကင်အမျိုးအစားတစ်ခုစီကို regex pattern ဖြင့် သတ်မှတ်သည်။ ဤ pattern များသည် Java တွင် တရားဝင်တိုကင်များ ဘယ်လိုပုံစံဖြစ်ကြောင်း ဖော်ပြသည်။",
+      "columnType": "တိုကင် အမျိုးအစား",
+      "columnRegex": "Regular Expression",
+      "columnCount": "အရေအတွက်",
+      "foundInCode": "သင့်ကုဒ်တွင် တွေ့ရှိ",
+      "notFoundInCode": "မရှိပါ"
+    },
+    "step2": {
+      "title": "Finite Automaton (NFA)",
+      "description": "Thompson construction ဖြင့် regex pattern တစ်ခုစီကို NFA အဖြစ်သို့ ပြောင်းလဲသည်။ States နှင့် transitions များသည် တိုကင်များကို ဖာစောက်နိုင်သော စက်တစ်ခု ဖြစ်လာသည်။",
+      "startState": "စတင်",
+      "acceptState": "လက်ခံ",
+      "epsilon": "\u03B5"
+    },
+    "step3": {
+      "title": "Fixed Point (NFA \u2192 DFA)",
+      "description": "Subset construction သည် NFA ကို DFA အဖြစ်သို့ ပြောင်းလဲသည်။ algorithm သည် state အသစ်များ မတွေ့သောအခါ ရပ်တန့်သည် \u2014 ၎င်းသည် fixed point ဖြစ်သည်။",
+      "epsilonClosure": "\u03B5-closure",
+      "newState": "state အသစ်",
+      "existingState": "ရှိပြီးသား",
+      "fixedPointReached": "Fixed point ရောက်ရှိပါပြီ",
+      "dfaStates": "DFA states",
+      "subsetLog": "Subset Construction မှတ်တမ်း"
+    },
+    "step4": {
+      "title": "Scanner",
+      "description": "DFA scanner သည် သင့်ရင်းမြစ်ကုဒ်ကို အကာရက်တာတစ်ခုချင်းစီ ဖတ်ပြီး states အကြား ပြောင်းလဲသည်။ accept state ရောက်သောအခါ တိုကင်တစ်ခု ထုတ်ပေးသည်။",
+      "sourceCode": "ရင်းမြစ် ကုဒ်",
+      "dfaState": "DFA State",
+      "tokensEmitted": "ထုတ်ပေးခဲ့သော တိုကင်များ",
+      "scanning": "ဖတ်နေသည်...",
+      "complete": "ဖတ်ပြီးပါပြီ",
+      "charPosition": "Char {{pos}}: '{{char}}'"
+    }
+  },
   "tokens": {
     "noTokens": "တိုကင်များ မထုတ်လုပ်ပါ",
     "distributionTitle": "အမျိုးအစားအလိုက် တိုကင် ဖြန့်ချီမှု",

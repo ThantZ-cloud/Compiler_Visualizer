@@ -9,6 +9,10 @@ export interface TokenGroupDef {
   regexPattern: string;
   /** Hex color for visualization */
   color: string;
+  /** Whether this group was found in the user's code */
+  found: boolean;
+  /** Count of tokens in this group */
+  count: number;
   /** Token types from backend that belong to this group */
   matches: (tokenType: string) => boolean;
 }
@@ -18,6 +22,8 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     name: 'KEYWORD',
     regexPattern: '\\b(public|class|static|void|int|if|else|for|while|return|new|this|import|package|private|protected|final|extends|implements|interface|enum|try|catch|finally|throw|throws|switch|case|break|continue|default|boolean|char|double|float|long|short|byte|null|true|false|instanceof|super|abstract|synchronized|volatile|transient|native|strictfp|assert|goto|const|do)\\b',
     color: '#FF00FF',
+    found: false,
+    count: 0,
     matches: (t) => {
       const keywords = ['KEYWORD', 'RESERVED', 'PRIMITIVE_TYPE'];
       return keywords.some(k => t.toUpperCase().includes(k));
@@ -27,6 +33,8 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     name: 'IDENTIFIER',
     regexPattern: '[a-zA-Z_$][a-zA-Z0-9_$]*',
     color: '#00FF88',
+    found: false,
+    count: 0,
     matches: (t) => {
       const idents = ['IDENTIFIER', 'NAME', 'ID'];
       return idents.some(k => t.toUpperCase() === k) || t.toUpperCase() === 'IDENTIFIER';
@@ -36,6 +44,8 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     name: 'STRING',
     regexPattern: '"[^"]*"',
     color: '#FFB000',
+    found: false,
+    count: 0,
     matches: (t) => {
       const strings = ['STRING', 'STRING_LITERAL', 'CHAR_LITERAL', 'CHAR'];
       return strings.some(k => t.toUpperCase().includes(k));
@@ -45,6 +55,8 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     name: 'NUMBER',
     regexPattern: '[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?',
     color: '#00D4FF',
+    found: false,
+    count: 0,
     matches: (t) => {
       const nums = ['NUMBER', 'INT_LITERAL', 'LONG_LITERAL', 'DOUBLE_LITERAL', 'FLOAT_LITERAL', 'DECIMAL'];
       return nums.some(k => t.toUpperCase().includes(k));
@@ -54,6 +66,8 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     name: 'OPERATOR',
     regexPattern: '==|!=|<=|>=|&&|\\|\\||[-+*/=<>&|!^%~?:]',
     color: '#FF3366',
+    found: false,
+    count: 0,
     matches: (t) => {
       const ops = ['OPERATOR', 'OP', 'ASSIGN', 'ARITHMETIC', 'LOGICAL', 'BITWISE', 'RELATIONAL'];
       return ops.some(k => t.toUpperCase().includes(k));
@@ -63,6 +77,8 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     name: 'SEPARATOR',
     regexPattern: '[(){};,.\\[\\]@]',
     color: '#8888AA',
+    found: false,
+    count: 0,
     matches: (t) => {
       const seps = ['SEPARATOR', 'DELIMITER', 'BRACE', 'BRACKET', 'PAREN', 'SEMICOLON', 'COMMA', 'DOT', 'AT'];
       return seps.some(k => t.toUpperCase().includes(k));
@@ -72,6 +88,8 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     name: 'WHITESPACE',
     regexPattern: '\\s+',
     color: '#555570',
+    found: false,
+    count: 0,
     matches: (t) => {
       const ws = ['WHITESPACE', 'SPACE', 'NEWLINE', 'TAB'];
       return ws.some(k => t.toUpperCase().includes(k));
@@ -81,6 +99,8 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     name: 'COMMENT',
     regexPattern: '//.*|/\\*[\\s\\S]*\\*/',
     color: '#262638',
+    found: false,
+    count: 0,
     matches: (t) => {
       const comments = ['COMMENT', 'LINE_COMMENT', 'BLOCK_COMMENT', 'JAVADOC'];
       return comments.some(k => t.toUpperCase().includes(k));

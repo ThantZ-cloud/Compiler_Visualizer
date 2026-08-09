@@ -1,5 +1,14 @@
 // ── Lexer types for NFA/DFA visualization ──
 
+/** A token emitted by the scanner */
+export interface Token {
+  type: string;
+  value: string;
+  line: number;
+  column: number;
+  length: number;
+}
+
 /** A single state in an NFA */
 export interface NFAState {
   id: number;
@@ -80,12 +89,7 @@ export interface ScannerStep {
   dfaStateId: number;
   dfaStateLabel: string;
   isAccept: boolean;
-  emittedToken?: {
-    type: string;
-    value: string;
-    line: number;
-    column: number;
-  };
+  emittedToken?: Token;
   description: string;
 }
 

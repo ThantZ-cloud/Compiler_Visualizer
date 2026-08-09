@@ -12,9 +12,10 @@ interface StepControlsProps {
   onRestart: () => void;
   /** Optional per-step labels shown in the dots row */
   stepNames?: string[];
+  /** Total number of steps (for enabling/disabling next button) */
+  totalSteps?: number;
 }
 
-const TOTAL_STEPS = 4;
 const DEFAULT_STEP_NAMES = ['Regex', 'NFA', 'DFA', 'Scanner'];
 
 const StepControls: React.FC<StepControlsProps> = ({
@@ -26,6 +27,7 @@ const StepControls: React.FC<StepControlsProps> = ({
   onNext,
   onRestart,
   stepNames = DEFAULT_STEP_NAMES,
+  totalSteps = 4,
 }) => {
   return (
     <div className="sticky bottom-0 z-20 flex items-center justify-between gap-3 px-4 py-1.5 bg-[var(--color-card)] border-t border-[var(--color-border-bright)]">
@@ -63,7 +65,7 @@ const StepControls: React.FC<StepControlsProps> = ({
 
         <button
           onClick={onNext}
-          disabled={currentStep === TOTAL_STEPS - 1}
+          disabled={currentStep === totalSteps - 1}
           aria-label="Next step"
           title="Next"
           className="flex items-center justify-center w-7 h-7 text-[var(--color-text-dim)] border border-[var(--color-border)] bg-transparent cursor-pointer transition-all hover:text-[var(--color-neon)] hover:border-[var(--color-neon)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-[var(--color-text-dim)] disabled:hover:border-[var(--color-border)]"

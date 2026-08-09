@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, NavLink, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
-import { Braces, TreePine, Database, Code2, Binary, Eye, GitFork } from 'lucide-react';
+import { Braces, TreePine, Code2, Binary, Eye, GitFork, Search } from 'lucide-react';
 
 const VisualizeLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -13,6 +13,7 @@ const VisualizeLayout: React.FC = () => {
 
   const isLexical = location.pathname.startsWith('/visualize/lexical') || location.pathname.startsWith('/visualize/tokens');
   const isSyntax = location.pathname.startsWith('/visualize/syntax') || location.pathname.startsWith('/visualize/ast');
+  const isSemantic = location.pathname.startsWith('/visualize/semantic');
   const activeView = searchParams.get('view') === 'static' ? 'static' : 'dynamic';
 
   const setView = (view: 'dynamic' | 'static') => {
@@ -28,7 +29,7 @@ const VisualizeLayout: React.FC = () => {
   const phases = [
     { path: '/visualize/lexical', label: 'Lexical Analysis', icon: Braces },
     { path: '/visualize/syntax', label: 'Syntax Analysis', icon: TreePine },
-    { path: '/visualize/semantic', label: 'Sym Table', icon: Database },
+    { path: '/visualize/semantic', label: 'Semantic Analysis', icon: Search },
     { path: '/visualize/tac', label: 'TAC', icon: Code2 },
     { path: '/visualize/bytecode', label: 'Bytecode', icon: Binary },
     { path: '/visualize/cfg', label: 'CFG', icon: GitFork },
@@ -65,7 +66,7 @@ const VisualizeLayout: React.FC = () => {
           ))}
         </div>
 
-        {(isLexical || isSyntax) && (
+        {(isLexical || isSyntax || isSemantic) && (
           <div className="flex flex-col gap-0.5 bg-[var(--color-card)] border border-[var(--color-border)] p-0.5">
             <button
               onClick={() => setView('dynamic')}
@@ -83,9 +84,9 @@ const VisualizeLayout: React.FC = () => {
                 activeView === 'static'
                   ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)] shadow-[0_0_8px_var(--color-neon-dim)]'
                   : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-              }`}
+}`}
             >
-              {t('lexical.tabs.tokenBrowser')}
+              {isSemantic ? t('semantic.symbolExplorer') : t('lexical.tabs.tokenBrowser')}
             </button>
           </div>
         )}

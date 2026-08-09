@@ -278,6 +278,39 @@
     "gridView": "အမျိုးအစားစု",
     "countSummary": "တိုကင်များ — {{total}} လုံး၊ {{shown}} ခု ပြထားသည်"
   },
+  "syntax": {
+    "step1": {
+      "title": "Context-Free Grammar နှင့် Input တိုကင်များ",
+      "description": "Parser သည် lexical analysis မှ ထွက်လာသော တိုကင်စီးကြောင်းကို စားသုံးပြီး Java ၏ grammar နှင့် နှိုင်းယှဉ်စစ်ဆေးသည်။ အောက်တွင် lexer မှ တိုကင်ကြောင်းနှင့် သင့်ပရိုဂရမ်က အသုံးပြုနေသော grammar rules များကို ပြထားသည်။",
+      "inputTokens": "Input: တိုကင် စီးကြောင်း (lexical analysis မှ)",
+      "fromLexical": "lexer မှ",
+      "grammarRules": "Grammar ထုတ်လုပ်နည်း စည်းမျဉ်းများ",
+      "rewrites": "စည်းမျဉ်း",
+      "noRules": "ဤပရိုးဂရမ်တွင် အသုံးပြုသော grammar စည်းမျဉ်း မရှိပါ"
+    },
+    "step2": {
+      "title": "Pushdown Automaton (PDA)",
+      "description": "Parser ဆိုသည်မှာ stack ပါသော state စက်ဖြစ်သည် — Pushdown Automaton။ တိုကင်များရောက်လာစဉ် controller သည် state များအကြားသွားပြီး stack က ဖာစ်နေသော ဖွဲ့စည်းတည်ဆောက်ပုံများကို မှတ်သားထားသည်။",
+      "stackMemory": "Stack မှတ်ဉာဏ်",
+      "empty": "stack ဗလာ",
+      "awaitingInput": "တိုကင်များ စောင့်ဆိုင်းနေသည်",
+      "accepted": "INPUT လက်ခံပြီး"
+    },
+    "step3": {
+      "title": "Shift-Reduce Parser",
+      "description": "တိုကင်များကို input buffer မှ parse stack သို့Shift လုပ်ပြီးတစ်ခုချင်းတင်သည်။ stack ထိပ်တွင် grammar rule တစ်ခု၏ right-hand side နှင့် ကိုက်ညီပါက parser က ထို symbols များကို left-hand side non-terminal အဖြစ် လျှော့ချသည် (reduce)။",
+      "inputBuffer": "Input Buffer",
+      "parseStack": "Parse Stack",
+      "actionLog": "လုပ်ဆောင်ချက် မှတ်တမ်း",
+      "empty": "(stack ဗလာ)",
+      "bufferEmpty": "တိုကင်အားလုံး စားသုံးပြီးပါပြီ"
+    },
+    "step4": {
+      "title": "Abstract Syntax Tree (AST) တည်ဆောက်ခြင်း",
+      "description": "ထို reduce အသစ်တစ်ခုစီသည် Abstract Syntax Tree ၏ node တစ်ခုကို တည်ဆောက်သည်။ Syntax analysis ၏ နောက်ဆုံး ထွက်ပေါ်ရလဒ်မှာ semantic analysis သို့ ပို့သောအပြည့်အစုံ AST ဖြစ်ကြောင်း ကြည့်ရှုနိုင်သည်။",
+      "nodes": "nodes"
+    }
+  },
   "ast": {
     "noAst": "AST မထုတ်လုပ်ပါ",
     "title": "Abstract Syntax Tree",

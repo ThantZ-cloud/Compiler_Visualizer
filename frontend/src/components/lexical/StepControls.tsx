@@ -1,19 +1,21 @@
 import React from 'react';
 import { Play, Pause, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
-import type { PlayState, PipelineStep } from '../../lib/lexer/types';
+import type { PlayState } from '../../lib/lexer/types';
 
 interface StepControlsProps {
-  currentStep: PipelineStep;
+  currentStep: number;
   playState: PlayState;
   onPlay: () => void;
   onPause: () => void;
   onPrev: () => void;
   onNext: () => void;
   onRestart: () => void;
+  /** Optional per-step labels shown in the dots row */
+  stepNames?: string[];
 }
 
 const TOTAL_STEPS = 4;
-const STEP_NAMES = ['Regex', 'NFA', 'DFA', 'Scanner'];
+const DEFAULT_STEP_NAMES = ['Regex', 'NFA', 'DFA', 'Scanner'];
 
 const StepControls: React.FC<StepControlsProps> = ({
   currentStep,
@@ -23,6 +25,7 @@ const StepControls: React.FC<StepControlsProps> = ({
   onPrev,
   onNext,
   onRestart,
+  stepNames = DEFAULT_STEP_NAMES,
 }) => {
   return (
     <div className="sticky bottom-0 z-20 flex items-center justify-between gap-3 px-4 py-1.5 bg-[var(--color-card)] border-t border-[var(--color-border-bright)]">
@@ -82,7 +85,7 @@ const StepControls: React.FC<StepControlsProps> = ({
 
       {/* Right: horizontal step dots */}
       <div className="flex items-center gap-1.5">
-        {STEP_NAMES.map((name, i) => (
+        {stepNames.map((name, i) => (
           <div key={i} className="flex items-center gap-1.5">
             {i > 0 && (
               <div

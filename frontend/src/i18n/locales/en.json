@@ -278,6 +278,39 @@
     "gridView": "Grid",
     "countSummary": "Tokens — {{total}} total, {{shown}} shown"
   },
+  "syntax": {
+    "step1": {
+      "title": "Context-Free Grammar & Input Tokens",
+      "description": "The parser consumes the token stream produced by lexical analysis and checks it against the grammar of Java. Below is the token stream from the lexer, alongside the subset of context-free grammar production rules your program exercises.",
+      "inputTokens": "Input: Token Stream (from lexical analysis)",
+      "fromLexical": "from lexer",
+      "grammarRules": "Grammar Production Rules",
+      "rewrites": "rules",
+      "noRules": "No grammar rules exercised by this program"
+    },
+    "step2": {
+      "title": "Pushdown Automaton (PDA)",
+      "description": "A parser is a finite-state machine with a stack: the Pushdown Automaton. The controller moves between states as tokens arrive, while the stack remembers partially-parsed constructs. Watch both move as the parse proceeds.",
+      "stackMemory": "Stack Memory",
+      "empty": "stack empty",
+      "awaitingInput": "waiting for tokens",
+      "accepted": "INPUT ACCEPTED"
+    },
+    "step3": {
+      "title": "Shift-Reduce Parser",
+      "description": "Tokens are shifted from the input buffer onto the parse stack one at a time. Whenever the top of the stack matches the right-hand side of a grammar rule, the parser reduces those symbols into the left-hand side non-terminal.",
+      "inputBuffer": "Input Buffer",
+      "parseStack": "Parse Stack",
+      "actionLog": "Action Log",
+      "empty": "(empty stack)",
+      "bufferEmpty": "all tokens consumed"
+    },
+    "step4": {
+      "title": "Abstract Syntax Tree Construction",
+      "description": "Each reduction builds a node of the Abstract Syntax Tree. Watch the tree grow from the leaves up — the final output of syntax analysis is the complete AST handed to semantic analysis.",
+      "nodes": "nodes"
+    }
+  },
   "ast": {
     "noAst": "No AST generated",
     "title": "Abstract Syntax Tree",

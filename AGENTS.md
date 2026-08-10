@@ -4,11 +4,12 @@ This is **Compiler Visualizer** — a web app that visualizes the Java compilati
 
 ## Tech Stack
 
-- **Frontend**: React 19 + TypeScript + Vite, **shadcn/ui** (Base UI primitives in `frontend/src/components/ui/`) and **Tailwind CSS v4** with custom `@theme` tokens in `frontend/src/index.css` (no component-level CSS files; everything is utility classes)
+- **Frontend**: React 19 + TypeScript + Vite, **shadcn-style components** co-located in `frontend/src/components/` (no separate `ui/` folder) and **Tailwind CSS v4** with custom `@theme` tokens in `frontend/src/index.css` (no component-level CSS files; everything is utility classes)
 - **Backend**: Spring Boot 3.2 (Java 17) + **SQLite** for local dev (H2 for tests, MySQL for production)
 - **i18n**: i18next with English (`en`) and Myanmar (`my`) locales
 - **Visualization**: D3.js (AST, tokens, symbol tables, CFG), Three.js (3D pipeline)
 - **Auth**: Spring Security + JWT (stateless)
+- **Audit subagents** (read-only, under `.opencode/agents/`): `backend-refactor`, `backend-reviewer`, `database-architecture-reviewer`, `frontend-refactor`, `ui-ux-reviewer`
 
 ## Key Conventions
 
@@ -16,6 +17,7 @@ This is **Compiler Visualizer** — a web app that visualizes the Java compilati
 - Lint: `npm run lint` (oxlint, not ESLint); typecheck/build: `npm run build`
 - No emoji anywhere in the UI — use Lucide icons
 - All user-facing copy goes through i18n in `frontend/src/i18n/locales/{en,my}.json`
+- Three DB profiles: dev (SQLite, default), test (H2, auto-loaded under `src/test`), prod (MySQL, activate with `-Dspring-boot.run.profiles=mysql`)
 
 <!-- context7 -->
 Use Context7 MCP to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service — even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer — your training data may not reflect recent changes. Prefer this over web search for library docs.

@@ -53,6 +53,16 @@ const DEFAULT_CODE = `public class Main {
     }
 }`;
 
+function buildStarterCode(title: string): string {
+  const raw = title.replace(/\.java$/i, '');
+  const className = (raw.charAt(0).toUpperCase() + raw.slice(1)).replace(/[^a-zA-Z0-9_]/g, '') || 'Main';
+  return `public class ${className} {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}`;
+}
+
 export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) => {
   const { t } = useTranslation();
   const [code, setCodeState] = useState<string>(DEFAULT_CODE);
@@ -132,7 +142,10 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
   }, []);
 
   const saveFile = useCallback(async (title: string, codeOverride?: string): Promise<number> => {
-    const codeToSave = codeOverride !== undefined ? codeOverride : code;
+    let codeToSave = codeOverride !== undefined ? codeOverride : code;
+    if (!codeToSave.trim()) {
+      codeToSave = buildStarterCode(title);
+    }
     if (currentFileId) {
       const response = await codeAPI.update(currentFileId, title, codeToSave);
       lastSavedCodeRef.current = codeToSave;
@@ -143,6 +156,7 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
       const newId = response.data.id;
       setCurrentFileId(newId);
       setCurrentFileName(title);
+      setCodeState(codeToSave);
       lastSavedCodeRef.current = codeToSave;
       setIsDirty(false);
       return newId;

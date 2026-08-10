@@ -1,7 +1,15 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+@AGENTS.md
 
+## Startup Checklist
+
+At the start of every conversation, list the contents of:
+- `.opencode/agents/` — available audit subagents
+- `.opencode/skill/` — available custom skills
+
+This ensures you know what subagents and skills are available before doing any work.
 ## Developer Profile
 
 The developer is a beginner learning React and backend API development with Spring Boot. They already have solid fundamentals in:

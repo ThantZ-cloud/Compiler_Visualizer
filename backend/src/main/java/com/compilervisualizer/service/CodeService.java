@@ -26,7 +26,6 @@ public class CodeService {
     private final SavedCodeRepository savedCodeRepository;
     private final UserRepository userRepository;
 
-    @Transactional
     public SavedCodeResponse saveCode(String username, SaveCodeRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found"));

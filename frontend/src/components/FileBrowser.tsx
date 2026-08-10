@@ -244,7 +244,7 @@ const FileBrowser: React.FC = () => {
         {files.map(file => (
           <div
             key={file.id}
-            className={`flex items-center gap-2 h-[28px] pr-4 pl-3 cursor-pointer transition-colors duration-75 group rounded-sm justify-around
+            className={`flex items-center gap-2 h-[28px] pr-1 pl-3 cursor-pointer transition-colors duration-75 group rounded-sm
               ${selectedId === file.id
                 ? 'bg-[var(--color-neon)]/8 text-[var(--color-neon)]'
                 : 'text-[var(--color-text-dim)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]'}`}
@@ -281,7 +281,7 @@ const FileBrowser: React.FC = () => {
             )}
 
             {!renamingId && (
-              <div className="flex items-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center shrink-0 w-0 overflow-hidden opacity-0 group-hover:w-auto group-hover:opacity-100 transition-all duration-100">
                 <button
                   className="bg-transparent border-none p-1.5 ml-2 text-[var(--color-text-muted)] hover:text-[var(--color-neon)] transition-colors"
                   onClick={(e) => { e.stopPropagation(); handleStartRename(file); }}
@@ -291,7 +291,7 @@ const FileBrowser: React.FC = () => {
                   <Pencil size={13} />
                 </button>
                 <button
-                  className="bg-transparent border-none p-1.5 mr-5 text-[var(--color-text-muted)] hover:text-[var(--color-rose)] transition-colors"
+                  className="bg-transparent border-none p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-rose)] transition-colors"
                   onClick={(e) => { e.stopPropagation(); handleDelete(file.id); }}
                   title={`${t('fileBrowser.delete')} ${file.title}`}
                   aria-label={`${t('fileBrowser.delete')} ${file.title}`}

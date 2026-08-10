@@ -35,3 +35,7 @@ backend/.mvn/repository/
 
 # Claude Code
 .claude/settings.local.json
+
+# SQLite temp files
+backend/dev.db-shm
+backend/dev.db-wal

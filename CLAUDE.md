@@ -27,6 +27,31 @@ Compiler Visualizer — a web app where users write Java code and see the compil
 
 Think of it like an online Java compiler that doesn't just give you the answer — it shows you *how* Java compiles your code, phase by phase.
 
+## Reference Textbook
+
+All compiler concepts, algorithms, terminology, and pipeline structure follow:
+**"Engineering a Compiler" (2nd Edition)** by Keith D. Cooper & Linda Torczon (Rice University)
+
+- When researching compiler topics, align terminology and pipeline phases with this book
+- If web sources or LLM training data conflict with the book, **prefer the book**
+- Use the book's notation and classification for IR, code generation, register allocation, etc.
+- When using Context7 or WebSearch, verify results match the book's approach before applying
+
+### Pipeline → Chapter Mapping
+
+| Pipeline Phase | Book Chapter(s) |
+|---|---|
+| Lexical Analysis | Chapter 3 — Lexical Analysis |
+| Parsing / AST | Chapter 4 — Parsing |
+| Semantic Analysis | Chapter 5 — Context-Sensitive Analysis |
+| Intermediate Representation | Chapter 6 — Intermediate Representations |
+| Code Generation | Chapters 7-8 — Machine Independence & Target Code Generation |
+| Optimization | Chapters 9-11 — (future scope) |
+
+### Reference Docs
+
+Extracted book sections live in `docs/compiler-reference/` as markdown. Read these before implementing a new pipeline phase to stay consistent with the book's approach.
+
 ## Commands
 
 ### Frontend (`frontend/`)

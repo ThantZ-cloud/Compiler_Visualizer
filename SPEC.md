@@ -315,48 +315,39 @@ Switch profiles: `./mvnw spring-boot:run -Dspring-boot.run.profiles=prod`
 
 ## 7. Compilation Phases
 
+> **Visualization reference:** See [`docs/compiler-reference/visualization-guide.md`](docs/compiler-reference/visualization-guide.md) for textbook-based visualization steps for each phase (sourced from *Engineering a Compiler*, Cooper & Torczon).
+
 ### Phase 1: Lexical Analysis (Tokenization)
-```
-Input:  "public class Main { }"
-Output: [
-  { type: "KEYWORD",  value: "public", line: 1, col: 1 },
-  { type: "KEYWORD",  value: "class",  line: 1, col: 8 },
-  { type: "CLASS",    value: "Main",   line: 1, col: 14 },
-  { type: "LBRACE",   value: "{",      line: 1, col: 19 },
-  { type: "RBRACE",   value: "}",      line: 1, col: 21 }
-]
-```
-**How:** `JavaLexer` uses JavaParser's AST visitor to walk the tree and extract tokens.
+**Input:** Source code string → **Output:** Token stream (`{ type, value, line, col }`)
+**Backend:** `JavaLexer` uses JavaParser's AST visitor to walk the tree and extract tokens.
 
-#### Step-by-Step Visualization (Dynamic view)
+#### Dynamic View (Frontend Pipeline)
+Computed **100% on the frontend** from the backend's token data:
 
-The lexical phase is visualized as a top-to-bottom educational pipeline computed **100% on the frontend** from the backend's token data (no Java changes):
-
-| Step | Title | What It Shows |
+| Step | Component | Description |
 |---|---|---|
-| 1 | Regular Expressions | Table of 8 grouped token patterns (KEYWORD, IDENTIFIER, STRING, NUMBER, OPERATOR, SEPARATOR, WHITESPACE, COMMENT); rows highlight which types actually appear in the user's code |
-| 2 | Finite Automaton (NFA) | D3.js diagram built via Thompson construction (`thompson.ts`); states/transitions animate in progressively; epsilon transitions shown |
-| 3 | Fixed Point (NFA → DFA) | Subset construction (`subsetConstruction.ts`) with a side-panel step log; the algorithm iterates until no new DFA states are discovered — the fixed point |
-| 4 | Scanner | Char-by-char scan of the user's source code through the DFA (`scanner.ts`); live DFA state indicator + emitted tokens list animates |
+| 1 — Regex | `RegexTable.tsx` | 8 grouped token patterns; rows highlight groups present in user's code |
+| 2 — NFA | `NfaGraph.tsx` | D3.js diagram via Thompson construction (`thompson.ts`) |
+| 3 — DFA | `DfaGraph.tsx` | Subset construction (`subsetConstruction.ts`) with step log |
+| 4 — Scanner | `ScannerAnimation.tsx` | Char-by-char DFA scan (`scanner.ts`), live state + emitted tokens |
 
-- Pipeline layout: all 4 sections stacked vertically on one scrollable page, connected by **animated flowing connectors** (`PipelineConnector.tsx`)
-- Controls: sticky bottom **icon-only bar** (Prev / Play-Pause / Next / Restart) with horizontal Regex-NFA-DFA-Scanner step dots; **Autoplay** scrolls and animates through all steps, or step through manually
-- Grouping: `tokenGroups.ts` maps backend token types into the 8 simplified groups for a clean diagram
-- View toggle: "Dynamic" (pipeline) / "Static" (token browser) switch lives in the top nav bar (URL param `?view=static`)
+- Pipeline layout: vertical scrollable sections connected by `PipelineConnector.tsx`
+- Controls: sticky bottom `StepControls.tsx` (Prev/Play/Next/Restart + step dots)
+- View toggle: Dynamic (pipeline) / Static (token browser) via `?view=static`
 
 ### Phase 2: Syntax Analysis (Parsing)
-**How:** `StaticJavaParser.parse()` builds the tree, `AstSerializer.toJson()` converts to JSON.
+**Backend:** `StaticJavaParser.parse()` builds the tree, `AstSerializer.toJson()` converts to JSON.
 
 ### Phase 3: Semantic Analysis
-**How:** `SymbolTableBuilder` walks the AST, extracts class/method/field declarations with types.
+**Backend:** `SymbolTableBuilder` walks the AST, extracts class/method/field declarations with types.
 
 ### Phase 4: Code Generation (Bytecode)
-**How:** `javax.tools.JavaCompiler` compiles in-process (no fork), then `javap` disassembles.
+**Backend:** `javax.tools.JavaCompiler` compiles in-process (no fork), then `javap` disassembles.
 
 ### Phase 5: Execution
-**How:** `ProcessBuilder` runs `java -cp <tempdir> Main` with 10s timeout. Stdin piped in if provided.
+**Backend:** `ProcessBuilder` runs `java -cp <tempdir> Main` with 10s timeout. Stdin piped in if provided.
 
-### Performance: Parallel Execution
+### Performance
 Phases 1 and 2 run in parallel via `CompletableFuture`.
 
 ---
@@ -606,7 +597,7 @@ ThemeProvider
 - Full en/my i18n (`lexical.*` namespace)
 
 ### Future Work
-- Step-by-step live visualization for the remaining phases (Syntax Analysis / AST, Semantic Analysis, Code Generation, Bytecode) — same top-to-bottom pattern as the lexical pipeline
+- Step-by-step live visualization for the remaining phases (Syntax Analysis / AST, Semantic Analysis, Code Generation, Bytecode) — follow `docs/compiler-reference/visualization-guide.md` for each phase's steps
 - Compilation history backend + UI
 - Side-by-side source -> bytecode view
 - Responsive design
@@ -640,6 +631,7 @@ ThemeProvider
 
 ## 14. Resources
 
+- [`docs/compiler-reference/visualization-guide.md`](docs/compiler-reference/visualization-guide.md) -- Textbook-based visualization steps for all pipeline phases
 - [JavaParser](https://javaparser.org/) -- Java source code parser
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/) -- VS Code's editor
 - [D3.js](https://d3js.org/) -- Data visualization library

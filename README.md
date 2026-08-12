@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/ThantZ-cloud/Compiler_Visualizer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ThantZ-cloud/Compiler_Visualizer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node](https://img.shields.io/badge/Node.js-22 LTS-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/Node.js-22%20LTS-339933?logo=nodejs&logoColor=white)](https://nodejs.org/)
 [![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 

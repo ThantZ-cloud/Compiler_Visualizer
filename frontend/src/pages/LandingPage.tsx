@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import BinaryRain from '../components/BinaryRain';
 import Footer from '../components/Footer';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { useScrollMemory } from '../hooks/useScrollMemory';
 import { Code, Layers, GitBranch, Search, Cpu, Save, PenLine, Play } from 'lucide-react';
 
 // ── Typewriter hook ──
@@ -323,6 +324,9 @@ const LandingPage: React.FC = () => {
     setBooted(true);
     setTimeout(() => setShowContent(true), 100);
   };
+
+  // Remember scroll position across navigations (e.g. coming back from /about)
+  useScrollMemory();
 
   // Bento feature layout — varied card spans on md (2 cols) and lg (4 cols)
   const features = useMemo(() => [

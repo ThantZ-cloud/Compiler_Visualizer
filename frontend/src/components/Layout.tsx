@@ -9,6 +9,7 @@ import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 import UserMenu from './UserMenu';
 import FileBrowser from './FileBrowser';
+import { clearScrollMemory } from '../hooks/useScrollMemory';
 
 const Layout: React.FC = () => {
   const { t } = useTranslation();
@@ -47,7 +48,7 @@ const Layout: React.FC = () => {
           {/* Logo */}
           <div
             className="flex items-center gap-2 cursor-pointer select-none group"
-            onClick={() => navigate('/')}
+            onClick={() => { clearScrollMemory('/'); navigate('/'); }}
           >
             <div className="w-8 h-8 border border-[var(--color-neon)] flex items-center justify-center text-[var(--color-neon)] group-hover:bg-[var(--color-neon)] group-hover:text-[var(--color-void)] transition-all">
               <Terminal size={16} />
@@ -153,7 +154,12 @@ const Layout: React.FC = () => {
       {/* Body */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {isAuthenticated && isCompiler && <FileBrowser />}
-        <main id="main-content" className={`flex-1 flex flex-col min-h-0 ${isLanding ? 'overflow-y-auto' : 'overflow-hidden'}`} role="main">
+        <main
+          id="main-content"
+          data-scroll-root={isLanding ? 'true' : undefined}
+          className={`flex-1 flex flex-col min-h-0 ${isLanding ? 'overflow-y-auto' : 'overflow-hidden'}`}
+          role="main"
+        >
           <Outlet />
         </main>
       </div>

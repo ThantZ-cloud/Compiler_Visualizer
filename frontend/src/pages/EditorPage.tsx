@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -8,6 +8,7 @@ import { useCompile } from '../context/CompileContext';
 import { useTheme } from '../context/ThemeContext';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { useScrollMemory } from '../hooks/useScrollMemory';
 
 const EditorPage: React.FC = () => {
   const { t } = useTranslation();
@@ -15,6 +16,10 @@ const EditorPage: React.FC = () => {
   const { resolvedTheme } = useTheme();
   const { code, setCode, result, loading, error, stdinInput, setStdinInput, saveFile, currentFileId, currentFileName, isDirty, handleCompile, handleCancel } = useCompile();
   const [saving, setSaving] = useState(false);
+  const terminalScrollRef = useRef<HTMLDivElement>(null);
+
+  // Remember terminal scroll position across navigations
+  useScrollMemory(terminalScrollRef);
 
   // Save-as prompt dialog state
   const [savePromptOpen, setSavePromptOpen] = useState(false);
@@ -207,8 +212,12 @@ const EditorPage: React.FC = () => {
         </div>
 
         {/* Terminal body */}
-        <div className="flex-1 px-5 py-3 overflow-auto text-[12px] leading-relaxed"
-          style={{ fontFamily: 'var(--font-mono)' }}>
+        <div
+          ref={terminalScrollRef}
+          data-scroll-root="true"
+          className="flex-1 px-5 py-3 overflow-auto text-[12px] leading-relaxed"
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
           {loading && (
             <div className="text-[var(--color-amber)] flex items-center gap-2">
               <Loader2 size={14} className="animate-spin" />

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, NavLink, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
 import { Braces, TreePine, Code2, Binary, Eye, Workflow, Search } from 'lucide-react';
+import { useScrollMemory } from '../hooks/useScrollMemory';
 
 const VisualizeLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -10,6 +11,10 @@ const VisualizeLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const panelScrollRef = useRef<HTMLDivElement>(null);
+
+  // Remember scroll position of the visualization panel across navigations
+  useScrollMemory(panelScrollRef);
 
   const isLexical = location.pathname.startsWith('/visualize/lexical') || location.pathname.startsWith('/visualize/tokens');
   const isSyntax = location.pathname.startsWith('/visualize/syntax') || location.pathname.startsWith('/visualize/ast');
@@ -101,7 +106,11 @@ const VisualizeLayout: React.FC = () => {
         )}
       </nav>
 
-      <div className="flex-1 min-h-0 overflow-auto p-6 bg-[var(--color-void)]">
+      <div
+        ref={panelScrollRef}
+        data-scroll-root="true"
+        className="flex-1 min-h-0 overflow-auto p-6 bg-[var(--color-void)]"
+      >
         {result ? (
           <Outlet />
         ) : (

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useRef, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
@@ -7,19 +7,21 @@ import { getPipelineSteps } from '../data/pipelineData';
 import PipelineStep from '../components/PipelineStep';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useScrollSpy } from '../hooks/useScrollSpy';
+import { useScrollMemory } from '../hooks/useScrollMemory';
 
 const PipelineScene = lazy(() => import('../components/PipelineScene'));
 
 const PipelinePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
-  const backTarget = location.state?.from === '/compiler' ? '/compiler' : '/';
   const pipelineSteps = useMemo(() => getPipelineSteps(t), [t]);
   const stepRefs = useRef<(HTMLElement | null)[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { activeIndex, scrollProgress, scrollTo } = useScrollSpy(scrollRef, stepRefs);
   const activeStep = activeIndex;
+
+  // Remember scroll position across navigations (e.g. coming back from /about)
+  useScrollMemory(scrollRef);
 
   const setStepRef = (el: HTMLElement | null, index: number) => {
     stepRefs.current[index] = el;
@@ -43,7 +45,7 @@ const PipelinePage: React.FC = () => {
         <button
           className="text-[var(--color-text-dim)] hover:text-[var(--color-neon)] transition-colors text-xs tracking-[0.1em]"
           style={{ fontFamily: 'var(--font-mono)' }}
-          onClick={() => navigate(backTarget)}
+          onClick={() => navigate(-1)}
         >
           {t('pipeline.back', '<- BACK')}
         </button>

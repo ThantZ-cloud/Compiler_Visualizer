@@ -135,6 +135,7 @@
   },
   "footer": {
     "tagline": "Java သည် သင့်ကုဒ်ကို ဘယ်လို ဘာသာပြန်သည်ကို ကြည့်ပါ — အဆင့်ဆင့်။",
+    "contactUs": "ဆက်သွယ်ရန်",
     "product": "ထုတ်ကုန်",
     "compiler": "ဘာသာပြန်",
     "pipeline": "လုပ်ငန်းစဉ်",
@@ -151,6 +152,91 @@
     "license": "License (MIT)",
     "copyright": "© 2026 Compilation Visualizer။ MIT License ဖြင့် ဖွင့်လင့်ထားသည်။",
     "builtWith": "React · Spring Boot · Java · D3.js · Three.js ဖြင့် ဖန်တီးထားသည်"
+  },
+  "about": {
+    "label": "// ကျွန်ုပ်တို့အကြောင်း",
+    "back": "<- ပြန်ရန်",
+    "headline": "အဖွဲ့ကို ဆုံတွေ့ပါ",
+    "university": "နည်းပညာတက္ကသိုလ် (ရတနာပုံ ဆိုက်ဘာစီးတီး)",
+    "universityShort": "UTYCC",
+    "location": "ပြင်ဦးလွင်၊ မြန်မာ",
+    "year": "တတိယနှစ် သတင်းအချက်အလက်သိပ္ပံ",
+    "project": "Web Development with J2EE",
+    "teamLabel": "// အဖွဲ့ဝင်များ",
+    "teamHeadline": "Compiler ၏ နောက်ကွယ်မှ ငါးဦး",
+    "teamDescription": "ကျွန်ုပ်တို့သည် UTYCC မှ သတင်းအချက်အလက်သိပ္ပံ ကျောင်းသားငါးဦးဖြစ်ပြီး Web Development with J2EE ပရောဂျက်အတွက် ဤ compiler visualizer ကို တည်ဆောက်နေပါသည်။ ကတ်ကို လှန်ပြီး ကျွန်ုပ်တို့နှင့် ဆက်သွယ်ရန် ကတ်ပေါ်တွင် မောက်စ်တင်ပါ။",
+    "contactLabel": "// ဆက်သွယ်ရန်",
+    "contactHeadline": "Compiler အကြောင်း ဆွေးနွေးချင်ပါသလား?",
+    "contactDescription": "မေးခွန်း၊ အကြံပြုချက် သို့မဟုတ် ပူးပေါင်းဆောင်ရွက်မှု အကြံဉာဏ်များ — တစ်ပြိုင်နက်တည်း အဖွဲ့တစ်ခုလုံးကို ဆက်သွယ်ပါ သို့မဟုတ် ကျွန်ုပ်တို့တစ်ဦးချင်းစီ၏ လူမှုမီဒီယာမှတစ်ဆင့် ဆက်သွယ်ပါ။",
+    "contactCta": "အဖွဲ့ထံ အီးမေးလ်ပို့ရန်",
+    "teamEmail": "compiler.visualizer.team@gmail.com",
+    "members": {
+      "thant": {
+        "name": "သန့်ဇင်ထွန်း",
+        "role": "အဖွဲ့ခေါင်းဆောင်",
+        "quote": "ကြီးကျယ်တဲ့အရာတွေက မလက်လျှော့တတ်တဲ့ အဖွဲ့ငယ်လေးတွေက ဆောက်တာပါ။",
+        "email": "thant@example.com",
+        "phone": "+95 9 000 000 001",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      },
+      "phyoLin": {
+        "name": "ဖြိုးလင်းမင်း",
+        "role": "အရည်အသွေးစစ်ဆေးရေး",
+        "quote": "အရည်အသွေးသည် မတော်တဆမဟုတ်ပါ — ၎င်းသည် ရည်ရွယ်ချက်၏ ရလဒ်ဖြစ်သည်။",
+        "email": "phyolin@example.com",
+        "phone": "+95 9 000 000 002",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      },
+      "phyoThin": {
+        "name": "ဖြိုးသင်ကီ",
+        "role": "UI/UX ဒီဇိုင်နာ",
+        "quote": "ဒီဇိုင်းဆိုတာ ပုံရိပ်သာမဟုတ် — အလုပ်လုပ်ပုံလည်းဖြစ်တယ်။",
+        "email": "phythinky@example.com",
+        "phone": "+95 9 000 000 003",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      },
+      "linLatt": {
+        "name": "လင်းလက်နွယ်",
+        "role": "ဒေတာဘေ့စ် ဗိသုကာပညာရှင်",
+        "quote": "App ကောင်းတိုင်းက ကောင်းကောင်းဒီဇိုင်းဆွဲထားတဲ့ table ကနေ စတယ်။",
+        "email": "linlatt@example.com",
+        "phone": "+95 9 000 000 004",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      },
+      "hmone": {
+        "name": "မုန်းမုန်းစမီး",
+        "role": "သုတေသနနှင့် တီထွင်ဖွံ့ဖြိုးရေး",
+        "quote": "သုတေသနဆိုတာ ငါဘာလုပ်နေမှန်းမသိတဲ့အချိန်မှာ လုပ်တဲ့အရာပါ။",
+        "email": "hmone@example.com",
+        "phone": "+95 9 000 000 005",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      }
+    }
   },
   "auth": {
     "email": "အီးမေးလ်",

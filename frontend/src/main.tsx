@@ -10,6 +10,7 @@ import { LanguageProvider } from './context/LanguageContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import Layout from './components/Layout'
 import LandingPage from './pages/LandingPage'
+import AboutPage from './pages/AboutPage'
 import PipelinePage from './pages/PipelinePage'
 import EditorPage from './pages/EditorPage'
 import VisualizeLayout from './pages/VisualizeLayout'
@@ -31,6 +32,7 @@ createRoot(document.getElementById('root')!).render(
               <Routes>
                 <Route element={<Layout />}>
                   <Route path="/" element={<LandingPage />} />
+                  <Route path="/about" element={<AboutPage />} />
                   <Route path="/pipeline" element={<PipelinePage />} />
                   <Route path="/compiler" element={<EditorPage />} />
                   <Route path="/visualize" element={<VisualizeLayout />}>

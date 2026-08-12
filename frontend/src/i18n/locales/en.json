@@ -135,6 +135,7 @@
   },
   "footer": {
     "tagline": "See how Java compiles your code — phase by phase, instruction by instruction.",
+    "contactUs": "Contact Us",
     "product": "Product",
     "compiler": "Compiler",
     "pipeline": "Pipeline",
@@ -151,6 +152,91 @@
     "license": "License (MIT)",
     "copyright": "© 2026 Compilation Visualizer. Open source under MIT License.",
     "builtWith": "Built with React · Spring Boot · Java · D3.js · Three.js"
+  },
+  "about": {
+    "label": "// ABOUT_US",
+    "back": "<- BACK",
+    "headline": "Meet The Team",
+    "university": "University of Technology Yatanarpon Cyber City",
+    "universityShort": "UTYCC",
+    "location": "Pyin Oo Lwin, Myanmar",
+    "year": "3rd Year Information Science",
+    "project": "Web Development with J2EE",
+    "teamLabel": "// TEAM_MEMBERS",
+    "teamHeadline": "The Five Behind The Compiler",
+    "teamDescription": "We are five Information Science students from UTYCC building this compiler visualizer for our Web Development with J2EE project. Hover a card to flip it and connect with us.",
+    "contactLabel": "// CONTACT",
+    "contactHeadline": "Want to talk compilers?",
+    "contactDescription": "Questions, feedback, or collaboration ideas — reach out to the whole team at once, or connect with each of us directly via our social profiles.",
+    "contactCta": "EMAIL THE TEAM",
+    "teamEmail": "compiler.visualizer.team@gmail.com",
+    "members": {
+      "thant": {
+        "name": "Thant Zin Htun",
+        "role": "Team Leader",
+        "quote": "Great things are built by small teams that refuse to give up.",
+        "email": "thant@example.com",
+        "phone": "+95 9 000 000 001",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      },
+      "phyoLin": {
+        "name": "Phyo Lin Mg",
+        "role": "Quality Assurance",
+        "quote": "Quality is never an accident — it is always the result of intention.",
+        "email": "phyolin@example.com",
+        "phone": "+95 9 000 000 002",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      },
+      "phyoThin": {
+        "name": "Phyo Thin Kyi",
+        "role": "UI/UX Designer",
+        "quote": "Design is not just what it looks like — it's how it works.",
+        "email": "phythinky@example.com",
+        "phone": "+95 9 000 000 003",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      },
+      "linLatt": {
+        "name": "Lin Latt Nwe",
+        "role": "Database Architect",
+        "quote": "Every great app starts with a well-designed table.",
+        "email": "linlatt@example.com",
+        "phone": "+95 9 000 000 004",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      },
+      "hmone": {
+        "name": "Hmone Hmone Smile",
+        "role": "Research & Development",
+        "quote": "Research is what I do when I don't know what I'm doing.",
+        "email": "hmone@example.com",
+        "phone": "+95 9 000 000 005",
+        "socials": {
+          "tiktok": "#",
+          "facebook": "#",
+          "telegram": "#",
+          "instagram": "#"
+        }
+      }
+    }
   },
   "auth": {
     "email": "Email",

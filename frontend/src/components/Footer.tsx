@@ -48,10 +48,13 @@ const Footer: React.FC = () => {
             >
               {t('footer.visualize')}
             </button>
-            <span className="text-xs text-[var(--color-text-dim)]"
-              style={{ fontFamily: 'var(--font-mono)' }}>
-              {t('footer.changelog')}
-            </span>
+            <button
+              className="text-xs text-[var(--color-text-dim)] hover:text-[var(--color-neon)] transition-colors"
+              style={{ fontFamily: 'var(--font-mono)' }}
+              onClick={() => navigate('/about')}
+            >
+              {t('footer.contactUs')}
+            </button>
           </div>
         </div>
 

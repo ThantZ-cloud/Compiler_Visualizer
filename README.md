@@ -22,13 +22,13 @@ interactive D3.js trees, 3D Three.js scenes, and raw bytecode disassembly.
 
 | Screenshot | Description |
 |------------|-------------|
-| [🏠 Landing Page](screenshots/01-landing-page.png) | Binary rain animation + terminal typewriter hero |
-| [✏️ Code Editor](screenshots/02-editor-page.png) | Monaco Editor with Java syntax + terminal output |
-| [🌐 3D Pipeline](screenshots/03-pipeline-3d.png) | Three.js 3D walkthrough of the compilation pipeline |
-| [🔤 Token Visualization](screenshots/04-tokens-visualization.png) | D3.js bar chart showing token types & flow |
-| [🌳 AST Tree](screenshots/05-ast-tree.png) | D3.js collapsible Abstract Syntax Tree |
-| [📋 Symbol Table](screenshots/06-semantic-symbol-table.png) | D3.js tree of class/method/field declarations |
-| [💾 Bytecode Display](screenshots/07-bytecode-display.png) | JVM bytecode via `javap -c -p` disassembly |
+| <img src="screenshots/01-landing-page.png" alt="Landing Page" width="600" /> | Landing Page — Binary rain animation + terminal typewriter hero |
+| <img src="screenshots/02-editor-page.png" alt="Code Editor" width="600" /> | Code Editor — Monaco Editor with Java syntax + terminal output |
+| <img src="screenshots/03-pipeline-3d.png" alt="3D Pipeline" width="600" /> | 3D Pipeline — Three.js 3D walkthrough of the compilation pipeline |
+| <img src="screenshots/04-tokens-visualization.png" alt="Token Visualization" width="600" /> | Token Visualization — D3.js bar chart showing token types & flow |
+| <img src="screenshots/05-ast-tree.png" alt="AST Tree" width="600" /> | AST Tree — D3.js collapsible Abstract Syntax Tree |
+| <img src="screenshots/06-semantic-symbol-table.png" alt="Symbol Table" width="600" /> | Symbol Table — D3.js tree of class/method/field declarations |
+| <img src="screenshots/07-bytecode-display.png" alt="Bytecode Display" width="600" /> | Bytecode Display — JVM bytecode via `javap -c -p` disassembly |
 
 ---
 

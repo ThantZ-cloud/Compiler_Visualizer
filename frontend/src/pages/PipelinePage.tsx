@@ -40,14 +40,6 @@ const PipelinePage: React.FC = () => {
         </ErrorBoundary>
       </div>
 
-      {/* Header bar */}
-      <div className="relative z-20 flex items-center gap-4 px-6 py-3 border-b border-[var(--color-border)] bg-[var(--color-card)]/80 backdrop-blur-sm shrink-0">
-        <div className="ml-auto text-[10px] font-mono text-[var(--color-text-muted)] tracking-widest">
-          {String(activeStep + 1).padStart(2, '0')}/{String(pipelineSteps.length).padStart(2, '0')} ·{' '}
-          {Math.round(scrollProgress * 100)}%
-        </div>
-      </div>
-
       {/* Scrollable content overlaid on the tunnel */}
       <div
         ref={scrollRef}

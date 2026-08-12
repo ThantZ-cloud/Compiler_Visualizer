@@ -42,13 +42,6 @@ const PipelinePage: React.FC = () => {
 
       {/* Header bar */}
       <div className="relative z-20 flex items-center gap-4 px-6 py-3 border-b border-[var(--color-border)] bg-[var(--color-card)]/80 backdrop-blur-sm shrink-0">
-        <button
-          className="text-[var(--color-text-dim)] hover:text-[var(--color-neon)] transition-colors text-xs tracking-[0.1em]"
-          style={{ fontFamily: 'var(--font-mono)' }}
-          onClick={() => navigate(-1)}
-        >
-          {t('pipeline.back', '<- BACK')}
-        </button>
         <span
           className="text-[10px] font-bold text-[var(--color-neon)] tracking-[0.3em] uppercase"
           style={{ fontFamily: 'var(--font-display)' }}

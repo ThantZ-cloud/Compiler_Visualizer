@@ -2,6 +2,7 @@ package com.compilervisualizer.service;
 
 import com.compilervisualizer.dto.CompileResponse;
 import com.compilervisualizer.dto.CompileResponse.ClassInfo;
+import com.compilervisualizer.dto.CodeGenerationData;
 import com.compilervisualizer.dto.TokenDto;
 import com.compilervisualizer.service.CodeExecutor.ExecutionResult;
 import com.github.javaparser.StaticJavaParser;
@@ -148,6 +149,16 @@ public class CompileService {
             }
             long tacTime = System.currentTimeMillis() - t2;
 
+            // Phase 3.6: Structured code generation data (reuses parsed AST)
+            CodeGenerationData codeGenData = null;
+            if (cu != null) {
+                try {
+                    codeGenData = TacGenerator.generateStructured(cu);
+                } catch (Exception e) {
+                    log.warn("Structured TAC generation failed", e);
+                }
+            }
+
             // Phase 4: Compile to bytecode (javac + javap for all classes)
             long t3 = System.currentTimeMillis();
             Map<String, String> allBytecode;
@@ -200,6 +211,7 @@ public class CompileService {
                 .cfgJson(cfgJson)
                 .cfgError(cfgError)
                 .cfgTimeMs(cfgTime)
+                .codeGenerationData(codeGenData)
                 .bytecode(bytecode)
                 .compilationError(compilationError)
                 .bytecodeTimeMs(bytecodeTime)

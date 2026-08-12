@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, NavLink, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
-import { Braces, TreePine, Code2, Binary, Eye, GitFork, Search } from 'lucide-react';
+import { Braces, TreePine, Code2, Binary, Eye, Workflow, Search } from 'lucide-react';
 
 const VisualizeLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -14,6 +14,9 @@ const VisualizeLayout: React.FC = () => {
   const isLexical = location.pathname.startsWith('/visualize/lexical') || location.pathname.startsWith('/visualize/tokens');
   const isSyntax = location.pathname.startsWith('/visualize/syntax') || location.pathname.startsWith('/visualize/ast');
   const isSemantic = location.pathname.startsWith('/visualize/semantic');
+  const isCodegen = location.pathname.startsWith('/visualize/codegen');
+  const isOptimizer = location.pathname.startsWith('/visualize/cfg');
+  const isBytecode = location.pathname.startsWith('/visualize/bytecode');
   const activeView = searchParams.get('view') === 'static' ? 'static' : 'dynamic';
 
   const setView = (view: 'dynamic' | 'static') => {
@@ -27,12 +30,12 @@ const VisualizeLayout: React.FC = () => {
   };
 
   const phases = [
-    { path: '/visualize/lexical', label: 'Lexical Analysis', icon: Braces },
-    { path: '/visualize/syntax', label: 'Syntax Analysis', icon: TreePine },
-    { path: '/visualize/semantic', label: 'Semantic Analysis', icon: Search },
-    { path: '/visualize/tac', label: 'TAC', icon: Code2 },
-    { path: '/visualize/bytecode', label: 'Bytecode', icon: Binary },
-    { path: '/visualize/cfg', label: 'CFG', icon: GitFork },
+    { path: '/visualize/lexical', label: t('visualize.nav.lexical'), icon: Braces },
+    { path: '/visualize/syntax', label: t('visualize.nav.syntax'), icon: TreePine },
+    { path: '/visualize/semantic', label: t('visualize.nav.semantic'), icon: Search },
+    { path: '/visualize/cfg', label: t('visualize.nav.optimizer'), icon: Workflow },
+    { path: '/visualize/codegen', label: t('visualize.nav.codegen'), icon: Code2 },
+    { path: '/visualize/bytecode', label: t('visualize.nav.bytecode'), icon: Binary },
   ];
 
   return (
@@ -66,7 +69,7 @@ const VisualizeLayout: React.FC = () => {
           ))}
         </div>
 
-        {(isLexical || isSyntax || isSemantic) && (
+        {(isLexical || isSyntax || isSemantic || isCodegen || isOptimizer || isBytecode) && (
           <div className="flex flex-col gap-0.5 bg-[var(--color-card)] border border-[var(--color-border)] p-0.5">
             <button
               onClick={() => setView('dynamic')}
@@ -86,7 +89,7 @@ const VisualizeLayout: React.FC = () => {
                   : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
 }`}
             >
-              {isSemantic ? t('semantic.symbolExplorer') : t('lexical.tabs.tokenBrowser')}
+              {isSemantic ? t('semantic.symbolExplorer') : isCodegen ? t('codegen.tabs.static') : isOptimizer ? 'Raw CFG' : isBytecode ? 'Raw Bytecode' : t('lexical.tabs.tokenBrowser')}
             </button>
           </div>
         )}

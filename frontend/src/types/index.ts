@@ -33,6 +33,42 @@ export interface CfgData {
   methods: CfgMethod[];
 }
 
+export interface TacInstruction {
+  line: number;
+  op: string;
+  result: string | null;
+  arg1: string | null;
+  operator: string | null;
+  arg2: string | null;
+  target: string | null;
+  comment: string | null;
+  sourceLine: number;
+}
+
+export interface EdgeInfo {
+  targetBlockId: number;
+  kind: string;
+  label: string | null;
+}
+
+export interface BasicBlockInfo {
+  id: number;
+  label: string | null;
+  type: string;
+  instructions: number[];
+  edges: EdgeInfo[];
+}
+
+export interface CodeGenerationData {
+  className: string;
+  packageName: string;
+  instructions: TacInstruction[];
+  basicBlocks: BasicBlockInfo[];
+  totalInstructions: number;
+  totalBlocks: number;
+  totalEdges: number;
+}
+
 export interface CompileResponse {
   tokens: Token[];
   astJson: string;
@@ -45,6 +81,7 @@ export interface CompileResponse {
   compilationTimeMs: number;
   classes?: ClassInfo[];
   allBytecode?: Record<string, string>;
+  codeGenerationData?: CodeGenerationData;
 }
 
 export interface ClassInfo {
@@ -75,4 +112,40 @@ export interface User {
   email: string;
 }
 
-export type CompilationPhase = 'lexical' | 'tokens' | 'ast' | 'semantic' | 'tac' | 'bytecode' | 'cfg' | 'execution';
+export type CompilationPhase = 'lexical' | 'tokens' | 'ast' | 'semantic' | 'codegen' | 'tac' | 'bytecode' | 'cfg' | 'execution';
+
+// --- Phase 4: Optimizer (CFG + SSA + Data-Flow) ---
+
+export interface DominatorEdge {
+  from: number;
+  to: number;
+}
+
+export interface DominatorData {
+  dominators: Record<number, number[]>;
+  idom: (number | null)[];
+  treeEdges: DominatorEdge[];
+}
+
+// --- Phase 5: Code Generation (scheduling + register allocation) ---
+
+export interface ScheduleEntry {
+  tacLine: number;
+  cycle: number;
+  unit: string;
+  dependencies: number[];
+}
+
+export interface InterferenceEdge {
+  from: string;
+  to: string;
+}
+
+// --- Phase 6: Bytecode ---
+
+export interface BytecodeInstruction {
+  offset: number;
+  opcode: string;
+  operands: string;
+  rawLine: string;
+}

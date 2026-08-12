@@ -216,7 +216,15 @@
   },
   "visualize": {
     "noCompilationResults": "ဘာသာပြန် ရလဒ်များ မရှိပါ",
-    "selectPhase": "Java ကုဒ်ရေးပြီး COMPILE ကိုနှိပ်ပြီး မြင်ကွင်းကို ကြည့်ပါ။"
+    "selectPhase": "Java ကုဒ်ရေးပြီး COMPILE ကိုနှိပ်ပြီး မြင်ကွင်းကို ကြည့်ပါ။",
+    "nav": {
+      "lexical": "ဇာတ်လုံး ခွဲခြမ်းစိတ်ဖြာခြင်း",
+      "syntax": "ဝါကျဖွဲ့စည်းပုံ ခွဲခြမ်းစိတ်ဖြာခြင်း",
+      "semantic": "အဓိပ္ပာယ်ဖော်ပြချက် ခွဲခြမ်းစိတ်ဖြာခြင်း",
+      "optimizer": "Optimize လုပ်ရန်",
+      "codegen": "ကုဒ်ဖန်တီးခြင်း",
+      "bytecode": "ဘိုက်ကုဒ်"
+    }
   },
   "lexical": {
     "tabs": {
@@ -377,10 +385,58 @@
     "scopeHierarchy": "သင်္ကေတ်မျှဝမ်းတည်ငဉ်း"
   },
   "bytecode": {
-    "noBytecode": "ဘိုက်ကုဒ် မထုတ်လုပ်ပါ"
+    "noBytecode": "ဘိုက်ကုဒ် မထုတ်လုပ်ပါ",
+    "pipeline": {
+      "noMethods": "ဘိုက်ကုဒ်တွင် methods မတွေ့ပါ။",
+      "listing": {
+        "title": "Bytecode Listing",
+        "description": "javap output ကို ဖတ်ပြီး class structure, constant pool, နှင့် method bytecode instructions များကို opcode descriptions ဖြင့် ပြသသည်။"
+      },
+      "stackMachine": {
+        "title": "Stack Machine Simulation",
+        "description": "JVM သည် operand stack ကို အသုံးပြု၍ bytecode ကို execute လုပ်သည်။"
+      },
+      "flow": {
+        "title": "Execution Flow",
+        "description": "JVM က bytecode instruction တစ်ခုချင်းစီကို ဘယ်လို process လုပ်သည်ကို အဆင့်ဆင့် ပြသသည်။"
+      }
+    }
   },
   "tac": {
     "noTac": "သုံးလုံးတန်းကုဒ် မထုတ်လုပ်ပါ"
+  },
+  "codegen": {
+    "noData": "ကုဒ်ဖန်တီးမှု ဒေတာ မရှိပါ",
+    "tabs": {
+      "pipeline": "Dynamic",
+      "static": "Static"
+    },
+    "step1": {
+      "title": "Expression Decomposition",
+      "description": "ရှုပ်ထွေးသော Java expressions များကို ရိုးရှင်းသော three-address code instructions များအဖြစ် ခွဲခြမ်းသည်။"
+    },
+    "step2": {
+      "title": "Three-Address Code",
+      "description": "TAC instruction စာရင်းအပြည့်အစုံ။ တစ်ခုချင်းစီတွင် operand သုံးခုထက်မက ပါဝင်သည်။"
+    },
+    "step3": {
+      "title": "Basic Block Construction",
+      "description": "TAC instructions များကို basic blocks များအဖြစ် စုစည်းသည် — ဝင်ပေါက်တစ်ခု၊ ထွက်ပေါက်တစ်ခု ရှိသည့် ဧရိယာများ။"
+    },
+    "step4": {
+      "title": "Flow Graph Edges",
+      "description": "Basic blocks များကို control flow edges များဖြင့် ချိတ်ဆက်သည်။"
+    },
+    "scheduling": {
+      "title": "Instruction Scheduling",
+      "description": "ဒေတာ မှီခိုမှုများကို ထိန်းသိမ်းရင်း pipeline stalls ကို လျှော့ချရန် instructions များကို ပြန်လည်စီစဉ်သည်။",
+      "noData": "Instruction schedule တွက်ချက်နေသည်..."
+    },
+    "regalloc": {
+      "title": "Register Allocation",
+      "description": "Graph coloring ဖြင့် variables များကို physical registers များသို့ သတ်မှတ်သည်။",
+      "noData": "Register allocation အတွက် liveness analysis CFG data လိုအပ်သည်။"
+    }
   },
   "cfg": {
     "noCfg": "ထိန်းချုပ်မှု စီးဆင်းမှု ဇယား မထုတ်လုပ်ပါ",

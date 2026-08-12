@@ -216,7 +216,15 @@
   },
   "visualize": {
     "noCompilationResults": "No Compilation Results",
-    "selectPhase": "Write some Java code and click COMPILE to see the visualization."
+    "selectPhase": "Write some Java code and click COMPILE to see the visualization.",
+    "nav": {
+      "lexical": "Lexical Analysis",
+      "syntax": "Syntax Analysis",
+      "semantic": "Semantic Analysis",
+      "optimizer": "Optimizer",
+      "codegen": "Code Generation",
+      "bytecode": "Byte Code"
+    }
   },
   "lexical": {
     "tabs": {
@@ -377,10 +385,58 @@
     "scopeHierarchy": "Scope Hierarchy"
   },
   "bytecode": {
-    "noBytecode": "No bytecode generated"
+    "noBytecode": "No bytecode generated",
+    "pipeline": {
+      "noMethods": "No methods found in bytecode.",
+      "listing": {
+        "title": "Bytecode Listing",
+        "description": "Parsed javap output showing class structure, constant pool, and method bytecode instructions with opcode descriptions."
+      },
+      "stackMachine": {
+        "title": "Stack Machine Simulation",
+        "description": "JVM executes bytecode using an operand stack. Each instruction pushes/pops values from the stack, transforming the program state."
+      },
+      "flow": {
+        "title": "Execution Flow",
+        "description": "Step-by-step execution showing how the JVM processes each bytecode instruction. Changes to stack and local variables are highlighted."
+      }
+    }
   },
   "tac": {
     "noTac": "No three-address code generated"
+  },
+  "codegen": {
+    "noData": "No code generation data available",
+    "tabs": {
+      "pipeline": "Dynamic",
+      "static": "Static"
+    },
+    "step1": {
+      "title": "Expression Decomposition",
+      "description": "Complex Java expressions are broken down into simple three-address code instructions. Each expression becomes one or more three-op operations."
+    },
+    "step2": {
+      "title": "Three-Address Code",
+      "description": "The complete TAC instruction list. Each instruction has at most three operands: result = arg1 operator arg2. Color-coded by operation type."
+    },
+    "step3": {
+      "title": "Basic Block Construction",
+      "description": "TAC instructions are grouped into basic blocks — single-entry, single-exit regions. Each block ends at a branch, goto, or return."
+    },
+    "step4": {
+      "title": "Flow Graph Edges",
+      "description": "Basic blocks are connected by control flow edges: fall-through (straight), conditional branches (true/false), and loop-back (curved)."
+    },
+    "scheduling": {
+      "title": "Instruction Scheduling",
+      "description": "Instructions are reordered to minimize pipeline stalls while preserving data dependencies. A superscalar pipeline issues up to 2 instructions per cycle.",
+      "noData": "Computing instruction schedule..."
+    },
+    "regalloc": {
+      "title": "Register Allocation",
+      "description": "Variables are assigned to physical registers using graph coloring. Variables that interfere (are simultaneously live) cannot share a register. Excess variables are spilled to memory.",
+      "noData": "Register allocation requires CFG data for liveness analysis."
+    }
   },
   "cfg": {
     "noCfg": "No control flow graph generated",

@@ -1,6 +1,7 @@
 # Project Context
 
 This is **Compiler Visualizer** — a web app that visualizes the Java compilation pipeline (lexing → parsing → AST → semantic analysis → bytecode → execution).
+read  @CLAUDE.md
 
 ## Tech Stack
 

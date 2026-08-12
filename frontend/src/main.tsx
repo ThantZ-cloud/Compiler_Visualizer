@@ -16,7 +16,7 @@ import VisualizeLayout from './pages/VisualizeLayout'
 import LexicalAnalysisPanel from './pages/LexicalAnalysisPanel'
 import SyntaxAnalysisPanel from './pages/SyntaxAnalysisPanel'
 import SemanticAnalysisPanel from './pages/SemanticAnalysisPanel'
-import TacPanel from './pages/TacPanel'
+import CodeGenerationPanel from './pages/CodeGenerationPanel'
 import BytecodePanel from './pages/BytecodePanel'
 import CfgPanel from './pages/CfgPanel'
 
@@ -39,7 +39,8 @@ createRoot(document.getElementById('root')!).render(
                     <Route path="syntax" element={<SyntaxAnalysisPanel />} />
                     <Route path="ast" element={<Navigate to="/visualize/syntax" replace />} />
                     <Route path="semantic" element={<SemanticAnalysisPanel />} />
-                    <Route path="tac" element={<TacPanel />} />
+                    <Route path="codegen" element={<CodeGenerationPanel />} />
+                    <Route path="tac" element={<Navigate to="/visualize/codegen" replace />} />
                     <Route path="bytecode" element={<BytecodePanel />} />
                     <Route path="cfg" element={<CfgPanel />} />
                   </Route>

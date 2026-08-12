@@ -33,6 +33,8 @@ public class CompileResponse {
     private String cfgError;
     private Long cfgTimeMs;
 
+    private CodeGenerationData codeGenerationData;
+
     private String executionOutput;
     private String executionError;
     private Integer exitCode;

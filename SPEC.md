@@ -114,7 +114,8 @@ All styling uses Tailwind CSS v4 with custom `@theme` tokens defined in `fronten
 |  +-------------------------------------------------------------+ |
 |  |  CompileContext (shared state)                               | |
 |  |  - code, results, currentFileId, isDirty                     | |
-|  |  - save/load, confirmDiscard                                 | |
+|  |  - save/load, confirmDiscard, compileSample(source)          | |
+|  |    (compileSample powers the visualizer's LOAD SAMPLE CODE)  | |
 |  +-------------------------------------------------------------+ |
 +------------------------------+------------------------------------+
                                | REST API (JSON) + JWT Header
@@ -168,9 +169,12 @@ frontend/src/
       my.json               # Myanmar translations
   context/
     AuthContext.tsx          # Auth state (login, register, logout, JWT token)
-    CompileContext.tsx       # Shared compile state (code, results, file management)
+    CompileContext.tsx       # Shared compile state (code, results, file management, compileSample)
     ThemeContext.tsx          # Theme state (dark/light/system) with localStorage persistence
     LanguageContext.tsx       # Language state (en/my) wrapping i18next
+  data/
+    pipelineData.ts          # Pipeline page phase data (copy, colors, icons per phase)
+    sampleCode.ts            # SAMPLE_JAVA_CODE — loop sample for the visualizer's LOAD SAMPLE CODE
   components/
     Layout.tsx              # Header bar + sidebar + Outlet (no component CSS files)
     FileBrowser.tsx          # VS Code-like sidebar (folders, files, context menu)
@@ -209,10 +213,10 @@ frontend/src/
       separator.tsx          # shadcn/ui separator
       tabs.tsx               # shadcn/ui tabs
   pages/
-    LandingPage.tsx          # Hero with BinaryRain, typewriter, CTA buttons, copyright
+    LandingPage.tsx          # Hero with BinaryRain, typewriter, 9-phase terminal mockup, three-phase stepper
     EditorPage.tsx           # Monaco editor + terminal output
     PipelinePage.tsx         # Full-page Three.js 3D pipeline visualization
-    VisualizeLayout.tsx      # Nav bar with phase links + Dynamic/Static toggle + Outlet
+    VisualizeLayout.tsx      # Phase nav + FRONT END/OPTIMIZER/BACK END badge + empty-state LOAD SAMPLE CODE
     LexicalAnalysisPanel.tsx # 4-step pipeline (Dynamic) + token browser (Static)
     TokensPanel.tsx          # Token visualization with chart/grid toggle (Static view)
     AstPanel.tsx             # Full-screen AST tree
@@ -235,12 +239,15 @@ frontend/src/
 | `/` | LandingPage | Hero section with BinaryRain background, typewriter effect, CTA buttons, copyright at bottom |
 | `/pipeline` | PipelinePage | Three.js 3D interactive pipeline visualization (lazy-loaded) |
 | `/compiler` | EditorPage | Monaco editor, file sidebar (when logged in), terminal output |
-| `/visualize` | VisualizeLayout | Phase nav bar + Dynamic/Static toggle + Outlet for child routes |
+| `/visualize` | VisualizeLayout | Phase nav bar + FRONT END/OPTIMIZER/BACK END badge + empty-state LOAD SAMPLE CODE + Outlet |
 | `/visualize/lexical` | LexicalAnalysisPanel | 4-step pipeline (Dynamic) + token browser (Static); `?view=static` switches views |
 | `/visualize/tokens` | LexicalAnalysisPanel | Legacy alias, redirects to the same component |
-| `/visualize/ast` | AstPanel | D3.js collapsible tree |
+| `/visualize/syntax` | AstPanel | D3.js collapsible tree |
+| `/visualize/ast` | AstPanel | Legacy alias, redirects to the same component |
 | `/visualize/semantic` | SemanticPanel | D3.js collapsible symbol table |
-| `/visualize/bytecode` | BytecodePanel | Raw bytecode display |
+| `/visualize/cfg` | Optimizer panel | CFG, dominator tree, SSA form, data-flow analysis |
+| `/visualize/codegen` | CodeGenerationPanel | TAC, basic blocks, scheduling, register allocation |
+| `/visualize/bytecode` | BytecodePanel | Bytecode listing, stack machine simulation, execution flow |
 
 ---
 
@@ -419,9 +426,9 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 |                                                               |
 |    // Write Java code. Watch the compiler dissect it...       |
 |                                                               |
-|     [VIEW PIPELINE]        [[BEGIN]]                          |
-|                            [[OPEN COMPILER]]                  |
-|                           (if authenticated)                  |
+|     [VIEW PIPELINE]   [TRY THE VISUALIZER]    [[BEGIN]]       |
+|                                            [[OPEN COMPILER]]  |
+|                                           (if authenticated)  |
 |                                                               |
 |           (c) 2026 Compilation Visualizer                     |
 |                          (Contact Us)                         |
@@ -431,7 +438,9 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 - **Boot sequence**: Terminal-style boot animation plays on first load (skipped for prefers-reduced-motion)
 - **BinaryRain**: Full-page canvas animation behind content
 - **FloatingBinary**: Floating binary strings in background
-- **CTA buttons**: "VIEW PIPELINE" navigates to `/pipeline`, "BEGIN" / "OPEN COMPILER" navigates to `/compiler`
+- **Hero CTAs**: "VIEW PIPELINE" navigates to `/pipeline`, "TRY THE VISUALIZER" navigates to `/visualize/lexical` (deep link straight into the visualizer's empty state), "BEGIN" / "OPEN COMPILER" navigates to `/compiler`
+- **Terminal mockup**: cycles all **9 pipeline panels** -- ANATOMY (three-phase compiler diagram, first) → SOURCE → TOKENS → AST → SEMANTIC → IR → OPTIMIZE → BYTECODE → EXECUTE -- auto-advancing every 2.6s with clickable dots; phase counter reads `PHASE x/9`, matching the boot line "Phases 1-9"
+- **How-it-works stepper**: teaches the three-phase compiler structure -- FRONT END (scanner/parser/elaboration → IR) → OPTIMIZER (analysis + transformation) → BACK END (instruction selection, scheduling, register allocation) -- with Braces/Wand2/Cpu icons (`landing.protocol.*`)
 - The Footer.tsx component exists in `components/` but is **not imported or used** on any page
 
 ### Editor Page (`/compiler`)
@@ -472,7 +481,9 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 +--------------------------------------------------------------+
 ```
 - **Phase nav bar**: "COMPILER" back button + Lucide icons + phase names. First tab is now **LEXICAL** (Braces icon, was "Tokens"), route `/visualize/lexical`
-- **Dynamic/Static toggle**: On the lexical route only, a segmented `DYNAMIC | STATIC` control sits in the top-right of the nav bar (before the token-count info). "Dynamic" = step-by-step pipeline, "Static" = token browser. State syncs via `?view=static` query param
+- **Dynamic/Static toggle**: On the lexical route only, a segmented `DYNAMIC | STATIC` control sits in the top-right of the nav bar (before the token-count info). "Dynamic" = step-by-step pipeline, "Static" = token browser. State syncs via `?view=static` query param. On the Optimizer/Bytecode routes the Static label is i18n (`visualize.tabs.rawCfg` / `visualize.tabs.rawBytecode`)
+- **Phase badge**: below the toggle, the sidebar tags the active route as **FRONT END** (lexical/syntax/semantic, cyan), **OPTIMIZER** (cfg, lime), or **BACK END** (codegen/bytecode, rose) using `visualize.phaseBadge.*` keys
+- **Empty state**: with no compile results, the panel shows "No Compilation Results" plus a **LOAD SAMPLE CODE** button — `compileSample()` compiles `SAMPLE_JAVA_CODE` (`data/sampleCode.ts`, a factorial loop so CFG/optimizer panels have branches) in place; a pulsing "Compiling..." indicator shows while it runs
 - Active phase shows neon green border with glow shadow
 - Phase info (token count, compilation time) shown on right when results exist
 
@@ -495,7 +506,7 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 - Translation files at `src/i18n/locales/en.json` and `src/i18n/locales/my.json`
 - Stored in `localStorage` as `cv-lang`
 - Toggled via button showing "EN" or Myanmar script in the header bar
-- Keys organized by section: `nav.*`, `landing.*`, `footer.*`, `auth.*`, `editor.*`, `lexical.*` (tabs, controls, and step 1-4 descriptions)
+- Keys organized by section: `nav.*`, `landing.*` (incl. `landing.protocol.*` three-phase stepper, `landing.preview.panels.*` mockup, `landing.exploreVisualizer` CTA), `footer.*`, `auth.*`, `editor.*`, `lexical.*` (tabs, controls, and step 1-4 descriptions), `visualize.*` (nav, phase badges, sample button, raw CFG/Bytecode tab labels)
 
 ---
 
@@ -515,7 +526,7 @@ ThemeProvider
 | ThemeContext | `context/ThemeContext.tsx` | Theme state (dark/light/system), resolvedTheme, localStorage persistence |
 | LanguageContext | `context/LanguageContext.tsx` | Language state (en/my), wraps i18next `changeLanguage` |
 | AuthContext | `context/AuthContext.tsx` | User state, JWT token, login/register/logout |
-| CompileContext | `context/CompileContext.tsx` | Code, results, loading, error, stdin, file management, compile/cancel |
+| CompileContext | `context/CompileContext.tsx` | Code, results, loading, error, stdin, file management, compile/cancel, `compileSample(source)` for the visualizer's LOAD SAMPLE CODE |
 
 ---
 
@@ -595,6 +606,11 @@ ThemeProvider
 - **Dynamic / Static** view toggle (segmented control in nav bar, synced via `?view=static`); Static = existing token browser
 - Sticky bottom **icon-only step controls** (Prev / Play-Pause / Next / Restart + Regex–NFA–DFA–Scanner dots); autoplay + manual step-through
 - Full en/my i18n (`lexical.*` namespace)
+
+### Week 8: Visualizer Discoverability + Landing Teaches Three Phases -- Done
+- **LOAD SAMPLE CODE** in the visualizer empty state: `compileSample(source)` added to `CompileContext` (compiles in place, marks editor clean, shows "Compiling..." state); sample lives in `data/sampleCode.ts` (`SAMPLE_JAVA_CODE`, a factorial loop) so the CFG/optimizer panels have branches to display
+- **FRONT END / OPTIMIZER / BACK END phase badge** in the visualize sidebar (`visualize.phaseBadge.*`); hardcoded "Raw CFG" / "Raw Bytecode" Static-tab labels moved to i18n (`visualize.tabs.*`)
+- Landing page: hero mockup now cycles **9 panels** with an ANATOMY panel first (three-phase compiler diagram, `landing.preview.panels.anatomy.content`); "How it works" stepper rewritten to teach the three-phase structure (front end → optimizer → back end, `landing.protocol.*`); new hero CTA **TRY THE VISUALIZER** deep-links to `/visualize/lexical`
 
 ### Future Work
 - Step-by-step live visualization for the remaining phases (Syntax Analysis / AST, Semantic Analysis, Code Generation, Bytecode) — follow `docs/compiler-reference/visualization-guide.md` for each phase's steps

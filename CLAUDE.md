@@ -108,9 +108,12 @@ frontend/src/
 │       └── my.json      # Myanmar translations
 ├── context/
 │   ├── AuthContext.tsx   # Auth state (login, register, logout, JWT token)
-│   ├── CompileContext.tsx # Shared compile state (code, results, file management)
+│   ├── CompileContext.tsx # Shared compile state (code, results, files, compileSample)
 │   ├── ThemeContext.tsx  # Theme state (dark/light/system) with localStorage persistence
 │   └── LanguageContext.tsx # Language state (en/my) wrapping i18next
+├── data/
+│   ├── pipelineData.ts   # Pipeline page phase data (copy, colors, icons per phase)
+│   └── sampleCode.ts     # SAMPLE_JAVA_CODE — loop sample for the visualizer's LOAD SAMPLE CODE
 ├── components/
 │   ├── Layout.tsx       # Shared layout: header + sidebar + Outlet for routes
 │   ├── FileBrowser.tsx  # VS Code-like sidebar (flat file list, context menu)
@@ -127,9 +130,9 @@ frontend/src/
 │   └── ui/              # shadcn/ui components (button, input, card, dialog, etc.)
 ├── pages/
 │   ├── EditorPage.tsx   # Code editor (Monaco) + terminal output
-│   ├── LandingPage.tsx  # Landing page with BinaryRain, typewriter, feature cards
+│   ├── LandingPage.tsx  # Landing page: BinaryRain, typewriter, 9-phase terminal mockup, three-phase compiler stepper
 │   ├── PipelinePage.tsx # Full-page Three.js 3D pipeline visualization
-│   ├── VisualizeLayout.tsx # Nav bar with phase links + Outlet
+│   ├── VisualizeLayout.tsx # Phase nav + FRONT END/OPTIMIZER/BACK END badge + empty-state LOAD SAMPLE CODE
 │   ├── TokensPanel.tsx  # Token visualization with chart/grid toggle
 │   ├── AstPanel.tsx     # Full-screen AST tree
 │   ├── SemanticPanel.tsx # Symbol table with tree/JSON toggle
@@ -159,11 +162,13 @@ frontend/src/
 /                      → LandingPage (hero, BinaryRain, feature cards)
 /pipeline              → PipelinePage (Three.js 3D pipeline visualization)
 /compiler              → EditorPage (code editor + terminal)
-/visualize             → VisualizeLayout (nav bar)
-/visualize/tokens      → TokensPanel (D3.js bar chart + token flow)
-/visualize/ast         → AstPanel (D3.js collapsible tree)
-/visualize/semantic    → SemanticPanel (D3.js collapsible tree)
-/visualize/bytecode    → BytecodePanel (raw bytecode display)
+/visualize             → VisualizeLayout (phase nav + Outlet)
+/visualize/lexical     → LexicalAnalysisPanel (4-step pipeline; /visualize/tokens is an alias)
+/visualize/syntax      → AstPanel (D3.js collapsible tree; /visualize/ast is an alias)
+/visualize/semantic    → SemanticPanel (D3.js collapsible tree + symbol explorer)
+/visualize/cfg         → Optimizer panel (CFG, dominator tree, SSA, data flow)
+/visualize/codegen     → CodeGenerationPanel (TAC, basic blocks, scheduling, reg alloc)
+/visualize/bytecode    → BytecodePanel (listing, stack machine, execution flow)
 ```
 
 **Key React concepts in this project:**
@@ -245,6 +250,9 @@ Source Code
 
 - **React Router** separates landing (`/`), pipeline (`/pipeline`), editor (`/compiler`), and visualizations (`/visualize/*`) — each phase gets full screen
 - **CompileContext** shares code/results across routes — compile once, visualize anywhere
+- Visiting `/visualize/*` without results shows an empty state with a **LOAD SAMPLE CODE** button — `compileSample()` compiles `SAMPLE_JAVA_CODE` from `frontend/src/data/sampleCode.ts` (a factorial loop, chosen so the CFG/optimizer panels have branches to show) directly in the visualizer, no editor needed
+- The visualize sidebar shows a **FRONT END / OPTIMIZER / BACK END** phase badge (`visualize.phaseBadge.*`) for the active route, and the hardcoded "Raw CFG"/"Raw Bytecode" tab labels are i18n keys (`visualize.tabs.*`)
+- The landing page teaches the compiler's **three-phase structure** (front end → optimizer → back end, `landing.protocol.*`) and its terminal mockup cycles all 9 pipeline panels — ANATOMY first (`landing.preview.panels.*`), matching the boot line "Phases 1-9"
 - **FileBrowser** provides VS Code-like sidebar with flat file list, saved to MySQL per user
 - **D3.js** visualizations: bar chart + token flow for tokens, collapsible trees for AST and semantic
 - All `/api/compile/**` endpoints return the full response (tokens + AST + symbol table + bytecode + output)

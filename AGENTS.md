@@ -20,6 +20,12 @@ read  @CLAUDE.md
 - All user-facing copy goes through i18n in `frontend/src/i18n/locales/{en,my}.json`
 - Three DB profiles: dev (SQLite, default), test (H2, auto-loaded under `src/test`), prod (MySQL, activate with `-Dspring-boot.run.profiles=mysql`)
 
+## Key Flows (recent features)
+
+- **Visualizer empty state**: with no compile results, `/visualize/*` offers **LOAD SAMPLE CODE** — `compileSample()` in `CompileContext` compiles `SAMPLE_JAVA_CODE` (`frontend/src/data/sampleCode.ts`, a factorial loop) in place; users never need the editor to explore visualizations
+- **Phase badge**: the visualizer sidebar tags the active route as FRONT END / OPTIMIZER / BACK END (`visualize.phaseBadge.*`); the Static-view tab labels are i18n (`visualize.tabs.rawCfg`, `visualize.tabs.rawBytecode`)
+- **Landing page**: hero mockup cycles all 9 pipeline panels (ANATOMY first, `landing.preview.panels.anatomy.content`); "How it works" teaches the three-phase compiler (`landing.protocol.*`); hero CTA **TRY THE VISUALIZER** (`landing.exploreVisualizer`) deep-links to `/visualize/lexical`
+
 <!-- context7 -->
 Use Context7 MCP to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service — even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer — your training data may not reflect recent changes. Prefer this over web search for library docs.
 

@@ -15,6 +15,7 @@ interface CompileContextType {
   selectedClass: string | null;
   setSelectedClass: (name: string | null) => void;
   handleCompile: () => Promise<void>;
+  compileSample: (source: string) => Promise<void>;
   handleCancel: () => void;
   currentFileId: number | null;
   currentFileName: string;
@@ -133,6 +134,34 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
     }
   }, [code, stdinInput, selectedClass]);
 
+  const compileSample = useCallback(async (source: string) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setCodeState(source);
+    lastSavedCodeRef.current = source;
+    setIsDirty(false);
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await compileAPI.compile(source, '', controller.signal, undefined);
+      setResult(response.data);
+      if (response.data.classes?.length) {
+        setSelectedClass(response.data.classes[0].name);
+      }
+    } catch (err: any) {
+      if (err.name === 'CanceledError' || err.name === 'AbortError') {
+        return;
+      }
+      setError(err.response?.data?.message || 'Compilation failed');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const handleCancel = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -191,12 +220,12 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
     error,
     stdinInput, setStdinInput,
     selectedClass, setSelectedClass,
-    handleCompile, handleCancel,
+    handleCompile, compileSample, handleCancel,
     currentFileId, currentFileName, setCurrentFileName,
     isDirty, saveFile, loadFile, newFile,
     discardDialogOpen, showDiscardDialog, confirmDiscardAction, cancelDiscardAction,
   }), [code, setCode, result, loading, error, stdinInput, selectedClass,
-      handleCompile, handleCancel, currentFileId, currentFileName, setCurrentFileName,
+      handleCompile, compileSample, handleCancel, currentFileId, currentFileName, setCurrentFileName,
       isDirty, saveFile, loadFile, newFile,
       discardDialogOpen, showDiscardDialog, confirmDiscardAction, cancelDiscardAction]);
 

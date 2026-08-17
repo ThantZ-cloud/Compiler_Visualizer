@@ -2,12 +2,13 @@ import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, NavLink, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
+import { SAMPLE_JAVA_CODE } from '../data/sampleCode';
 import { Braces, TreePine, Code2, Binary, Eye, Workflow, Search } from 'lucide-react';
 import { useScrollMemory } from '../hooks/useScrollMemory';
 
 const VisualizeLayout: React.FC = () => {
   const { t } = useTranslation();
-  const { result } = useCompile();
+  const { result, loading, compileSample } = useCompile();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,6 +24,14 @@ const VisualizeLayout: React.FC = () => {
   const isOptimizer = location.pathname.startsWith('/visualize/cfg');
   const isBytecode = location.pathname.startsWith('/visualize/bytecode');
   const activeView = searchParams.get('view') === 'static' ? 'static' : 'dynamic';
+
+  const phaseInfo = isLexical || isSyntax || isSemantic
+    ? { label: t('visualize.phaseBadge.frontEnd'), color: '#00D4FF' }
+    : isOptimizer
+      ? { label: t('visualize.phaseBadge.optimizer'), color: '#A3E635' }
+      : isCodegen || isBytecode
+        ? { label: t('visualize.phaseBadge.backEnd'), color: '#FF3366' }
+        : null;
 
   const setView = (view: 'dynamic' | 'static') => {
     const next = new URLSearchParams(searchParams);
@@ -94,8 +103,17 @@ const VisualizeLayout: React.FC = () => {
                   : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
 }`}
             >
-              {isSemantic ? t('semantic.symbolExplorer') : isCodegen ? t('codegen.tabs.static') : isOptimizer ? 'Raw CFG' : isBytecode ? 'Raw Bytecode' : t('lexical.tabs.tokenBrowser')}
+              {isSemantic ? t('semantic.symbolExplorer') : isCodegen ? t('codegen.tabs.static') : isOptimizer ? t('visualize.tabs.rawCfg') : isBytecode ? t('visualize.tabs.rawBytecode') : t('lexical.tabs.tokenBrowser')}
             </button>
+          </div>
+        )}
+
+        {phaseInfo && (
+          <div
+            className="text-center text-[9px] font-bold tracking-[0.25em] py-1.5 border font-display uppercase"
+            style={{ color: phaseInfo.color, borderColor: `${phaseInfo.color}55`, background: `${phaseInfo.color}0D` }}
+          >
+            {phaseInfo.label}
           </div>
         )}
 
@@ -111,7 +129,13 @@ const VisualizeLayout: React.FC = () => {
         data-scroll-root="true"
         className="flex-1 min-h-0 overflow-auto p-6 bg-[var(--color-void)]"
       >
-        {result ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-center gap-3">
+            <div className="text-sm font-mono animate-pulse">
+              {t('editor.compiling')}...
+            </div>
+          </div>
+        ) : result ? (
           <Outlet />
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-center gap-3">
@@ -122,12 +146,20 @@ const VisualizeLayout: React.FC = () => {
             <p className="text-xs max-w-[400px] font-mono">
               {'// '}{t('visualize.selectPhase')}
             </p>
-            <button
-              className="mt-3 px-6 py-3 text-[10px] font-bold tracking-[0.12em] text-[var(--color-void)] bg-[var(--color-neon)] border-none cursor-pointer transition-all font-display uppercase hover:shadow-[0_0_20px_var(--color-neon-dim)]"
-              onClick={() => navigate('/compiler')}
-            >
-              ← BACK TO COMPILER
-            </button>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <button
+                className="mt-3 px-6 py-3 text-[10px] font-bold tracking-[0.12em] text-[var(--color-void)] bg-[var(--color-neon)] border-none cursor-pointer transition-all font-display uppercase hover:shadow-[0_0_20px_var(--color-neon-dim)]"
+                onClick={() => compileSample(SAMPLE_JAVA_CODE)}
+              >
+                {t('visualize.loadSample')}
+              </button>
+              <button
+                className="mt-3 px-6 py-3 text-[10px] font-bold tracking-[0.12em] text-[var(--color-text-muted)] bg-transparent border border-[var(--color-border)] cursor-pointer transition-all font-display uppercase hover:text-[var(--color-neon)] hover:border-[var(--color-neon)]"
+                onClick={() => navigate('/compiler')}
+              >
+                ← BACK TO COMPILER
+              </button>
+            </div>
           </div>
         )}
       </div>

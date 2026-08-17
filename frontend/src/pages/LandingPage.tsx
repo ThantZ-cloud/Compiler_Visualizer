@@ -7,7 +7,7 @@ import BinaryRain from '../components/BinaryRain';
 import Footer from '../components/Footer';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useScrollMemory } from '../hooks/useScrollMemory';
-import { Code, Layers, GitBranch, Search, Cpu, Save, PenLine, Play } from 'lucide-react';
+import { Code, Layers, GitBranch, Search, Cpu, Save, Braces, Wand2 } from 'lucide-react';
 
 // ── Typewriter hook ──
 function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 2000) {
@@ -88,7 +88,7 @@ function BootSequence({ onComplete }: { onComplete: () => void }) {
     '[OK]   JavaParser loaded',
     '[OK]   D3.js visualization engine ready',
     '[OK]   Monaco Compiler loaded',
-    '[OK]   Phase 1-5: Lexer → Bytecode — online',
+    '[OK]   Phases 1-9: Anatomy → Execution — online',
     '[READY] Welcome, human.',
   ]);
 
@@ -175,10 +175,15 @@ function TerminalMockup() {
       { value: '}', type: 'delimiter' },
     ];
     return [
+      { key: 'anatomy', name: 'ANATOMY', color: 'var(--color-neon)', kind: 'pre' as const, content: t('landing.preview.panels.anatomy.content'), tokens: [] as typeof tokens },
       { key: 'source', name: 'SOURCE', color: 'var(--color-neon)', kind: 'pre' as const, content: t('landing.preview.panels.editor.code'), tokens: [] as typeof tokens },
       { key: 'tokens', name: 'TOKENS', color: 'var(--color-cyan)', kind: 'tokens' as const, content: '', tokens },
       { key: 'ast', name: 'AST', color: 'var(--color-magenta)', kind: 'pre' as const, content: t('landing.preview.panels.ast.content'), tokens: [] as typeof tokens },
+      { key: 'semantic', name: 'SEMANTIC', color: 'var(--color-cyan)', kind: 'pre' as const, content: t('landing.preview.panels.semantic.content'), tokens: [] as typeof tokens },
+      { key: 'ir', name: 'IR', color: 'var(--color-amber)', kind: 'pre' as const, content: t('landing.preview.panels.ir.content'), tokens: [] as typeof tokens },
+      { key: 'optimize', name: 'OPTIMIZE', color: 'var(--color-magenta)', kind: 'pre' as const, content: t('landing.preview.panels.optimize.content'), tokens: [] as typeof tokens },
       { key: 'bytecode', name: 'BYTECODE', color: 'var(--color-amber)', kind: 'pre' as const, content: t('landing.preview.panels.bytecode.content'), tokens: [] as typeof tokens },
+      { key: 'execute', name: 'EXECUTE', color: 'var(--color-neon)', kind: 'pre' as const, content: t('landing.preview.panels.execute.content'), tokens: [] as typeof tokens },
     ];
   }, [t]);
 
@@ -340,9 +345,9 @@ const LandingPage: React.FC = () => {
 
   // How-it-works steps
   const steps = useMemo(() => [
-    { id: 0, icon: PenLine, accent: 'var(--color-neon)' },
-    { id: 1, icon: Cpu, accent: 'var(--color-cyan)' },
-    { id: 2, icon: Play, accent: 'var(--color-magenta)' },
+    { id: 0, icon: Braces, accent: 'var(--color-neon)' },
+    { id: 1, icon: Wand2, accent: 'var(--color-cyan)' },
+    { id: 2, icon: Cpu, accent: 'var(--color-magenta)' },
   ], []);
 
   // Pipeline phase accent colors
@@ -353,6 +358,9 @@ const LandingPage: React.FC = () => {
     'var(--color-amber)',
     'var(--color-rose)',
     'var(--color-cyan)',
+    'var(--color-neon)',
+    'var(--color-amber)',
+    'var(--color-magenta)',
   ], []);
 
   return (
@@ -410,6 +418,12 @@ const LandingPage: React.FC = () => {
                 >
                   <span>{t('landing.viewPipeline')}</span>
                 </button>
+                <button
+                  className="btn-neon px-8 py-4 text-sm min-h-[48px] w-full sm:w-auto"
+                  onClick={() => navigate('/visualize/lexical')}
+                >
+                  <span>{t('landing.exploreVisualizer')}</span>
+                </button>
               </div>
 
               <div className="flex flex-wrap gap-x-6 gap-y-2 mt-10">
@@ -444,9 +458,14 @@ const LandingPage: React.FC = () => {
                   </h2>
                 </div>
                 <div className="lg:col-span-5 lg:mt-2">
-                  <p className="text-base text-[var(--color-text-dim)] leading-relaxed font-sans mb-8">
+                  <p className="text-base text-[var(--color-text-dim)] leading-relaxed font-sans mb-6">
                     {t('landing.why.body')}
                   </p>
+                  <div className="border-l-2 border-[var(--color-neon)] pl-4 mb-8">
+                    <p className="text-xs text-[var(--color-text-dim)] leading-relaxed font-mono">
+                      {t('landing.why.compilerVsInterpreter')}
+                    </p>
+                  </div>
                   <div className="flex flex-wrap gap-3">
                     <div className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--color-void)] hover:border-[var(--color-neon)] transition-colors rounded-lg">
                       <span className="w-1.5 h-1.5 bg-[var(--color-neon)]" />
@@ -568,7 +587,7 @@ const LandingPage: React.FC = () => {
                 </h2>
 
                 <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-                  {['0', '1', '2', '3', '4', '5'].map((idx, i) => (
+                  {['0', '1', '2', '3', '4', '5', '6', '7', '8'].map((idx, i) => (
                     <Fragment key={idx}>
                       <div
                         className="px-4 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] font-mono text-xs font-bold tracking-wider transition-colors hover:border-[var(--color-neon)]"
@@ -576,7 +595,7 @@ const LandingPage: React.FC = () => {
                       >
                         {t(`landing.pipelineTeaser.phases.${idx}`)}
                       </div>
-                      {i < 5 && <span className="text-[var(--color-neon)] opacity-40 font-mono">→</span>}
+                      {i < 8 && <span className="text-[var(--color-neon)] opacity-40 font-mono">→</span>}
                     </Fragment>
                   ))}
                 </div>

@@ -19,6 +19,7 @@
     "begin": "စတင်ရန်",
     "openCompiler": "ဘာသာပြန်ဖွင့်ရန်",
     "viewPipeline": "လုပ်ငန်းစဉ်ကြည့်ရန်",
+    "exploreVisualizer": "VISUALIZER စမ်းကြည့်ရန်",
     "hero": {
       "terminalTitle": "javac Main.java",
       "phaseLabel": "အဆင့်"
@@ -29,6 +30,7 @@
       "headline": "ဘာသာပြန်များသည် အမှောင်ခန်းများဖြစ်သည်။",
       "headlineAccent": "သင့်အား ဖွင့်ပါ။",
       "body": "အများစုသော ကိရိယာများသည် ဘာသာပြန်အောင်မြင်မှု သို့မဟုတ် အမှားကိုသာ ပြသည်။ ၎င်းက Java ဘယ်လို bytecode ဖြစ်သွားသည်ကို ပြသည် — lex, parse, AST, semantic analysis, bytecode generation — ထို့နောက် ရလဒ်ကို လုပ်ဆောင်သည်။",
+      "compilerVsInterpreter": "Compiler သည် ပရိုဂရမ်တစ်ခုလုံးကို မလုပ်ဆောင်မီ ဘာသာပြန်ပေးသည်; interpreter သည် တစ်ကြောင်းချင်း လုပ်ဆောင်သည်။ Java သည် နှစ်မျိုးပေါင်းစပ်မှုဖြစ်သည် — javac က bytecode သို့ compile လုပ်ပြီး JVM က interpret လုပ်ကာ JIT compiler က hot code ကို native machine code အဖြစ် ပြောင်းလဲပေးသည်။",
       "forLabel": "အတွက် ဖန်တီးထားသည်",
       "forItems": {
         "students": "CS ကျောင်းသားများ",
@@ -73,44 +75,51 @@
       ]
     },
     "protocol": {
-      "label": "// လုပ်ငန်းစဉ်",
-      "headline": "ဘယ်လိုအလုပ်လုပ်သလဲ",
+      "label": "// ကွန်ပလိုင်လာ ဘယ်လိုအလုပ်လုပ်သလဲ",
+      "headline": "အပိုင်းသုံးပိုင်း။ ဘာသာပြန်ရှင်တစ်ခု။",
       "steps": [
         {
           "id": "01",
-          "title": "ရေး",
-          "description": "Syntax highlighting နှင့် autocomplete ပါဝင်သော Monaco editor တွင် Java ကုဒ်ရေးပါ။"
+          "title": "FRONT END",
+          "description": "သင့်ကုဒ်ကို နားလည်သည် — scanner, parser နှင့် semantic elaboration တို့က source စာသားကို IR (intermediate representation) အဖြစ် ပြောင်းလဲသည်။"
         },
         {
           "id": "02",
-          "title": "ဘာသာပြန်",
-          "description": "Compile ကို နှိပ်ပြီး visualizer တွင် အဆင့်တိုင်းကို စစ်ဆေးပါ — tokens, AST, semantic, bytecode။"
+          "title": "OPTIMIZER",
+          "description": "IR ကို ခွဲခြမ်းစိတ်ဖြာပြီး ပိုကောင်းသော IR အဖြစ် ပြန်ရေးသည် — အဓိပ္ပာယ်တူ၊ ကုဒ်ပိုမြန်။ Data-flow analysis, loop-invariant code motion စသည်တို့ ပါဝင်သည်။"
         },
         {
           "id": "03",
-          "title": "လုပ်ဆောင်",
-          "description": "Custom stdin ဖြင့် သင့်ကုဒ်ကို လုပ်ဆောင်ပါ၊ သို့မဟုတ် 3D pipeline visualization ကို ရှာဖွေပါ။"
+          "title": "BACK END",
+          "description": "IR ကို ပစ်မှတ်စက်သို့ ပြောင်းလဲသည် — instruction selection, scheduling, register allocation တို့က နောက်ဆုံး ပရိုဂရမ်ကို ထုတ်လုပ်သည်။"
         }
       ]
     },
     "pipelineTeaser": {
       "label": "// PIPELINE ကို ကြိုတင်ကြည့်ရှုမှု",
-      "headline": "အဆင့်ခြောက်ဆင့်။ ခရီးတစ်ခု။",
+      "headline": "အဆင့်ကိုးဆင့်။ ခရီးတစ်ခု။",
       "phases": [
+        "Anatomy",
         "Source",
         "Lexical",
         "Parse",
         "Semantic",
         "IR",
-        "Bytecode"
+        "Optimize",
+        "Bytecode",
+        "Execute"
       ],
       "cta": "PIPELINE အပြည့်ကို ကြည့်ရန်",
-      "description": "လူဖတ်နိုင်သော source မှ JVM-executable bytecode အထိ။ အပြောင်းအလဲ အဆင့်တိုင်းကို လမ်းလျှောက်ပါ။"
+      "description": "လူဖတ်နိုင်သော source မှ native execution အထိ — optimizer နှင့် JVM အပါအဝင်။ အပြောင်းအလဲ အဆင့်တိုင်းကို လမ်းလျှောက်ပါ။"
     },
     "preview": {
       "label": "// SYSTEM ကို ကြိုတင်ကြည့်ရှုမှု",
       "headline": "လုပ်ဆောင်ပုံကို ကြည့်ပါ",
       "panels": {
+        "anatomy": {
+          "title": "ANATOMY",
+          "content": "// THE THREE-PHASE COMPILER\n//\n//   Source                  IR                    IR\n//   Program --> FRONT END -------> OPTIMIZER -------> BACK END --> Target\n//              (Scanner)         (Analysis)         (Instr Sel)   Program\n//              (Parser)          (Transform)        (Scheduling)\n//              (Elaboration)                       (Reg Alloc)\n//\n// Principle 1: preserve the program's meaning\n// Principle 2: improve the program"
+        },
         "editor": {
           "title": "EDITOR",
           "code": "public class Hello {\n  public static void main(String[] args) {\n    System.out.println(\"Hello\");\n  }\n}"
@@ -122,6 +131,22 @@
         "bytecode": {
           "title": "BYTECODE",
           "content": "0: getstatic #2\n3: ldc #3\n5: invokevirtual #4\n8: return"
+        },
+        "semantic": {
+          "title": "SEMANTIC",
+          "content": "scope: compilation unit\n  class Hello\n    method main(String[]) : void\n      println(String) : void"
+        },
+        "ir": {
+          "title": "IR",
+          "content": "t1 = ldc \"Hello\"\nt2 = getstatic System.out\nt3 = invokevirtual t2.println(t1)\nreturn"
+        },
+        "optimize": {
+          "title": "OPTIMIZE",
+          "content": "// loop-invariant code motion\nt = 2 * b * c\nfor (i = 1; i <= n; i++) {\n  a = a * d(i) * t;\n}"
+        },
+        "execute": {
+          "title": "EXECUTE",
+          "content": "$ java Hello\nHello\n\n// interpreted by JVM, then JIT-compiled"
         }
       }
     },
@@ -303,6 +328,16 @@
   "visualize": {
     "noCompilationResults": "ဘာသာပြန် ရလဒ်များ မရှိပါ",
     "selectPhase": "Java ကုဒ်ရေးပြီး COMPILE ကိုနှိပ်ပြီး မြင်ကွင်းကို ကြည့်ပါ။",
+    "loadSample": "နမူနာကုဒ် ဖွင့်ရန်",
+    "phaseBadge": {
+      "frontEnd": "FRONT END",
+      "optimizer": "OPTIMIZER",
+      "backEnd": "BACK END"
+    },
+    "tabs": {
+      "rawCfg": "CFG အကြမ်းမြင်ကွင်း",
+      "rawBytecode": "Bytecode အကြမ်းမြင်ကွင်း"
+    },
     "nav": {
       "lexical": "ဇာတ်လုံး ခွဲခြမ်းစိတ်ဖြာခြင်း",
       "syntax": "ဝါကျဖွဲ့စည်းပုံ ခွဲခြမ်းစိတ်ဖြာခြင်း",
@@ -522,6 +557,10 @@
       "title": "Register Allocation",
       "description": "Graph coloring ဖြင့် variables များကို physical registers များသို့ သတ်မှတ်သည်။",
       "noData": "Register allocation အတွက် liveness analysis CFG data လိုအပ်သည်။"
+    },
+    "interactions": {
+      "title": "Interactions",
+      "description": "Back end ၏ ခက်ခဲသော ပြဿနာများသည် တစ်ခုနှင့်တစ်ခု ဆက်စပ်သည်။ Scheduling က loads များကို ၎င်းတို့ကို သုံးသော arithmetic မှ ဝေးရာသို့ ရွှေ့သည် — ၎င်းသည် value တစ်ခု live ဖြစ်သည့် ကာလကို ကျယ်စေပြီး register pressure ကို မြင့်စေသည်။ Register allocation ကမူ scheduling ကို ကန့်သတ်သော false dependencies များကို ဖန်တီးနိုင်သည် — register တစ်ခုတည်း မျှဝေသော operation နှစ်ခုကို ၎င်းတို့၏ value များ သီးခြားဖြစ်လင့်ကစား ပြန်စီရန် မရပါ။ Value များကို rename လုပ်ခြင်းက false dependence ကို ဖျက်ပေးသည်၊ register တစ်ခု ပိုကုန်ကျသည်။"
     }
   },
   "cfg": {
@@ -540,16 +579,43 @@
     "subtitle": "Java သည် သင့်ကုဒ်ကို ဘယ်လို ဘာသာပြန်သည်",
     "subtitleLine1": "Java သည် ဘယ်လို",
     "subtitleLine2": "ဘာသာပြန်သည်",
-    "description": "လူဖတ်နိုင်သော အရင်းအမြစ်ကုဒ်မှ စက်မှု လုပ်ဆောင်နိုင်သော ဘိုက်ကုဒ်အထိ ခရီးကို လိုက်ပါ။ အဆင့်ခြောက်ဆင့်ဖြင့် သင့်ကုဒ်ကို JVM နားလည်နိုင်သည့်အရာသို့ ပြောင်းလဲပေးသည်။",
+    "description": "လူဖတ်နိုင်သော အရင်းအမြစ်ကုဒ်မှ JVM အတွင်း native execution အထိ ခရီးကို လိုက်ပါ။ အဆင့်ကိုးဆင့်ဖြင့် သင့်ကုဒ်ကို စက်လုပ်ဆောင်နိုင်သည့်အရာသို့ အဆင့်ဆင့် ပြောင်းလဲပေးသည်။",
     "complete": "လုပ်ငန်းစဉ် ပြီးဆုံးပါပြီ",
     "completeHeadline": "စာသားမှ လုပ်ဆောင်ခြင်းသို့",
-    "completeDescription": "အဆင့်ခြောက်ဆင့်ဖြင့်သာ သင့် Java အရင်းအမြစ်ကုဒ်ကို လူဖတ်နိုင်သည့် စာသားမှ JVM သည် မည်သည့် ပလက်ဖောင်းတွင်မဆို လုပ်ဆောင်နိုင်သည့် ဘိုက်ကုဒ်သို့ ပြောင်းလဲပေးသည်။ ၎င်းသည် \"တစ်ကြိမ်ရေး၊ ဘယ်နေရာမဆို လုပ်ဆောင်\" ဟူသည့် တကယ့် မှော်ပညာဖြစ်သည်။",
+    "completeDescription": "လူဖတ်နိုင်သည့် စာသားမှ IR နှင့် bytecode မှတစ်ဆင့် JVM အတွင်း native execution အထိ — ၎င်းသည် \"တစ်ကြိမ်ရေး၊ ဘယ်နေရာမဆို လုပ်ဆောင်\" ဟူသည့် တကယ့် မှော်ပညာဖြစ်သည်။",
     "tryIt": "ကိုယ်တိုင်စမ်းကြည့်ပါ",
     "phaseLabel": "အဆင့်",
     "outputLabel": "ထွက်ရလဒ်",
     "inputLabel": "ထည့်သွင်းမှု",
     "javaConceptLabel": "Java အယူအဆ",
+    "threePhases": {
+      "label": "// အပိုင်းသုံးပိုင်း ကွန်ပလိုင်လာ",
+      "frontEnd": {
+        "title": "Front End",
+        "description": "အဆင့် ၂-၆: scanner, parser, elaboration — သင့်ကုဒ်ကို နားလည်ပြီး IR အဖြစ် မှတ်တမ်းတင်သည်။"
+      },
+      "optimizer": {
+        "title": "Optimizer",
+        "description": "အဆင့် ၇: IR ကို ခွဲခြမ်းစိတ်ဖြာပြီး ပိုကောင်းသော IR အဖြစ် ပြန်ရေးသည် — အဓိပ္ပာယ်တူ၊ ကုဒ်ပိုမြန်။"
+      },
+      "backEnd": {
+        "title": "Back End",
+        "description": "အဆင့် ၈: instruction selection, scheduling, register allocation — IR ကို JVM သို့ ပြောင်းလဲသည်။"
+      }
+    },
+    "whyStudy": {
+      "title": "// ကွန်ပလိုင်လာ ဘာကြောင့် လေ့လာသင့်သလဲ?",
+      "body": "ကွန်ပလိုင်လာသည် ကွန်ပျူတာသိပ္ပံ၏ အနှစ်ချုပ်တစ်ခုဖြစ်သည် — greedy algorithms (register allocation), dynamic programming (instruction selection), list scheduling (instruction scheduling), finite automata (scanning), pushdown automata (parsing) နှင့် fixed-point algorithms (data-flow analysis)။ ၎င်းအတွင်း အလုပ်လုပ်ခြင်းက ဤနည်းပညာများအားလုံးကို မြန်မြန်ဆန်ဆန် သိကျွမ်းစေသည်။"
+    },
     "steps": {
+      "anatomy": {
+        "title": "ကွန်ပလိုင်လာ တည်ဆောက်ပုံ",
+        "subtitle": "Front End · Optimizer · Back End",
+        "explanation1": "ကွန်ပလိုင်လာဆိုသည်မှာ ဘာသာစကားတစ်ခုဖြင့် ရေးထားသော ကုဒ်ကို အခြားဘာသာစကားတစ်ခုသို့ ပြန်ဆိုပေးသော ပရိုဂရမ်ဖြစ်သည်။ ကွန်ပလိုင်လာတိုင်းလိုလိုတွင် အပိုင်းသုံးပိုင်းပါသော တည်ဆောက်ပုံရှိသည် — သင့်ဘာသာစကားကို နားလည်သော front end၊ ပစ်မှတ်စက်ကို သိသော back end နှင့် ၎င်းတို့ကြားရှိ optimizer တို့ဖြစ်သည်။",
+        "explanation2": "front end နှင့် back end သည် တိုက်ရိုက် စကားမပြောပါ။ ၎င်းတို့သည် IR (Intermediate Representation) မှတစ်ဆင့် ဆက်သွယ်သည် — ၎င်းသည် ကွန်ပလိုင်လာ၏ အဓိပ္ပာယ်သတ်မှတ်ထားသော ကုဒ်ပုံစံဖြစ်သည်။ ဤသပ်ရပ်သော နယ်နိမိတ်ကြောင့် front end တစ်ခုကို back end အများအပြားအတွက် ပြန်သုံးနိုင်သည် (retargeting)။",
+        "explanation3": "နောက်အဆင့်များအားလုံးကို စည်းမျဉ်းနှစ်ခုက ထိန်းချုပ်သည် — ကွန်ပလိုင်လာသည် သင့်ပရိုဂရမ်၏ အဓိပ္ပာယ်ကို မပျက်စီးစေရ နှင့် ပရိုဂရမ်ကို တစ်နည်းနည်းဖြင့် ပိုကောင်းအောင် လုပ်ပေးရမည်။",
+        "javaConcept": "Java သည် နှစ်မျိုးပေါင်းစပ်မှုဖြစ်သည် — javac က source ကို bytecode အဖြစ် compile လုပ်ပြီး (compilation) JVM က ထို bytecode ကို interpret လုပ်ကာ (interpretation) JIT compiler က hot code ကို runtime တွင် native machine code အဖြစ် ပြန်ဆိုပေးသည်။"
+      },
       "source": {
         "title": "အရင်းအမြစ်ကုဒ်",
         "subtitle": "လူဖတ်နိုင်သည့် ညွှန်ကြားချက်များ",
@@ -583,20 +649,36 @@
         "javaConcept": "Java သည် static type ရှိသည် — variable တိုင်းတွင် ကြေညာထားသည့် အမျိုးအစားရှိရမည်ဖြစ်ပြီး အမျိုးအစားများ ကိုက်ညီရမည်ဖြစ်သည်။ သင်္ကေတဇယားသည် class အမည်များ၊ method လက်မှတ်များ၊ variable အမျိုးအစားများနှင့် scope (ဘယ်နေရာတွင် မြင်ရသည်) ကို ခြေရာခံသည်။ ၎င်းသည် ဘာသာပြန်ရှင်သည် သင့်ပရိုဂရမ်၏ အဓိပ္ပာယ်ကို နားလည်အောင် ဆောက်ထားသည့် မြေပုံတစ်ခုလိုပင်။"
       },
       "ir": {
-        "title": "ကုဒ်ဖန်တီးခြင်း",
+        "title": "အလယ်အလတ် ကိုယ်စားပြုပုံစံ",
         "subtitle": "သုံးလုံးတန်းကုဒ် (IR)",
-        "explanation1": "နောက်ဆုံး ဘိုက်ကုဒ် မထုတ်လုပ်မီ ဘာသာပြန်ရှင်သည် TAC ဟု ခေါ်သည့် Intermediate Representation (IR) ကို ဖန်တီးသည်။ ညွှန်ကြားချက်တိုင်းတွင် operand အများဆုံး သုံးခုသာ ပါဝင်သည် — ထည့်သွင်းမှု နှစ်ခုနှင့် ထွက်ရလဒ် တစ်ခု။",
+        "explanation1": "front end ၏ နောက်ဆုံးအလုပ်မှာ IR (Intermediate Representation) ဖန်တီးခြင်းဖြစ်သည် — ၎င်းသည် ကွန်ပလိုင်လာ၏ အဓိပ္ပာယ်သတ်မှတ်ထားသော ကုဒ်ပုံစံဖြစ်သည်။ TAC (Three-Address Code) သည် ဂန္တဝင် IR တစ်မျိုးဖြစ်ပြီး ညွှန်ကြားချက်တိုင်းတွင် operand အများဆုံး သုံးခုသာ ပါဝင်သည် — ထည့်သွင်းမှု နှစ်ခုနှင့် ထွက်ရလဒ် တစ်ခု။",
         "explanation2": "၎င်းကို သင့်ကုဒ်၏ ရိုးရှင်းပြီး လျှော့ချထားသည့် ဗားရှင်းတစ်ခုလို တွေးကြည့်ပါ — ရှုပ်ထွေးသည့် သင်္ချာညီမျှခြင်းကို အဆင့်ဆင့် လျှော့ချသကဲ့သို့။ ရှုပ်ထွေးသည့် expression များကို ရိုးရှင်းသည့် အပိုင်းများအဖြစ် ခွဲခြမ်းသည် — ဤဟာကို ဖွင့်ပါ၊ ဟိုဟာကို ခေါ်ပါ၊ ရလဒ်ကို ဒီမှာ သိမ်းပါ။",
-        "explanation3": "TAC သည် optimize လုပ်ရလွယ်ကူသည့် ကမ္ဘာလုံးဆိုင်ရာ ဖော်မတ်ဖြစ်သည့်အတွက် အရေးကြီးသည်။ ဘာသာပြန်ရှင်သည် နောက်ဆုံး ဘိုက်ကုဒ် မထုတ်လုပ်မီ ဤအဆင့်တွင် ညွှန်ကြားချက်များကို ပြန်လည်စီစဉ်ခြင်း၊ ထပ်ခါထပ်ခါ လုပ်ဆောင်ချက်မျာ�ကို ဖယ်ရှားခြင်း သို့မဟုတ် ပေါင်းစပ်ခြင်း ပြုလုပ်နိုင်သည်။",
+        "explanation3": "ဤအချက်မှစ၍ ကွန်ပလိုင်လာသည် သင့်ရင်းမြစ်စာသားကို ပြန်မကြည့်တော့ပါ — IR ပေါ်တွင်သာ အလုပ်လုပ်သည်။ ထို့ကြောင့် IR သည် အရေးကြီးသည် — နောက်အဆင့်တိုင်း (optimizer, back end) သည် ဤကိုယ်စားပြုပုံစံတစ်ခုတည်းကိုသာ ဖတ်ရေးလုပ်သည်။",
         "javaConcept": "ကျွန်တော်တို့၏ ဥပမာတွင် System.out.println('Hello, World!') method call ကို — System class ကို ဖွင့်ခြင်း၊ ၎င်း၏ out field ကို ဝင်ရောက်ခြင်း၊ string ကြွယ်ဝမှုကို ဖွင့်ခြင်း၊ ပြီးနောက် println ကို ခေါ်ဆိုခြင်းအဖြစ် ခွဲခြမ်းစိတ်ဖြာပါသည်။ အဆင့်တိုင်းသည် ရိုးရှင်းသည့် ညွှန်ကြားချက် တစ်ခုဖြစ်သည်။"
       },
       "bytecode": {
         "title": "ဘိုက်ကုဒ်",
         "subtitle": "JVM ညွှန်ကြားချက်များ",
-        "explanation1": "နောက်ဆုံး ထွက်ရလဒ်သည် Java ဘိုက်ကုဒ်ဖြစ်သည် — JVM အောင်မြင်စွာ ဆောင်ရွက်နိုင်သည့် compact binary ညွှန်ကြားချက်များ စုစည်းမှုဖြစ်သည်။ ၎င်းကို .class ဖိုင်များတွင် သိမ်းဆည်းပါသည်။",
+        "explanation1": "back end သည် optimize ပြီးသော IR ကို JVM instruction set သို့ ပြောင်းလဲပေးသည် — IR operation တစ်ခုစီအတွက် မည်သည့် instruction သုံးမည် (instruction selection)၊ မည်သည့်အစီအစဉ်ဖြင့် လုပ်ဆောင်မည် (scheduling) နှင့် မည်သည့် register များတွင် တန်ဖိုးများ ထားမည် (allocation) ကို ဆုံးဖြတ်သည်။ နောက်ဆုံးထွက်ရလဒ်သည် JVM လုပ်ဆောင်နိုင်သော bytecode ဖြစ်ပြီး .class ဖိုင်များတွင် သိမ်းဆည်းပါသည်။",
         "explanation2": "ဘိုက်ကုဒ်ကို ပြင်ဆင်ပြီးသား ချက်ပြုတ်နည်းတစ်ခုလို တွေးကြည့်ပါ — ညွှန်ကြားချက်တိုင်းသည် တိကျပြီး နံပါတ်တပ်ထားကာ လိုက်နာဖို့ အဆင်သင့်ဖြစ်သည်။ JVM သည် ဤညွှန်ကြားချက်များကို တစ်ခုချင်းစီ ဖတ်ပြီး သင့်စက်ပေါ်တွင် အောင်မြင်စွာ ဆောင်ရွက်သည်။",
         "explanation3": "Java သည် 'တစ်ကြိမ်ရေး၊ ဘယ်နေရာမဆို လုပ်ဆောင်' ဖြစ်သည် — JVM ရှိသည့် ဖုန်းမည်သည့်ဖုန်းတွင်မဆို ဘိုက်ကုဒ်အတူတူကို လုပ်ဆောင်သည်။ ဘိုက်ကုဒ်သည် platform-independent ဖြစ်ပြီး JVM သည် platform-specific အသေးစိတ်များကို ကိုင်တွယ်သည်။",
         "javaConcept": "javac ဘာသာပြန်ရှင်သည် ဘိုက်ကုဒ်ပါဝင်သည့် .class ဖိုင်များကို ထုတ်လုပ်သည်။ ၎င်းတို့ကို javap -c (Java class file disassembler) ဖြင့် စစ်ဆေးနိုင်သည်။ ဘိုက်ကုဒ်ညွှန်ကြားချက်တိုင်းသည် byte တစ်ခုတည်း ရှည်လျားပြီး opcode 0-255 ရှိသည်။"
+      },
+      "optimizer": {
+        "title": "ပိုမိုကောင်းမွန်အောင် ပြုပြင်ခြင်း",
+        "subtitle": "ခွဲခြမ်းစိတ်ဖြာခြင်းနှင့် ပြောင်းလဲခြင်း",
+        "explanation1": "front end နှင့် back end ကြားတွင် optimizer ရှိသည် — ၎င်းသည် IR မှ IR သို့ ပြောင်းလဲပေးသူဖြစ်သည်။ IR ကို ဖတ်၍ ခွဲခြမ်းစိတ်ဖြာပြီး ပိုသေးသော သို့မဟုတ် ပိုမြန်သော IR အဖြစ် ပြန်ရေးသည် — အဓိပ္ပာယ်တူ၊ ကုဒ်ပိုကောင်း။ (IR-to-IR ပြောင်းလဲသူသည် ကွန်ပလိုင်လာတစ်ခုပင် ဖြစ်သည်!)",
+        "explanation2": "optimization တိုင်းတွင် အပိုင်းနှစ်ပိုင်းရှိသည် — analysis သည် ကုဒ်အကြောင်း အချက်အလက်များကို ရှာဖွေပြီး transformation သည် ထိုအချက်အလက်များဖြင့် ကုဒ်ကို ပြန်ရေးသည်။ ဥပမာ data-flow analysis သည် program လုပ်ဆောင်ချိန်တွင် တန်ဖိုးများ မည်သို့ စီးဆင်းမည်ကို compile ချိန်တွင် တွက်ချက်သည်။",
+        "explanation3": "ဂန္တဝင်ဥပမာမှာ loop-invariant code motion ဖြစ်သည်။ loop အတွင်း မည်သည့်အခါမျှ မပြောင်းလဲသော expression ကို loop အပြင်တွင် တစ်ကြိမ်တည်းတွက်ရန် optimizer က လုံခြုံကြောင်း သက်သေပြသည် — ထပ်ခါထပ်ခါ လုပ်ရသော အလုပ်ကို လျှော့ချပေးသည်။ Context သည် အဓိကဖြစ်သည်။",
+        "javaConcept": "javac သည် အနည်းငယ်သာ optimize လုပ်သည်။ ကြီးမားသော optimization များကို runtime JIT compiler က လုပ်သည် — ၎င်းသည် မည်သည့် method များ အများဆုံး ခေါ်ဆိုခံရသည် (hot code) စသည့် static compiler မသိနိုင်သော အချက်အလက်များကို သိရှိသည်။"
+      },
+      "execution": {
+        "title": "လုပ်ဆောင်ခြင်း",
+        "subtitle": "JVM Interpreter + JIT",
+        "explanation1": "Virtual machine ဆိုသည်မှာ ပရိုဆက်ဆာတစ်ခုအတွက် simulator — ထို machine ၏ instruction set ကို interpret လုပ်သော interpreter ဖြစ်သည်။ compile ပြီးသော .class ဖိုင်ကို သင့် CPU က တိုက်ရိုက် မလုပ်ဆောင်ပါ — JVM က လုပ်ဆောင်ပေးသည်။ JVM သည် class ကို load လုပ်၍ bytecode ကို စစ်ဆေးပြီး ညွှန်ကြားချက်တစ်ခုချင်း interpret လုပ်သည်။",
+        "explanation2": "interpretation သည် ရိုးရှင်းပြီး portable ဖြစ်သော်လည်း native code ထက် နှေးသည်။ ထို့ကြောင့် JVM သည် မည်သည့် code အများဆုံး လုပ်ဆောင်သည်ကို စောင့်ကြည့်ပြီး method တစ်ခု 'hot' ဖြစ်လာသောအခါ JIT compiler က ၎င်း၏ bytecode ကို သင့် CPU အတွက် native machine code အဖြစ် ပြန်ဆိုပေးသည်။",
+        "explanation3": "ဤပေါင်းစပ်မှု — bytecode သို့ compile လုပ်ခြင်း၊ interpret လုပ်ခြင်း၊ ထို့နောက် hot code ကို JIT compile လုပ်ခြင်း — ကြောင့် Java သည် 'တစ်ကြိမ်ရေး၊ ဘယ်နေရာမဆို လုပ်ဆောင်' ဖြစ်သလို server များနှင့် game များအတွက်လည်း မြန်ဆန်သည်။",
+        "javaConcept": "သင့် CPU သည် Java bytecode ကို ဘယ်တော့မှ မမြင်ရပါ။ ၎င်းသည် JIT မှ ထုတ်လုပ်သော native machine ညွှန်ကြားချက်များကိုသာ လုပ်ဆောင်သည်။ Java benchmark များ 'warm-up' လိုအပ်ရသည့် အကြောင်းရင်းမှာ JIT သည် hot code ကို ရှာဖွေရန် အချိန်အနည်းငယ် လိုသောကြောင့်ဖြစ်သည်။"
       }
     }
   },

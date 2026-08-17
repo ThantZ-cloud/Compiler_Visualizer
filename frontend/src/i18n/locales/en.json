@@ -19,6 +19,7 @@
     "begin": "BEGIN",
     "openCompiler": "OPEN COMPILER",
     "viewPipeline": "VIEW PIPELINE",
+    "exploreVisualizer": "TRY THE VISUALIZER",
     "hero": {
       "terminalTitle": "javac Main.java",
       "phaseLabel": "PHASE"
@@ -29,6 +30,7 @@
       "headline": "Compilers are black boxes.",
       "headlineAccent": "Open yours.",
       "body": "Most tools show compile success or failure. This one shows how Java becomes bytecode — lex, parse, AST, semantic analysis, bytecode generation — then runs the result.",
+      "compilerVsInterpreter": "A compiler translates the whole program before it runs; an interpreter executes it line by line. Java is a hybrid — javac compiles to bytecode, the JVM interprets it, and a JIT compiler turns hot code into native machine code.",
       "forLabel": "BUILT FOR",
       "forItems": {
         "students": "CS Students",
@@ -73,44 +75,51 @@
       ]
     },
     "protocol": {
-      "label": "// PROTOCOL",
-      "headline": "How it works",
+      "label": "// HOW_A_COMPILER_WORKS",
+      "headline": "Three phases. One translator.",
       "steps": [
         {
           "id": "01",
-          "title": "WRITE",
-          "description": "Write Java code in the Monaco editor with syntax highlighting and autocomplete."
+          "title": "FRONT END",
+          "description": "Understands your code: the scanner, parser, and semantic elaboration turn source text into an intermediate representation (IR)."
         },
         {
           "id": "02",
-          "title": "COMPILE",
-          "description": "Click compile and inspect each phase in the visualizer — tokens, AST, semantic, bytecode."
+          "title": "OPTIMIZER",
+          "description": "Analyzes the IR and rewrites it into better IR — same meaning, faster code. Data-flow analysis, loop-invariant code motion, and more."
         },
         {
           "id": "03",
-          "title": "RUN",
-          "description": "Execute your code with custom stdin, or explore the 3D pipeline visualization."
+          "title": "BACK END",
+          "description": "Maps the IR to the target machine: instruction selection, scheduling, and register allocation produce the final program."
         }
       ]
     },
     "pipelineTeaser": {
       "label": "// PIPELINE_PREVIEW",
-      "headline": "Six phases. One journey.",
+      "headline": "Nine phases. One journey.",
       "phases": [
+        "Anatomy",
         "Source",
         "Lexical",
         "Parse",
         "Semantic",
         "IR",
-        "Bytecode"
+        "Optimize",
+        "Bytecode",
+        "Execute"
       ],
       "cta": "VIEW FULL PIPELINE",
-      "description": "From human-readable source to JVM-executable bytecode. Walk through every transformation step."
+      "description": "From human-readable source to native execution — including the optimizer and the JVM itself. Walk through every transformation step."
     },
     "preview": {
       "label": "// SYSTEM_PREVIEW",
       "headline": "See it in action",
       "panels": {
+        "anatomy": {
+          "title": "ANATOMY",
+          "content": "// THE THREE-PHASE COMPILER\n//\n//   Source                  IR                    IR\n//   Program --> FRONT END -------> OPTIMIZER -------> BACK END --> Target\n//              (Scanner)         (Analysis)         (Instr Sel)   Program\n//              (Parser)          (Transform)        (Scheduling)\n//              (Elaboration)                       (Reg Alloc)\n//\n// Principle 1: preserve the program's meaning\n// Principle 2: improve the program"
+        },
         "editor": {
           "title": "EDITOR",
           "code": "public class Hello {\n  public static void main(String[] args) {\n    System.out.println(\"Hello\");\n  }\n}"
@@ -119,9 +128,25 @@
           "title": "AST",
           "content": "ClassDeclaration\n  └─ MethodDeclaration\n      └─ MethodCall\n          └─ \"Hello\""
         },
+        "semantic": {
+          "title": "SEMANTIC",
+          "content": "scope: compilation unit\n  class Hello\n    method main(String[]) : void\n      println(String) : void"
+        },
+        "ir": {
+          "title": "IR",
+          "content": "t1 = ldc \"Hello\"\nt2 = getstatic System.out\nt3 = invokevirtual t2.println(t1)\nreturn"
+        },
+        "optimize": {
+          "title": "OPTIMIZE",
+          "content": "// loop-invariant code motion\nt = 2 * b * c\nfor (i = 1; i <= n; i++) {\n  a = a * d(i) * t;\n}"
+        },
         "bytecode": {
           "title": "BYTECODE",
           "content": "0: getstatic #2\n3: ldc #3\n5: invokevirtual #4\n8: return"
+        },
+        "execute": {
+          "title": "EXECUTE",
+          "content": "$ java Hello\nHello\n\n// interpreted by JVM, then JIT-compiled"
         }
       }
     },
@@ -303,6 +328,16 @@
   "visualize": {
     "noCompilationResults": "No Compilation Results",
     "selectPhase": "Write some Java code and click COMPILE to see the visualization.",
+    "loadSample": "LOAD SAMPLE CODE",
+    "phaseBadge": {
+      "frontEnd": "FRONT END",
+      "optimizer": "OPTIMIZER",
+      "backEnd": "BACK END"
+    },
+    "tabs": {
+      "rawCfg": "Raw CFG",
+      "rawBytecode": "Raw Bytecode"
+    },
     "nav": {
       "lexical": "Lexical Analysis",
       "syntax": "Syntax Analysis",
@@ -522,6 +557,10 @@
       "title": "Register Allocation",
       "description": "Variables are assigned to physical registers using graph coloring. Variables that interfere (are simultaneously live) cannot share a register. Excess variables are spilled to memory.",
       "noData": "Register allocation requires CFG data for liveness analysis."
+    },
+    "interactions": {
+      "title": "Interactions",
+      "description": "The back end's hard problems interact. Scheduling moves loads away from the arithmetic that uses them — this widens the period a value is live, raising register pressure. Register allocation, in turn, can create false dependencies that constrain scheduling: two operations sharing a register cannot be reordered, even when their values are independent. Renaming the values breaks the false dependence, at the cost of one more register."
     }
   },
   "cfg": {
@@ -540,16 +579,43 @@
     "subtitle": "HOW JAVA COMPILES YOUR CODE",
     "subtitleLine1": "HOW JAVA COMPILES",
     "subtitleLine2": "YOUR CODE",
-    "description": "Follow the journey from human-readable source code to machine-executable bytecode. Six phases, each transforming your code into something the JVM can understand.",
+    "description": "Follow the journey from human-readable source code to native execution inside the JVM. Nine phases, each transforming your code into something the machine can run.",
     "complete": "Pipeline Complete",
     "completeHeadline": "FROM TEXT TO EXECUTION",
-    "completeDescription": "In just six phases, your Java source code is transformed from human-readable text into bytecode that the JVM can execute on any platform. This is the magic behind \"write once, run anywhere.\"",
+    "completeDescription": "From human-readable text, through IR and bytecode, to native execution inside the JVM — this is the magic behind \"write once, run anywhere.\"",
     "tryIt": "TRY IT YOURSELF",
     "phaseLabel": "Phase",
     "outputLabel": "Output",
     "inputLabel": "Input",
     "javaConceptLabel": "Java Concept",
+    "threePhases": {
+      "label": "// THE THREE-PHASE COMPILER",
+      "frontEnd": {
+        "title": "Front End",
+        "description": "Phases 2-6: scanner, parser, elaboration — understand your code and record it as IR."
+      },
+      "optimizer": {
+        "title": "Optimizer",
+        "description": "Phase 7: analyze the IR and rewrite it into better IR — same meaning, faster code."
+      },
+      "backEnd": {
+        "title": "Back End",
+        "description": "Phase 8: instruction selection, scheduling, register allocation — map IR to the JVM."
+      }
+    },
+    "whyStudy": {
+      "title": "// WHY STUDY COMPILERS?",
+      "body": "A compiler is a microcosm of computer science: greedy algorithms (register allocation), dynamic programming (instruction selection), list scheduling (instruction scheduling), finite automata (scanning), pushdown automata (parsing), and fixed-point algorithms (data-flow analysis). Working inside one is a fast way to meet them all."
+    },
     "steps": {
+      "anatomy": {
+        "title": "Compiler Anatomy",
+        "subtitle": "Front End · Optimizer · Back End",
+        "explanation1": "A compiler is a program that translates code written in one language into another. Almost every compiler shares the same three-part architecture: a front end that understands your language, a back end that knows the target machine, and an optimizer in between.",
+        "explanation2": "Front end and back end never talk directly. They communicate through an Intermediate Representation (IR) — the compiler's definitive form of your program. That clean boundary makes compilers retargetable: one front end can serve many different back ends.",
+        "explanation3": "Two principles govern every phase that follows: the compiler must preserve the meaning of your program, and it should improve the program in some way. Everything you scroll through next follows from those two rules.",
+        "javaConcept": "Java is a hybrid system: javac compiles source to bytecode (compilation), then the JVM interprets that bytecode (interpretation) — and a Just-In-Time (JIT) compiler translates hot bytecode into native machine code at runtime."
+      },
       "source": {
         "title": "Source Code",
         "subtitle": "Human-Readable Instructions",
@@ -583,20 +649,36 @@
         "javaConcept": "Java is statically typed — every variable must have a declared type, and types must be compatible. The symbol table tracks class names, method signatures, variable types, and scope nesting. The compiler uses a scope stack to resolve identifiers: it searches the innermost block first, then enclosing scopes, up to the package level."
       },
       "ir": {
-        "title": "Code Generation",
+        "title": "Intermediate Representation",
         "subtitle": "Three-Address Code (IR)",
-        "explanation1": "Before generating final bytecode, the compiler creates an Intermediate Representation (IR) called Three-Address Code (TAC). Each instruction has at most three operands: two inputs and one output.",
+        "explanation1": "The front end's final job is generating an Intermediate Representation (IR) — the compiler's definitive form of your code. Three-Address Code (TAC) is one classic IR: each instruction has at most three operands, two inputs and one output.",
         "explanation2": "Think of it as a simplified, stripped-down version of your code — like reducing a complex math equation step by step. Complex expressions are broken into simple pieces: load this, call that, store the result here.",
-        "explanation3": "TAC is important because it's a universal format that's easy to optimize. The compiler can rearrange, eliminate redundant operations, or combine instructions at this stage before generating the final bytecode.",
+        "explanation3": "From this point on, the compiler never looks back at your source text — it works only on the IR. That is why the IR is so important: every later phase (optimizer, back end) reads and writes this one representation.",
         "javaConcept": "In our example, the method call System.out.println('Hello, World!') gets decomposed into: load the System class, access its out field, load the string constant, then call println. Each step is one simple instruction."
       },
       "bytecode": {
         "title": "Bytecode",
         "subtitle": "JVM Instructions",
-        "explanation1": "The final output is Java bytecode — a set of compact binary instructions that the Java Virtual Machine (JVM) can execute. This is what gets saved in .class files.",
+        "explanation1": "The back end maps the optimized IR onto the JVM instruction set — choosing which instruction implements each IR operation (instruction selection), in what order they run (scheduling), and which values live in registers (allocation). The final output is Java bytecode: compact instructions the JVM can execute, saved in .class files.",
         "explanation2": "Think of bytecode as an assembled recipe — every instruction is precise, numbered, and ready to follow. The JVM reads these instructions one by one and executes them on your machine.",
         "explanation3": "This is why Java is 'write once, run anywhere' — the same bytecode runs on any device that has a JVM, whether it's Windows, Mac, or Linux. The bytecode is platform-independent; the JVM handles the platform-specific details.",
         "javaConcept": "The javac compiler produces .class files containing bytecode. You can examine them with javap -c (the Java class file disassembler). Each bytecode instruction is one byte long (hence the name), with opcode 0-255."
+      },
+      "optimizer": {
+        "title": "Optimizer",
+        "subtitle": "Analysis & Transformation",
+        "explanation1": "Between the front end and the back end sits the optimizer: an IR-to-IR transformer. It reads IR, analyzes it, and rewrites it into IR that is smaller or faster — same meaning, better code. (An IR-to-IR transformer is itself a compiler!)",
+        "explanation2": "Every optimization is a pair: analysis discovers facts about the code, transformation uses those facts to rewrite it. Data-flow analysis, for example, reasons at compile time about how values flow when the program runs.",
+        "explanation3": "The classic example is loop-invariant code motion. If an expression inside a loop never changes, the optimizer proves it is safe to compute it once before the loop — cutting work from every iteration. Context makes all the difference.",
+        "javaConcept": "javac performs only light optimization. The heavy lifting happens in the JIT compiler at runtime, which knows things a static compiler cannot — like which methods are actually called the most (hot code)."
+      },
+      "execution": {
+        "title": "Execution",
+        "subtitle": "JVM Interpreter + JIT",
+        "explanation1": "A virtual machine is a simulator for some processor — an interpreter for that machine's instruction set. The compiled .class file is not run by your CPU directly — it is run by the Java Virtual Machine. The JVM loads the class, verifies the bytecode, and interprets it instruction by instruction.",
+        "explanation2": "Interpretation is simple and portable, but slower than native code. So the JVM watches which code runs most often: when a method gets hot, a Just-In-Time (JIT) compiler translates its bytecode into native machine code for your specific CPU.",
+        "explanation3": "This hybrid — compile to bytecode, interpret, then JIT-compile the hot parts — is why Java is both 'write once, run anywhere' and fast enough for servers and games.",
+        "javaConcept": "Your CPU never sees Java bytecode. It only executes native machine instructions produced by the JIT. Next time you see a 'warm-up' before Java benchmarks, you know why: the JIT needs a moment to find the hot code."
       }
     }
   },

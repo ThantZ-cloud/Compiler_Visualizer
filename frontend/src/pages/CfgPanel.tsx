@@ -11,14 +11,16 @@ import CfgBasicBlocks from '../components/cfg/CfgBasicBlocks';
 import DominatorTree from '../components/cfg/DominatorTree';
 import SsaForm from '../components/cfg/SsaForm';
 import DataFlowAnalysis from '../components/cfg/DataFlowAnalysis';
+import InstructionScheduling from '../components/cfg/InstructionScheduling';
 import CfgGraph from '../components/CfgGraph';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { computeDominators } from '../lib/cfg/dominators';
 import { buildSsa } from '../lib/cfg/ssa';
 import { runLivenessAnalysis } from '../lib/cfg/dataflow';
+import { computeSchedule } from '../lib/cfg/scheduling';
 
-const STEP_DELAYS = [3000, 4000, 4000, 4000];
-const OPTIMIZER_STEP_NAMES = ['CFG', 'Dominators', 'SSA', 'Data Flow'];
+const STEP_DELAYS = [3000, 4000, 4000, 4000, 4000];
+const OPTIMIZER_STEP_NAMES = ['CFG', 'Dominators', 'SSA', 'Data Flow', 'Scheduling'];
 
 function parseCfg(jsonStr: string): CfgMethod[] | null {
   try {
@@ -33,7 +35,7 @@ const CfgPanel: React.FC = () => {
   const { result, loading } = useCompile();
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('view') === 'static' ? 'static' : 'pipeline';
-  const [currentStep, setCurrentStep] = useState<0 | 1 | 2 | 3>(0);
+  const [currentStep, setCurrentStep] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [playState, setPlayState] = useState<PlayState>('idle');
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -67,6 +69,11 @@ const CfgPanel: React.FC = () => {
     return runLivenessAnalysis(currentMethod);
   }, [currentMethod]);
 
+  const scheduling = useMemo(() => {
+    if (!currentMethod || !result?.codeGenerationData?.instructions?.length) return null;
+    return computeSchedule(result.codeGenerationData.instructions);
+  }, [currentMethod, result]);
+
   const scrollToStep = useCallback((step: number) => {
     const el = stepRefs.current[step];
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -81,9 +88,9 @@ const CfgPanel: React.FC = () => {
     let step = 0;
     const advance = () => {
       setCompletedSteps(prev => new Set(prev).add(step));
-      if (step < 3) {
+      if (step < 4) {
         step++;
-        setCurrentStep(step as 0 | 1 | 2 | 3);
+        setCurrentStep(step as 0 | 1 | 2 | 3 | 4);
         scrollToStep(step);
         autoplayTimer.current = setTimeout(advance, STEP_DELAYS[step]);
       } else {
@@ -99,8 +106,8 @@ const CfgPanel: React.FC = () => {
   }, []);
 
   const handleNext = useCallback(() => {
-    if (currentStep < 3) {
-      const next = (currentStep + 1) as 0 | 1 | 2 | 3;
+    if (currentStep < 4) {
+      const next = (currentStep + 1) as 0 | 1 | 2 | 3 | 4;
       setCompletedSteps(prev => new Set([...prev, currentStep]));
       setCurrentStep(next);
       scrollToStep(next);
@@ -109,7 +116,7 @@ const CfgPanel: React.FC = () => {
 
   const handlePrev = useCallback(() => {
     if (currentStep > 0) {
-      setCurrentStep((currentStep - 1) as 0 | 1 | 2 | 3);
+      setCurrentStep((currentStep - 1) as 0 | 1 | 2 | 3 | 4);
       scrollToStep(currentStep - 1);
     }
   }, [currentStep, scrollToStep]);
@@ -126,14 +133,14 @@ const CfgPanel: React.FC = () => {
     if (playState === 'playing') return;
     const container = stepRefs.current[0]?.parentElement;
     if (!container) return;
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       const el = stepRefs.current[i];
       if (el) {
         const rect = el.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
         const relativeTop = rect.top - containerRect.top;
         if (relativeTop > -100 && relativeTop < containerRect.height / 2) {
-          setCurrentStep(i as 0 | 1 | 2 | 3);
+          setCurrentStep(i as 0 | 1 | 2 | 3 | 4);
           break;
         }
       }
@@ -159,7 +166,7 @@ const CfgPanel: React.FC = () => {
     );
   }
 
-  if (!dominators || !ssa || !dataFlow) {
+  if (!dominators || !ssa || !dataFlow || !scheduling) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-center gap-3">
         <GitFork size={48} className="text-[var(--color-neon)] opacity-30" />
@@ -229,13 +236,28 @@ const CfgPanel: React.FC = () => {
                 />
               </ErrorBoundary>
             </div>
+
+            <PipelineConnector active={completedSteps.has(3) || currentStep >= 4} />
+
+            {/* Step 5: Instruction Scheduling */}
+            <div ref={(el) => { stepRefs.current[4] = el; }}>
+              <ErrorBoundary name="InstructionScheduling">
+                <InstructionScheduling
+                  method={currentMethod}
+                  instructions={result.codeGenerationData?.instructions || []}
+                  scheduling={scheduling}
+                  isPlaying={playState === 'playing' && currentStep === 4}
+                  isCompleted={completedSteps.has(4) || playState === 'completed'}
+                />
+              </ErrorBoundary>
+            </div>
           </div>
 
           <StepControls
             currentStep={currentStep}
             playState={playState}
             stepNames={OPTIMIZER_STEP_NAMES}
-            totalSteps={4}
+            totalSteps={5}
             onPlay={handlePlay}
             onPause={handlePause}
             onNext={handleNext}

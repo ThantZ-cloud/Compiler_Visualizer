@@ -569,6 +569,12 @@
     "zoomOut": "ချုံ့ရန်",
     "resetView": "မြင်ကွင်း ပြန်သတ်ရန်"
   },
+  "optimizer": {
+    "step5": {
+      "title": "Instruction Scheduling",
+      "description": "List scheduling သည် data dependencies များကို ထိန်းသိမ်းရင်း pipeline stalls များကို လျှော့ချရန် instructions များကို ပြန်လည်စီစဉ်သည်။ Node တစ်ခုစီသည် instruction တစ်ခုဖြစ်ပြီး edges များမှာ အစီအစဉ်ကို ကန့်သတ်သော dependencies များဖြစ်သည်။"
+    }
+  },
   "pipeline": {
     "title": "ဘာသာပြန် လုပ်ငန်းစဉ်",
     "subtitle": "Java သည် သင့်ကုဒ်ကို ဘယ်လို ဘာသာပြန်သည်",

@@ -19,6 +19,17 @@ export interface ScheduleEntry {
   dependencies: number[];
 }
 
+/** Per-cycle snapshot of the scheduler's internal state */
+export interface CycleInfo {
+  cycle: number;
+  /** Instructions ready to issue at the start of this cycle */
+  ready: number[];
+  /** Instructions actually issued this cycle */
+  issued: number[];
+  /** Instructions ready but held back (issue-width limit) */
+  stalled: number[];
+}
+
 export interface SchedulingResult {
   dependencies: DependencyEdge[];
   schedule: ScheduleEntry[];
@@ -27,6 +38,10 @@ export interface SchedulingResult {
   /** Original order cycles vs scheduled cycles */
   originalCycles: number;
   scheduledCycles: number;
+  /** Cycles for a single-issue (serial) baseline */
+  serialCycles: number;
+  /** Per-cycle scheduler state (ready / issued / stalled) */
+  cycleBreakdown: CycleInfo[];
 }
 
 /** Estimate latency for an instruction type */
@@ -139,6 +154,7 @@ function listSchedule(
   instructions: TacInstruction[],
   dependencies: DependencyEdge[],
   numUnits: number = 2,
+  cycleLog?: CycleInfo[],
 ): ScheduleEntry[] {
   const instrMap = new Map<number, TacInstruction>();
   for (const instr of instructions) {
@@ -185,6 +201,7 @@ function listSchedule(
   while (ready.length > 0 && cycle < maxCycles) {
     // Sort ready list by latency (longest first — critical path heuristic)
     ready.sort((a, b) => (latencies.get(b) || 1) - (latencies.get(a) || 1));
+    const readySnapshot = [...ready];
 
     // Issue up to numUnits instructions per cycle
     const issued: number[] = [];
@@ -206,6 +223,15 @@ function listSchedule(
       } else {
         stillReady.push(line);
       }
+    }
+
+    if (cycleLog) {
+      cycleLog.push({
+        cycle,
+        ready: readySnapshot,
+        issued: [...issued],
+        stalled: [...stillReady],
+      });
     }
 
     ready.length = 0;
@@ -283,11 +309,38 @@ export function computeSchedule(
   instructions: TacInstruction[],
 ): SchedulingResult {
   const dependencies = buildDependencyGraph(instructions);
-  const schedule = listSchedule(instructions, dependencies);
+  const cycleLog: CycleInfo[] = [];
+  const schedule = listSchedule(instructions, dependencies, 2, cycleLog);
+  const serial = listSchedule(instructions, dependencies, 1);
 
   const criticalPath = schedule.length > 0
     ? Math.max(...schedule.map(s => s.cycle)) + 1
     : 0;
+  const serialCycles = serial.length > 0
+    ? Math.max(...serial.map(s => s.cycle)) + 1
+    : 0;
+
+  // Normalize cycle breakdown: one entry per cycle from 0..maxCycle,
+  // filling gaps (stall cycles with nothing ready) as empty rows.
+  const infoByCycle = new Map<number, CycleInfo>();
+  for (const c of cycleLog) infoByCycle.set(c.cycle, c);
+  const issuedByCycle = new Map<number, number[]>();
+  for (const e of schedule) {
+    const arr = issuedByCycle.get(e.cycle) || [];
+    arr.push(e.tacLine);
+    issuedByCycle.set(e.cycle, arr);
+  }
+  const maxCycle = Math.max(0, criticalPath - 1, ...[...infoByCycle.keys()]);
+  const cycleBreakdown: CycleInfo[] = [];
+  for (let cycle = 0; cycle <= maxCycle; cycle++) {
+    const info = infoByCycle.get(cycle);
+    cycleBreakdown.push({
+      cycle,
+      issued: info?.issued ?? issuedByCycle.get(cycle) ?? [],
+      ready: info?.ready ?? [],
+      stalled: info?.stalled ?? [],
+    });
+  }
 
   return {
     dependencies,
@@ -295,5 +348,7 @@ export function computeSchedule(
     criticalPath,
     originalCycles: instructions.filter(i => i.op !== 'label' && i.op !== 'method_start' && i.op !== 'method_end').length,
     scheduledCycles: criticalPath,
+    serialCycles,
+    cycleBreakdown,
   };
 }

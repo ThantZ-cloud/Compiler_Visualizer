@@ -569,6 +569,12 @@
     "zoomOut": "Zoom Out",
     "resetView": "Reset View"
   },
+  "optimizer": {
+    "step5": {
+      "title": "Instruction Scheduling",
+      "description": "List scheduling reorders instructions to minimize pipeline stalls while preserving data dependencies. Each node is one instruction; edges are the dependencies that constrain the order."
+    }
+  },
   "pipeline": {
     "title": "Compilation Pipeline",
     "subtitle": "HOW JAVA COMPILES YOUR CODE",

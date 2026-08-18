@@ -570,6 +570,22 @@
     "resetView": "မြင်ကွင်း ပြန်သတ်ရန်"
   },
   "optimizer": {
+    "step1": {
+      "title": "Basic Blocks",
+      "description": "Control flow graph ကို basic blocks များအဖြစ် ခွဲခြမ်းသည် — အဆုံးကလွဲ၍ branch များမရှိသော instruction စီစဉ်မှုများ။"
+    },
+    "step2": {
+      "title": "Dominator Tree",
+      "description": "Block A သည် entry မှ B သို့ ရောက်ရန် လမ်းတိုင်း A ကို ဖြတ်သန်းရပါက A က B ကို dominate လုပ်သည်။ Dominator tree တွင် ဤ immediate domination ဆက်စပ်မှုများကို ပြသသည်။"
+    },
+    "step3": {
+      "title": "SSA Form",
+      "description": "Static Single Assignment ပုံစံတွင် variable တိုင်းကို တစ်ကြိမ်သာ assign လုပ်သည်။ φ-functions များသည် control-flow join points များတွင် values များကို ပေါင်းစပ်ပေးသည်။"
+    },
+    "step4": {
+      "title": "Data-Flow Analysis",
+      "description": "Liveness analysis သည် variable အသုံးပြုမှု အချက်အလက်များကို CFG မှတစ်ဆင့် နောက်ပြန် ပျံ့နှံ့စေသည်။ Variable တစ်ခုသည် ၎င်း၏ value ကို ပြန်သတ်မှတ်ခြင်းမပြုမီ ဖတ်မည်ဆိုပါက \"live\" ဖြစ်သည်။"
+    },
     "step5": {
       "title": "Instruction Scheduling",
       "description": "List scheduling သည် data dependencies များကို ထိန်းသိမ်းရင်း pipeline stalls များကို လျှော့ချရန် instructions များကို ပြန်လည်စီစဉ်သည်။ Node တစ်ခုစီသည် instruction တစ်ခုဖြစ်ပြီး edges များမှာ အစီအစဉ်ကို ကန့်သတ်သော dependencies များဖြစ်သည်။"

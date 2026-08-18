@@ -83,7 +83,8 @@ const CfgBasicBlocks: React.FC<CfgBasicBlocksProps> = ({ method, isPlaying, isCo
     let i = 0;
     const show = () => {
       if (i >= method.blocks.length) return;
-      setVisibleBlocks(prev => new Set([...prev, method.blocks[i].id]));
+      const blockId = method.blocks[i].id;
+      setVisibleBlocks(prev => new Set([...prev, blockId]));
       i++;
       timerRef.current = setTimeout(show, 300);
     };

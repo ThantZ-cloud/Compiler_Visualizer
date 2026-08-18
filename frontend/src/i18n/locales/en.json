@@ -570,6 +570,22 @@
     "resetView": "Reset View"
   },
   "optimizer": {
+    "step1": {
+      "title": "Basic Blocks",
+      "description": "The control flow graph is decomposed into basic blocks — sequences of instructions with no branches except at the end."
+    },
+    "step2": {
+      "title": "Dominator Tree",
+      "description": "Block A dominates block B if every path from the entry to B must go through A. The dominator tree shows these immediate domination relationships."
+    },
+    "step3": {
+      "title": "SSA Form",
+      "description": "In Static Single Assignment form, every variable is assigned exactly once. φ-functions merge values at control-flow join points, and each definition gets a unique subscript."
+    },
+    "step4": {
+      "title": "Data-Flow Analysis",
+      "description": "Liveness analysis propagates variable usage information backward through the CFG. A variable is \"live\" at a point if its value may be read before being redefined."
+    },
     "step5": {
       "title": "Instruction Scheduling",
       "description": "List scheduling reorders instructions to minimize pipeline stalls while preserving data dependencies. Each node is one instruction; edges are the dependencies that constrain the order."

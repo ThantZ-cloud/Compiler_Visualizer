@@ -30,6 +30,16 @@ export interface CycleInfo {
   stalled: number[];
 }
 
+/** Nodes/edges that form the longest latency-weighted dependency chain */
+export interface CriticalPathInfo {
+  /** TAC lines of instructions on the critical path */
+  criticalNodes: Set<number>;
+  /** Data-edge keys ("from->to") along the critical path */
+  criticalEdges: Set<string>;
+  /** Total latency of the longest chain (ops on the chain) */
+  criticalLength: number;
+}
+
 export interface SchedulingResult {
   dependencies: DependencyEdge[];
   schedule: ScheduleEntry[];
@@ -42,6 +52,8 @@ export interface SchedulingResult {
   serialCycles: number;
   /** Per-cycle scheduler state (ready / issued / stalled) */
   cycleBreakdown: CycleInfo[];
+  /** Longest latency-weighted dependency chain (Ch 7) */
+  criticalPathInfo: CriticalPathInfo;
 }
 
 /** Estimate latency for an instruction type */
@@ -303,6 +315,85 @@ function listSchedule(
 }
 
 /**
+ * Compute the critical path: the longest latency-weighted chain of
+ * data (RAW) dependencies. Data edges form a DAG, so longest-path
+ * distances are well-defined.
+ */
+export function computeCriticalPath(
+  instructions: TacInstruction[],
+  dependencies: DependencyEdge[],
+): CriticalPathInfo {
+  const latOf = new Map<number, number>();
+  for (const instr of instructions) latOf.set(instr.line, getLatency(instr.op));
+
+  const dataEdges = dependencies.filter(d => d.type === 'data');
+  const succs = new Map<number, number[]>();
+  const preds = new Map<number, number[]>();
+  const lines = new Set<number>();
+  for (const e of dataEdges) {
+    lines.add(e.from);
+    lines.add(e.to);
+    if (!succs.has(e.from)) succs.set(e.from, []);
+    succs.get(e.from)!.push(e.to);
+    if (!preds.has(e.to)) preds.set(e.to, []);
+    preds.get(e.to)!.push(e.from);
+  }
+
+  const roots = [...lines].filter(l => !preds.has(l));
+
+  // Topological sort (data edges only → guaranteed DAG)
+  const order: number[] = [];
+  const state = new Map<number, number>();
+  const visit = (l: number) => {
+    if (state.get(l) === 2) return;
+    if (state.get(l) === 1) return;
+    state.set(l, 1);
+    for (const s of succs.get(l) || []) visit(s);
+    state.set(l, 2);
+    order.push(l);
+  };
+  for (const l of [...lines].sort((a, b) => a - b)) visit(l);
+  const topo = [...order].reverse(); // parents before children
+
+  // Longest distance from any root (edges weighted by source latency)
+  const distFromStart = new Map<number, number>();
+  for (const l of roots) distFromStart.set(l, 0);
+  for (const l of topo) {
+    const d = distFromStart.get(l) ?? 0;
+    for (const s of succs.get(l) || []) {
+      const cand = d + (latOf.get(l) || 1);
+      if (cand > (distFromStart.get(s) ?? -1)) distFromStart.set(s, cand);
+    }
+  }
+
+  // Longest distance from any exit (children first)
+  const distToEnd = new Map<number, number>();
+  for (const l of lines) if (!succs.has(l)) distToEnd.set(l, 0);
+  for (const l of [...topo].reverse()) {
+    const best = Math.max(0, ...(succs.get(l) || []).map(s => (latOf.get(l) || 1) + (distToEnd.get(s) ?? 0)));
+    distToEnd.set(l, best);
+  }
+
+  const criticalLength = Math.max(0, ...[...lines].map(l => (distFromStart.get(l) ?? 0) + (latOf.get(l) || 1)));
+  const criticalNodes = new Set<number>();
+  for (const l of lines) {
+    if ((distFromStart.get(l) ?? 0) + (latOf.get(l) || 1) + (distToEnd.get(l) ?? 0) === criticalLength) {
+      criticalNodes.add(l);
+    }
+  }
+
+  const criticalEdges = new Set<string>();
+  for (const e of dataEdges) {
+    if (criticalNodes.has(e.from) && criticalNodes.has(e.to)
+        && (distFromStart.get(e.to) ?? 0) === (distFromStart.get(e.from) ?? 0) + (latOf.get(e.from) || 1)) {
+      criticalEdges.add(`${e.from}->${e.to}`);
+    }
+  }
+
+  return { criticalNodes, criticalEdges, criticalLength };
+}
+
+/**
  * Main entry: compute instruction schedule for a method's TAC.
  */
 export function computeSchedule(
@@ -350,5 +441,6 @@ export function computeSchedule(
     scheduledCycles: criticalPath,
     serialCycles,
     cycleBreakdown,
+    criticalPathInfo: computeCriticalPath(instructions, dependencies),
   };
 }

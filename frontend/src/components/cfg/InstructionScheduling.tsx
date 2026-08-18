@@ -135,7 +135,7 @@ const InstructionScheduling: React.FC<InstructionSchedulingProps> = ({ method, i
       {/* Detail chips */}
       <div className="flex flex-wrap gap-4 px-1">
         <div className="text-[9px] font-mono text-[var(--color-text-muted)]">
-          <span className="text-[#FFB000] font-bold">{scheduling.criticalPath}</span> critical path
+          <span className="text-[#00D4FF] font-bold">{scheduling.criticalPathInfo?.criticalLength ?? 0}</span> critical chain
         </div>
         <div className="text-[9px] font-mono text-[var(--color-text-muted)]">
           <span className="text-[#FF3366] font-bold">{scheduling.dependencies.length}</span> dependencies
@@ -158,6 +158,9 @@ const InstructionScheduling: React.FC<InstructionSchedulingProps> = ({ method, i
               </span>
               <span className="flex items-center gap-1 text-[8px] font-mono text-[var(--color-text-muted)]">
                 <span className="w-2 h-0.5 inline-block" style={{ background: '#FF3366' }} /> output (WAW)
+              </span>
+              <span className="flex items-center gap-1 text-[8px] font-mono text-[var(--color-text-muted)]">
+                <span className="w-2 h-0.5 inline-block" style={{ background: '#00D4FF' }} /> critical chain
               </span>
             </div>
           </div>

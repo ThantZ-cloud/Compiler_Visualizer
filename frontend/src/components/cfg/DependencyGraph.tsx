@@ -24,6 +24,8 @@ const DEP_COLORS: Record<string, string> = {
   output: '#FF3366',
 };
 
+const CRIT_COLOR = '#00D4FF';
+
 const ROW_H = 62;
 const NODE_H = 38;
 
@@ -147,6 +149,26 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({ instructions, schedul
           .attr('d', 'M0,0 L10,5 L0,10 Z')
           .attr('fill', color);
       }
+      defs.append('marker')
+        .attr('id', 'dep-arrow-crit')
+        .attr('viewBox', '0 0 10 10')
+        .attr('refX', 9).attr('refY', 5)
+        .attr('markerWidth', 5).attr('markerHeight', 5)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,0 L10,5 L0,10 Z')
+        .attr('fill', CRIT_COLOR);
+      defs.append('filter')
+        .attr('id', 'crit-glow')
+        .append('feDropShadow')
+        .attr('dx', 0).attr('dy', 0)
+        .attr('stdDeviation', 3)
+        .attr('flood-color', CRIT_COLOR)
+        .attr('flood-opacity', 0.7);
+
+      // Critical path edges/nodes
+      const critNodes = scheduling.criticalPathInfo?.criticalNodes ?? new Set<number>();
+      const critEdges = scheduling.criticalPathInfo?.criticalEdges ?? new Set<string>();
 
       // Dependency edges (curved, top -> bottom, color-coded)
       scheduling.dependencies.forEach((dep, i) => {
@@ -155,7 +177,8 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({ instructions, schedul
         if (!from || !to) return;
 
         const revealed = revealedEdges.has(i);
-        const color = DEP_COLORS[dep.type] || '#6A7B9B';
+        const critical = revealed && critEdges.has(`${dep.from}->${dep.to}`);
+        const color = critical ? CRIT_COLOR : (DEP_COLORS[dep.type] || '#6A7B9B');
         const x1 = from.x + nodeW / 2;
         const y1 = from.y + NODE_H;
         const x2 = to.x + nodeW / 2;
@@ -167,10 +190,10 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({ instructions, schedul
           .attr('d', path)
           .attr('fill', 'none')
           .attr('stroke', color)
-          .attr('stroke-width', revealed ? 2 : 1)
-          .attr('stroke-opacity', revealed ? 1 : 0.15)
+          .attr('stroke-width', critical ? 2.5 : 2)
+          .attr('stroke-opacity', revealed ? (critical ? 1 : 0.9) : 0.15)
           .attr('stroke-dasharray', revealed ? 'none' : '4,4')
-          .attr('marker-end', revealed ? `url(#dep-arrow-${dep.type})` : 'none');
+          .attr('marker-end', revealed ? `url(#dep-arrow-${critical ? 'crit' : dep.type})` : 'none');
 
         // Variable name at the edge midpoint
         const varName = dep.label.split(':')[0].trim();
@@ -192,15 +215,26 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({ instructions, schedul
         if (!pos) continue;
         const instr = instrMap.get(entry.tacLine);
         const unitColor = UNIT_COLORS[entry.unit] || '#6A7B9B';
+        const critical = critNodes.has(entry.tacLine);
         const text = truncate(formatInstr(instr), Math.floor((nodeW - 20) / 6.2));
 
         const nodeG = g.append('g').attr('transform', `translate(${pos.x},${pos.y})`);
+        if (critical) {
+          nodeG.append('rect')
+            .attr('x', -2).attr('y', -2)
+            .attr('width', nodeW + 4).attr('height', NODE_H + 4)
+            .attr('rx', 6)
+            .attr('fill', 'none')
+            .attr('stroke', CRIT_COLOR)
+            .attr('stroke-width', 3)
+            .attr('stroke-opacity', 0.35);
+        }
         nodeG.append('rect')
           .attr('width', nodeW).attr('height', NODE_H).attr('rx', 4)
-          .attr('fill', '#16161F')
-          .attr('stroke', unitColor)
-          .attr('stroke-opacity', 0.55)
-          .attr('stroke-width', 1.2);
+          .attr('fill', critical ? 'rgba(0,212,255,0.08)' : '#16161F')
+          .attr('stroke', critical ? CRIT_COLOR : unitColor)
+          .attr('stroke-opacity', critical ? 1 : 0.55)
+          .attr('stroke-width', critical ? 2 : 1.2);
         nodeG.append('text')
           .attr('x', 8).attr('y', 13)
           .attr('font-size', '8px')

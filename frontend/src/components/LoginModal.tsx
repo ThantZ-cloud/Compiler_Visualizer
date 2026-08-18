@@ -26,10 +26,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
     try {
       await login(username, password);
       onClose();
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Login failed. Check your credentials.';
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      const message = error.response?.data?.message || 'Login failed. Check your credentials.';
       setError(message);
-      toast.error(err.response ? message : 'Connection failed');
+      toast.error(error.response ? message : 'Connection failed');
     } finally {
       setLoading(false);
     }

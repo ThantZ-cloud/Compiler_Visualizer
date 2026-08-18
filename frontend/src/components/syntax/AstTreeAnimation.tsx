@@ -66,33 +66,48 @@ function getNodeLabel(type: string, name?: string): string {
 
 function parseAstJson(jsonStr: string): AstNode | null {
   try {
-    const parsed = JSON.parse(jsonStr);
-    if (parsed.error) return null;
-    return convertToAstNode(parsed);
+    const parsed = JSON.parse(jsonStr) as { error?: boolean } | RawAstNode;
+    if (parsed && typeof parsed === 'object' && 'error' in parsed) return null;
+    return convertToAstNode(parsed as RawAstNode | null | undefined);
   } catch {
     return null;
   }
 }
 
-function convertToAstNode(obj: any): AstNode {
+interface RawAstNode {
+  type?: unknown;
+  name?: unknown;
+  method?: unknown;
+  field?: unknown;
+  value?: unknown;
+  line?: unknown;
+  column?: unknown;
+  children?: unknown;
+}
+
+function convertToAstNode(obj: RawAstNode | null | undefined): AstNode {
   if (!obj || typeof obj !== 'object') {
     return { type: 'Unknown', name: String(obj) };
   }
-  const type = obj.type || 'Unknown';
-  const name = obj.name || obj.method || obj.field || obj.value || '';
+  const type = typeof obj.type === 'string' ? obj.type : 'Unknown';
+  const name =
+    (typeof obj.name === 'string' ? obj.name : '') ||
+    (typeof obj.method === 'string' ? obj.method : '') ||
+    (typeof obj.field === 'string' ? obj.field : '') ||
+    (typeof obj.value === 'string' ? obj.value : '');
   const children: AstNode[] = [];
   if (Array.isArray(obj.children)) {
-    obj.children.forEach((child: any) => {
-      if (child && typeof child === 'object') children.push(convertToAstNode(child));
+    obj.children.forEach((child) => {
+      if (child && typeof child === 'object') children.push(convertToAstNode(child as RawAstNode));
     });
   }
   return {
     type,
     name,
     children: children.length > 0 ? children : undefined,
-    value: obj.value,
-    line: obj.line,
-    column: obj.column,
+    value: typeof obj.value === 'string' ? obj.value : undefined,
+    line: typeof obj.line === 'number' ? obj.line : undefined,
+    column: typeof obj.column === 'number' ? obj.column : undefined,
   };
 }
 
@@ -143,8 +158,9 @@ const AstTreeAnimation: React.FC<AstTreeAnimationProps> = ({ astJson, isPlaying,
     svg.call(zoom);
 
     const root = d3.hierarchy(astData);
-    const nodeCount = root.descendants().length;
-    const treeHeight = Math.max(height - 80, nodeCount * 25);
+    const depth = root.height || 1; // levels below the root
+    // Natural full-height layout — the wrapper grows to fit, nothing is clipped.
+    const treeHeight = Math.max(height - 80, (depth + 1) * 55);
     const treeWidth = Math.max(width - 250, 400);
     d3.tree<AstNode>().size([treeHeight, treeWidth])(root);
 
@@ -200,6 +216,8 @@ const AstTreeAnimation: React.FC<AstTreeAnimationProps> = ({ astJson, isPlaying,
       const dx = (width - bounds.width) / 2 - bounds.x + 20;
       const dy = 40 - bounds.y;
       svg.call(zoom.transform, d3.zoomIdentity.translate(dx, dy));
+      // Grow the SVG to the full tree height so the bottom nodes stay visible.
+      svg.attr('height', Math.ceil(bounds.height + 80));
     }
 
     return () => {
@@ -230,7 +248,7 @@ const AstTreeAnimation: React.FC<AstTreeAnimationProps> = ({ astJson, isPlaying,
           </span>
         </div>
         <div className="ast-tree-wrapper" ref={containerRef} style={{ minHeight: 420 }}>
-          <svg ref={svgRef} width="100%" height="100%" />
+          <svg ref={svgRef} width="100%" />
         </div>
       </div>
     </div>

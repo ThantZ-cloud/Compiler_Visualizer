@@ -58,7 +58,7 @@ const EditorPage: React.FC = () => {
     } finally {
       setSaving(false);
     }
-  }, [saveFile]);
+  }, [saveFile, t]);
 
   const handleSaveCancel = useCallback(() => {
     setSavePromptOpen(false);
@@ -203,7 +203,7 @@ const EditorPage: React.FC = () => {
             <button
               className="px-4 py-2 text-xs font-bold text-[var(--color-neon)] border border-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] flex items-center gap-1.5"
               style={{ fontFamily: 'var(--font-display)' }}
-              onClick={() => navigate('/visualize/tokens')}
+              onClick={() => navigate('/visualize/lexical')}
             >
               <Eye size={10} />
               {t('editor.visualize')}

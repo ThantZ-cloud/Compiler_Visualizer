@@ -219,10 +219,35 @@ export function getPipelineSteps(t: TFunction): PipelineStepData[] {
 //   No branches, no loops — straight-line code.`,
     },
     {
+      id: "optimizer",
+      title: t('pipeline.steps.optimizer.title'),
+      subtitle: t('pipeline.steps.optimizer.subtitle'),
+      phase: 6,
+      color: "#A3E635",
+      icon: "Wand2",
+      explanation: [
+        t('pipeline.steps.optimizer.explanation1'),
+        t('pipeline.steps.optimizer.explanation2'),
+        t('pipeline.steps.optimizer.explanation3'),
+      ],
+      javaConcept: t('pipeline.steps.optimizer.javaConcept'),
+      input: "{ IR (Three-Address Code) from the front end }",
+      output: `// Original IR — inside a loop:
+//   for i = 1..n {  a = a * 2 * b * c * d(i)  }
+//
+// Analysis: 2, b, c never change inside the loop
+// Transformation (loop-invariant code motion):
+//
+//   t = 2 * b * c          // hoisted OUT of the loop
+//   for i = 1..n {  a = a * d(i) * t  }
+//
+// Multiplications per loop: 4n  ->  2n + 2`,
+    },
+    {
       id: "bytecode",
       title: t('pipeline.steps.bytecode.title'),
       subtitle: t('pipeline.steps.bytecode.subtitle'),
-      phase: 6,
+      phase: 7,
       color: "#FF3366",
       icon: "Cpu",
       explanation: [
@@ -231,7 +256,7 @@ export function getPipelineSteps(t: TFunction): PipelineStepData[] {
         t('pipeline.steps.bytecode.explanation3'),
       ],
       javaConcept: t('pipeline.steps.bytecode.javaConcept'),
-      input: "{ Three-Address Code from Code Generation }",
+      input: "{ Optimized IR from the Optimizer }",
       output: `// HelloWorld.class — Compiled with javac
 // Disassembled with javap -c -p
 
@@ -251,6 +276,30 @@ public class HelloWorld {
   // B6 = invokevirtual (2 bytes operand)
   // B1 = return       (no operands)
 }`,
+    },
+    {
+      id: "execution",
+      title: t('pipeline.steps.execution.title'),
+      subtitle: t('pipeline.steps.execution.subtitle'),
+      phase: 8,
+      color: "#F8FAFC",
+      icon: "Play",
+      explanation: [
+        t('pipeline.steps.execution.explanation1'),
+        t('pipeline.steps.execution.explanation2'),
+        t('pipeline.steps.execution.explanation3'),
+      ],
+      javaConcept: t('pipeline.steps.execution.javaConcept'),
+      input: "{ HelloWorld.class — the bytecode from the back end }",
+      output: `$ java HelloWorld
+Hello, World!
+$
+// What happened under the hood:
+//   1. JVM class loader loads HelloWorld.class
+//   2. Bytecode is verified, then interpreted op by op
+//   3. Hot code detected -> JIT compiler translates
+//      it to native machine code for your CPU
+//   4. Native code runs directly on the hardware`,
     },
   ];
 }

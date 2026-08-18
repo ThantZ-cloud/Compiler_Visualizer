@@ -34,10 +34,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
     try {
       await register(username, email, password);
       onClose();
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Registration failed. Try a different username.';
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      const message = error.response?.data?.message || 'Registration failed. Try a different username.';
       setError(message);
-      toast.error(err.response ? message : 'Connection failed');
+      toast.error(error.response ? message : 'Connection failed');
     } finally {
       setLoading(false);
     }

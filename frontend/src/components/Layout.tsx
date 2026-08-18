@@ -95,7 +95,7 @@ const Layout: React.FC = () => {
                 ? 'text-[var(--color-neon)] border-[var(--color-neon)] bg-[var(--color-neon)]/5'
                 : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text)] hover:border-[var(--color-border)]'}`}
             style={{ fontFamily: 'var(--font-display)' }}
-            onClick={() => navigate('/visualize/tokens')}
+            onClick={() => navigate('/visualize/lexical')}
           >
             <Eye size={12} />
             {t('nav.visualizer')}
@@ -131,22 +131,13 @@ const Layout: React.FC = () => {
           {isAuthenticated ? (
             <UserMenu />
           ) : (
-            <>
-              <button
-                className="px-4 py-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-neon)] transition-colors tracking-[0.1em]"
-                style={{ fontFamily: 'var(--font-display)' }}
-                onClick={() => setShowLoginModal(true)}
-              >
-                {t('nav.signIn')}
-              </button>
-              <button
-                className="px-4 py-2 text-xs font-bold text-[var(--color-neon)] border border-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all tracking-[0.1em]"
-                style={{ fontFamily: 'var(--font-display)' }}
-                onClick={() => setShowRegisterModal(true)}
-              >
-                {t('nav.register')}
-              </button>
-            </>
+            <button
+              className="px-4 py-2 text-xs font-bold text-[var(--color-neon)] border border-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] cursor-pointer bg-transparent min-h-[44px]"
+              style={{ fontFamily: 'var(--font-display)' }}
+              onClick={() => setShowLoginModal(true)}
+            >
+              {t('nav.signIn')}
+            </button>
           )}
         </div>
       </header>

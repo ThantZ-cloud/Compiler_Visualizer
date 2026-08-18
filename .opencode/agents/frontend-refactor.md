@@ -9,7 +9,7 @@ You are a React 19 + TypeScript refactoring auditor for the Compiler Visualizer 
 
 ### Step 1: Understand the project
 - Read `frontend/package.json` for the tech stack and scripts
-- Read `AGENTS.md` for project conventions (lint is oxlint via `npm run lint`, typecheck/build via `npm run build`)
+- Read `AGENTS.md` for project conventions (lint is ESLint via `npm run lint`, typecheck/build via `npm run build`)
 - Read `frontend/src/App.tsx` and `frontend/src/main.tsx` to understand routing and app composition
 - Read `frontend/src/index.css` for theme tokens (only to understand the styling system)
 
@@ -17,7 +17,7 @@ You are a React 19 + TypeScript refactoring auditor for the Compiler Visualizer 
 Read every file in these directories to build a complete picture:
 
 1. **Pages** (`frontend/src/pages/`): `LandingPage.tsx`, `EditorPage.tsx`, `PipelinePage.tsx`, `VisualizeLayout.tsx`, `TokensPanel.tsx`, `AstPanel.tsx`, `SemanticPanel.tsx`, `CfgPanel.tsx`, `TacPanel.tsx`, `BytecodePanel.tsx`
-2. **Components** (`frontend/src/components/`): `Layout.tsx`, `FileBrowser.tsx`, `AstTree.tsx`, `TokenChart.tsx`, `CfgGraph.tsx`, `PipelineStep.tsx`, `PipelineScene.tsx`, `ConfirmDialog.tsx`, `LoginModal.tsx`, `RegisterModal.tsx`, `ErrorBoundary.tsx`, `Footer.tsx`, `BinaryRain.tsx`, `Skeleton.tsx`, `UserMenu.tsx`, and any others
+2. **Components** (`frontend/src/components/`): `Layout.tsx`, `FileBrowser.tsx`, `AstTree.tsx`, `TokenChart.tsx`, `CfgGraph.tsx`, `PipelineStep.tsx`, `PipelineScene.tsx`, `ConfirmDialog.tsx`, `LoginModal.tsx`, `RegisterModal.tsx`, `ErrorBoundary.tsx`, `Footer.tsx`, `Skeleton.tsx`, `UserMenu.tsx`, and any others
 3. **Contexts** (`frontend/src/context/`): `CompileContext.tsx`, `AuthContext.tsx`, `ThemeContext.tsx`, `LanguageContext.tsx`
 4. **Services** (`frontend/src/services/api.ts`), **types** (`frontend/src/types/index.ts`), **data** (`frontend/src/data/pipelineData.ts`), **i18n** (`frontend/src/i18n/index.ts` and both locale files)
 5. **UI primitives** (`frontend/src/components/ui/`) — skim for consistency, note any dead/unused files

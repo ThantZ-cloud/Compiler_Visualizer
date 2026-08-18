@@ -36,6 +36,7 @@ createRoot(document.getElementById('root')!).render(
                   <Route path="/pipeline" element={<PipelinePage />} />
                   <Route path="/compiler" element={<EditorPage />} />
                   <Route path="/visualize" element={<VisualizeLayout />}>
+                    <Route index element={<LexicalAnalysisPanel />} />
                     <Route path="lexical" element={<LexicalAnalysisPanel />} />
                     <Route path="tokens" element={<LexicalAnalysisPanel />} />
                     <Route path="syntax" element={<SyntaxAnalysisPanel />} />
@@ -45,6 +46,7 @@ createRoot(document.getElementById('root')!).render(
                     <Route path="tac" element={<Navigate to="/visualize/codegen" replace />} />
                     <Route path="bytecode" element={<BytecodePanel />} />
                     <Route path="cfg" element={<CfgPanel />} />
+                    <Route path="optimizer" element={<Navigate to="/visualize/cfg" replace />} />
                   </Route>
                 </Route>
               </Routes>

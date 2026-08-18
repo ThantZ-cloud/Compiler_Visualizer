@@ -59,8 +59,9 @@ function getReadsWrites(instr: TacInstruction): { reads: string[]; writes: strin
   if (instr.arg2 && !instr.arg2.match(/^\d+$/)) reads.push(instr.arg2);
   // phi functions read from all args
   if (instr.op === 'phi') {
-    for (const arg of (instr as any).phiArgs || []) {
-      if (arg.varName) reads.push(arg.varName);
+    const phiArgs = (instr as TacInstruction & { phiArgs?: { varName?: unknown }[] }).phiArgs || [];
+    for (const arg of phiArgs) {
+      if (typeof arg.varName === 'string') reads.push(arg.varName);
     }
   }
 

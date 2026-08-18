@@ -16,11 +16,58 @@ interface SymbolRow {
 
 function parseSymbolTable(jsonStr: string): SymbolRow[] {
   try {
-    const data = JSON.parse(jsonStr);
+    const data = JSON.parse(jsonStr) as SymbolTableJson;
     if (data.error) return [];
     const rows: SymbolRow[] = [];
 
-    // package
+    interface SymbolImport {
+  name?: string;
+  static?: boolean;
+  asterisk?: boolean;
+}
+
+interface SymbolTypeRef {
+  name?: string;
+}
+
+interface SymbolVariable {
+  name?: string;
+  type?: SymbolTypeRef;
+  initializerPresent?: boolean;
+}
+
+interface SymbolMember {
+  kind?: string;
+  name?: string;
+  modifiers?: string[];
+  returnType?: SymbolTypeRef;
+  parameters?: { name?: string; type?: SymbolTypeRef }[];
+  throws?: string[];
+  extends?: string[];
+  implements?: string[];
+  constants?: { name?: string }[];
+  variables?: SymbolVariable[];
+  static?: boolean;
+}
+
+interface SymbolType {
+  kind?: string;
+  name?: string;
+  modifiers?: string[];
+  extends?: string[];
+  implements?: string[];
+  constants?: { name?: string }[];
+  members?: SymbolMember[];
+}
+
+interface SymbolTableJson {
+  error?: boolean;
+  package?: string;
+  imports?: SymbolImport[];
+  types?: SymbolType[];
+}
+
+// package
     if (data.package) {
       rows.push({
         kind: 'package',
@@ -34,10 +81,10 @@ function parseSymbolTable(jsonStr: string): SymbolRow[] {
 
     // imports
     if (data.imports) {
-      data.imports.forEach((imp: any) => {
+      data.imports.forEach((imp) => {
         rows.push({
           kind: 'import',
-          name: imp.name,
+          name: imp.name || '',
           modifiers: imp.static ? 'static' : '',
           type: '',
           parent: data.package || '',
@@ -48,44 +95,44 @@ function parseSymbolTable(jsonStr: string): SymbolRow[] {
 
     // types and their members
     if (data.types) {
-      data.types.forEach((type: any) => {
+      data.types.forEach((type) => {
         rows.push({
-          kind: type.kind,
-          name: type.name,
+          kind: type.kind || '',
+          name: type.name || '',
           modifiers: (type.modifiers || []).join(' '),
           type: [
-            ...(type.extends || []).map((e: string) => `extends ${e}`),
-            ...(type.implements || []).map((i: string) => `implements ${i}`),
+            ...(type.extends || []).map((e) => `extends ${e}`),
+            ...(type.implements || []).map((i) => `implements ${i}`),
           ].join(', ') || '',
           parent: data.package || '',
           details: type.constants
-            ? type.constants.map((c: any) => c.name).join(', ')
+            ? type.constants.map((c) => (c.name || '')).join(', ')
             : '',
         });
 
         if (type.members) {
-          type.members.forEach((member: any) => {
+          type.members.forEach((member) => {
             if (member.kind === 'method' || member.kind === 'constructor') {
               const params = (member.parameters || [])
-                .map((p: any) => `${p.type?.name || 'var'} ${p.name}`)
+                .map((p) => `${p.type?.name || 'var'} ${p.name || ''}`.trim())
                 .join(', ');
               const retType = member.returnType?.name || '';
               rows.push({
                 kind: member.kind,
-                name: `${member.name}(${params})`,
+                name: `${member.name || ''}(${params})`,
                 modifiers: (member.modifiers || []).join(' '),
                 type: retType,
-                parent: type.name,
+                parent: type.name || '',
                 details: (member.throws || []).join(', ') || '',
               });
             } else if (member.kind === 'field') {
-              (member.variables || []).forEach((v: any) => {
+              (member.variables || []).forEach((v) => {
                 rows.push({
                   kind: 'field',
-                  name: v.name,
+                  name: v.name || '',
                   modifiers: (member.modifiers || []).join(' '),
                   type: v.type?.name || 'var',
-                  parent: type.name,
+                  parent: type.name || '',
                   details: v.initializerPresent ? '= ...' : '',
                 });
               });
@@ -95,17 +142,17 @@ function parseSymbolTable(jsonStr: string): SymbolRow[] {
                 name: member.static ? 'static { ... }' : '{ ... }',
                 modifiers: '',
                 type: '',
-                parent: type.name,
+                parent: type.name || '',
                 details: '',
               });
             } else if (member.kind) {
               // inner class/interface/enum
               rows.push({
                 kind: member.kind,
-                name: member.name,
+                name: member.name || '',
                 modifiers: (member.modifiers || []).join(' '),
                 type: '',
-                parent: type.name,
+                parent: type.name || '',
                 details: '',
               });
             }

@@ -139,7 +139,7 @@ const SsaForm: React.FC<SsaFormProps> = ({ method, ssa, instructions, isPlaying,
             const arg2 = instr.arg2 || '';
             const target = instr.target || '';
 
-            let display = '';
+            let display: string;
             if (instr.op === 'label') {
               display = `${instr.target || ''}:`;
             } else if (instr.op === 'goto' || instr.op === 'if' || instr.op === 'iffalse') {

@@ -16,7 +16,7 @@
   "landing": {
     "statusBadge": "SYSTEM ONLINE",
     "description": "// Write Java code. Watch the compiler dissect it — token by token, tree by tree, instruction by instruction.",
-    "begin": "BEGIN",
+    "begin": "GET STARTED",
     "openCompiler": "OPEN COMPILER",
     "viewPipeline": "VIEW PIPELINE",
     "exploreVisualizer": "TRY THE VISUALIZER",
@@ -97,15 +97,14 @@
     },
     "pipelineTeaser": {
       "label": "// PIPELINE_PREVIEW",
-      "headline": "Nine phases. One journey.",
+      "headline": "Eight phases. One journey.",
       "phases": [
-        "Anatomy",
         "Source",
         "Lexical",
-        "Parse",
+        "Syntax",
         "Semantic",
         "IR",
-        "Optimize",
+        "Optimizer",
         "Bytecode",
         "Execute"
       ],
@@ -116,10 +115,6 @@
       "label": "// SYSTEM_PREVIEW",
       "headline": "See it in action",
       "panels": {
-        "anatomy": {
-          "title": "ANATOMY",
-          "content": "// THE THREE-PHASE COMPILER\n//\n//   Source                  IR                    IR\n//   Program --> FRONT END -------> OPTIMIZER -------> BACK END --> Target\n//              (Scanner)         (Analysis)         (Instr Sel)   Program\n//              (Parser)          (Transform)        (Scheduling)\n//              (Elaboration)                       (Reg Alloc)\n//\n// Principle 1: preserve the program's meaning\n// Principle 2: improve the program"
-        },
         "editor": {
           "title": "EDITOR",
           "code": "public class Hello {\n  public static void main(String[] args) {\n    System.out.println(\"Hello\");\n  }\n}"
@@ -154,7 +149,7 @@
       "label": "// READY_TO_START",
       "headline": "Start exploring compilers.",
       "subline": "// Free to try · Sign in to save code",
-      "primaryCta": "BEGIN",
+      "primaryCta": "GET STARTED",
       "secondaryCta": "VIEW PIPELINE"
     }
   },
@@ -344,7 +339,7 @@
       "semantic": "Semantic Analysis",
       "optimizer": "Optimizer",
       "codegen": "Code Generation",
-      "bytecode": "Byte Code"
+      "bytecode": "Bytecode"
     }
   },
   "lexical": {
@@ -579,7 +574,7 @@
     "subtitle": "HOW JAVA COMPILES YOUR CODE",
     "subtitleLine1": "HOW JAVA COMPILES",
     "subtitleLine2": "YOUR CODE",
-    "description": "Follow the journey from human-readable source code to native execution inside the JVM. Nine phases, each transforming your code into something the machine can run.",
+    "description": "Follow the journey from human-readable source code to native execution inside the JVM. Eight phases, each transforming your code into something the machine can run.",
     "complete": "Pipeline Complete",
     "completeHeadline": "FROM TEXT TO EXECUTION",
     "completeDescription": "From human-readable text, through IR and bytecode, to native execution inside the JVM — this is the magic behind \"write once, run anywhere.\"",
@@ -592,15 +587,15 @@
       "label": "// THE THREE-PHASE COMPILER",
       "frontEnd": {
         "title": "Front End",
-        "description": "Phases 2-6: scanner, parser, elaboration — understand your code and record it as IR."
+        "description": "Phases 1-5: scanner, parser, elaboration — understand your code and record it as IR."
       },
       "optimizer": {
         "title": "Optimizer",
-        "description": "Phase 7: analyze the IR and rewrite it into better IR — same meaning, faster code."
+        "description": "Phase 6: analyze the IR and rewrite it into better IR — same meaning, faster code."
       },
       "backEnd": {
         "title": "Back End",
-        "description": "Phase 8: instruction selection, scheduling, register allocation — map IR to the JVM."
+        "description": "Phase 7: instruction selection, scheduling, register allocation — map IR to the JVM."
       }
     },
     "whyStudy": {
@@ -608,14 +603,6 @@
       "body": "A compiler is a microcosm of computer science: greedy algorithms (register allocation), dynamic programming (instruction selection), list scheduling (instruction scheduling), finite automata (scanning), pushdown automata (parsing), and fixed-point algorithms (data-flow analysis). Working inside one is a fast way to meet them all."
     },
     "steps": {
-      "anatomy": {
-        "title": "Compiler Anatomy",
-        "subtitle": "Front End · Optimizer · Back End",
-        "explanation1": "A compiler is a program that translates code written in one language into another. Almost every compiler shares the same three-part architecture: a front end that understands your language, a back end that knows the target machine, and an optimizer in between.",
-        "explanation2": "Front end and back end never talk directly. They communicate through an Intermediate Representation (IR) — the compiler's definitive form of your program. That clean boundary makes compilers retargetable: one front end can serve many different back ends.",
-        "explanation3": "Two principles govern every phase that follows: the compiler must preserve the meaning of your program, and it should improve the program in some way. Everything you scroll through next follows from those two rules.",
-        "javaConcept": "Java is a hybrid system: javac compiles source to bytecode (compilation), then the JVM interprets that bytecode (interpretation) — and a Just-In-Time (JIT) compiler translates hot bytecode into native machine code at runtime."
-      },
       "source": {
         "title": "Source Code",
         "subtitle": "Human-Readable Instructions",

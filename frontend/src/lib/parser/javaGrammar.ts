@@ -67,16 +67,18 @@ export function findGrammarRule(nodeType: string): GrammarRule | null {
 
 export const PDA_STATES: PdaStateNode[] = [
   { id: 'start', label: 'q₀ START', description: 'Awaiting the first token', x: 40, y: 40, isStart: true },
-  { id: 'header', label: 'q₁ HEADER', description: 'Parsing a type declaration header', x: 250, y: 10 },
-  { id: 'body', label: 'q₂ BODY', description: 'Parsing members between { }', x: 460, y: 40 },
+  { id: 'header', label: 'q₁ HEADER', description: 'Parsing a type declaration header', x: 250, y: 50 },
+  { id: 'body', label: 'q₂ BODY', description: 'Parsing members between { }', x: 460, y: 50 },
   { id: 'statement', label: 'q₃ STATEMENT', description: 'Parsing a statement inside a block', x: 460, y: 150 },
   { id: 'accept', label: 'q₄ ACCEPT', description: 'The whole program reduced', x: 250, y: 190, isAccept: true },
 ];
 
+export const VIEW_BOX_PADDING = 30;
+
 export const PDA_TRANSITIONS: PdaTransition[] = [
-  { from: 'start', to: 'header', label: "SHIFT 'class' | 'interface' | 'enum' | 'record'" },
-  { from: 'header', to: 'body', label: "SHIFT '{'" },
-  { from: 'body', to: 'statement', label: 'SHIFT stmt keyword / identifier' },
-  { from: 'statement', to: 'body', label: "REDUCE → ';' / '}'" },
+  { from: 'start', to: 'header', label: "SHIFT 'class' | 'interface' | 'enum' | 'record'", labelOffset: -10 },
+  { from: 'header', to: 'body', label: "SHIFT '{'", labelOffset: 12 },
+  { from: 'body', to: 'statement', label: 'SHIFT stmt keyword / identifier', labelOffset: -12 },
+  { from: 'statement', to: 'body', label: "REDUCE → ';' / '}'", labelOffset: 12 },
   { from: 'body', to: 'accept', label: "REDUCE CompilationUnit on '}'" },
 ];

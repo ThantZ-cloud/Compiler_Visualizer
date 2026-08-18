@@ -43,7 +43,6 @@ const DomTree: React.FC<DominatorTreeProps> = ({ method, dominators, isPlaying, 
   // Render dominator tree + CFG overlay — defer to next frame so layout is settled
   useEffect(() => {
     if (!svgRef.current || !containerRef.current) return;
-    let raf: number;
     const render = () => {
     const svg = d3.select(svgRef.current!);
     svg.selectAll('*').remove();
@@ -95,7 +94,7 @@ const DomTree: React.FC<DominatorTreeProps> = ({ method, dominators, isPlaying, 
     const LEVEL_GAP = NODE_W + 50;
     const positions = new Map<number, { x: number; y: number }>();
 
-    for (const [lvl, _] of levelGroups) {
+    for (const lvl of levelGroups.keys()) {
       const nodesInLevel = blocks.filter(b => (treeLevels.get(b.id) || 0) === lvl);
       const totalH = nodesInLevel.length * (NODE_H + 20);
       const startY = height / 2 - totalH / 2;
@@ -179,7 +178,7 @@ const DomTree: React.FC<DominatorTreeProps> = ({ method, dominators, isPlaying, 
       );
     }
     };
-    raf = requestAnimationFrame(render);
+    const raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
   }, [method, dominators, revealedEdges]);
 

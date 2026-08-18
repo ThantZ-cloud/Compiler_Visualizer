@@ -2,12 +2,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, type Variants } from 'framer-motion';
 import {
-  FileCode, Scan, TreePine, Search, Code2, Cpu,
+  FileCode, Scan, TreePine, Search, Code2, Cpu, Boxes, Wand2, Play,
 } from 'lucide-react';
 import type { PipelineStepData } from '../data/pipelineData';
 
 const iconMap: Record<string, React.FC<{ size?: number; className?: string; style?: React.CSSProperties }>> = {
-  FileCode, Scan, TreePine, Search, Code2, Cpu,
+  FileCode, Scan, TreePine, Search, Code2, Cpu, Boxes, Wand2, Play,
 };
 
 const containerVariants: Variants = {

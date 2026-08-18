@@ -264,6 +264,21 @@ const CodeGenerationPanel: React.FC = () => {
                 )}
               </ErrorBoundary>
             </div>
+
+            <PipelineConnector active={completedSteps.has(5) || playState === 'completed'} />
+
+            {/* Interactions — scheduling ⇄ register allocation */}
+            <div className="bg-[var(--color-card)] border border-[var(--color-border)] p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Code2 size={12} className="text-[var(--color-neon)]" />
+                <div className="text-[9px] text-[var(--color-neon)] font-bold font-display tracking-[0.15em] uppercase">
+                  {t('codegen.interactions.title')}
+                </div>
+              </div>
+              <p className="text-[10px] text-[var(--color-text-dim)] font-mono leading-relaxed m-0">
+                {t('codegen.interactions.description')}
+              </p>
+            </div>
           </div>
 
           {/* Sticky controls */}

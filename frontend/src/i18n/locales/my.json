@@ -97,15 +97,14 @@
     },
     "pipelineTeaser": {
       "label": "// PIPELINE ကို ကြိုတင်ကြည့်ရှုမှု",
-      "headline": "အဆင့်ကိုးဆင့်။ ခရီးတစ်ခု။",
+      "headline": "အဆင့်ရှစ်ဆင့်။ ခရီးတစ်ခု။",
       "phases": [
-        "Anatomy",
         "Source",
         "Lexical",
-        "Parse",
+        "Syntax",
         "Semantic",
         "IR",
-        "Optimize",
+        "Optimizer",
         "Bytecode",
         "Execute"
       ],
@@ -116,10 +115,6 @@
       "label": "// SYSTEM ကို ကြိုတင်ကြည့်ရှုမှု",
       "headline": "လုပ်ဆောင်ပုံကို ကြည့်ပါ",
       "panels": {
-        "anatomy": {
-          "title": "ANATOMY",
-          "content": "// THE THREE-PHASE COMPILER\n//\n//   Source                  IR                    IR\n//   Program --> FRONT END -------> OPTIMIZER -------> BACK END --> Target\n//              (Scanner)         (Analysis)         (Instr Sel)   Program\n//              (Parser)          (Transform)        (Scheduling)\n//              (Elaboration)                       (Reg Alloc)\n//\n// Principle 1: preserve the program's meaning\n// Principle 2: improve the program"
-        },
         "editor": {
           "title": "EDITOR",
           "code": "public class Hello {\n  public static void main(String[] args) {\n    System.out.println(\"Hello\");\n  }\n}"
@@ -579,7 +574,7 @@
     "subtitle": "Java သည် သင့်ကုဒ်ကို ဘယ်လို ဘာသာပြန်သည်",
     "subtitleLine1": "Java သည် ဘယ်လို",
     "subtitleLine2": "ဘာသာပြန်သည်",
-    "description": "လူဖတ်နိုင်သော အရင်းအမြစ်ကုဒ်မှ JVM အတွင်း native execution အထိ ခရီးကို လိုက်ပါ။ အဆင့်ကိုးဆင့်ဖြင့် သင့်ကုဒ်ကို စက်လုပ်ဆောင်နိုင်သည့်အရာသို့ အဆင့်ဆင့် ပြောင်းလဲပေးသည်။",
+    "description": "လူဖတ်နိုင်သော အရင်းအမြစ်ကုဒ်မှ JVM အတွင်း native execution အထိ ခရီးကို လိုက်ပါ။ အဆင့်ရှစ်ဆင့်ဖြင့် သင့်ကုဒ်ကို စက်လုပ်ဆောင်နိုင်သည့်အရာသို့ အဆင့်ဆင့် ပြောင်းလဲပေးသည်။",
     "complete": "လုပ်ငန်းစဉ် ပြီးဆုံးပါပြီ",
     "completeHeadline": "စာသားမှ လုပ်ဆောင်ခြင်းသို့",
     "completeDescription": "လူဖတ်နိုင်သည့် စာသားမှ IR နှင့် bytecode မှတစ်ဆင့် JVM အတွင်း native execution အထိ — ၎င်းသည် \"တစ်ကြိမ်ရေး၊ ဘယ်နေရာမဆို လုပ်ဆောင်\" ဟူသည့် တကယ့် မှော်ပညာဖြစ်သည်။",
@@ -592,15 +587,15 @@
       "label": "// အပိုင်းသုံးပိုင်း ကွန်ပလိုင်လာ",
       "frontEnd": {
         "title": "Front End",
-        "description": "အဆင့် ၂-၆: scanner, parser, elaboration — သင့်ကုဒ်ကို နားလည်ပြီး IR အဖြစ် မှတ်တမ်းတင်သည်။"
+        "description": "အဆင့် ၁-၅: scanner, parser, elaboration — သင့်ကုဒ်ကို နားလည်ပြီး IR အဖြစ် မှတ်တမ်းတင်သည်။"
       },
       "optimizer": {
         "title": "Optimizer",
-        "description": "အဆင့် ၇: IR ကို ခွဲခြမ်းစိတ်ဖြာပြီး ပိုကောင်းသော IR အဖြစ် ပြန်ရေးသည် — အဓိပ္ပာယ်တူ၊ ကုဒ်ပိုမြန်။"
+        "description": "အဆင့် ၆: IR ကို ခွဲခြမ်းစိတ်ဖြာပြီး ပိုကောင်းသော IR အဖြစ် ပြန်ရေးသည် — အဓိပ္ပာယ်တူ၊ ကုဒ်ပိုမြန်။"
       },
       "backEnd": {
         "title": "Back End",
-        "description": "အဆင့် ၈: instruction selection, scheduling, register allocation — IR ကို JVM သို့ ပြောင်းလဲသည်။"
+        "description": "အဆင့် ၇: instruction selection, scheduling, register allocation — IR ကို JVM သို့ ပြောင်းလဲသည်။"
       }
     },
     "whyStudy": {
@@ -608,14 +603,6 @@
       "body": "ကွန်ပလိုင်လာသည် ကွန်ပျူတာသိပ္ပံ၏ အနှစ်ချုပ်တစ်ခုဖြစ်သည် — greedy algorithms (register allocation), dynamic programming (instruction selection), list scheduling (instruction scheduling), finite automata (scanning), pushdown automata (parsing) နှင့် fixed-point algorithms (data-flow analysis)။ ၎င်းအတွင်း အလုပ်လုပ်ခြင်းက ဤနည်းပညာများအားလုံးကို မြန်မြန်ဆန်ဆန် သိကျွမ်းစေသည်။"
     },
     "steps": {
-      "anatomy": {
-        "title": "ကွန်ပလိုင်လာ တည်ဆောက်ပုံ",
-        "subtitle": "Front End · Optimizer · Back End",
-        "explanation1": "ကွန်ပလိုင်လာဆိုသည်မှာ ဘာသာစကားတစ်ခုဖြင့် ရေးထားသော ကုဒ်ကို အခြားဘာသာစကားတစ်ခုသို့ ပြန်ဆိုပေးသော ပရိုဂရမ်ဖြစ်သည်။ ကွန်ပလိုင်လာတိုင်းလိုလိုတွင် အပိုင်းသုံးပိုင်းပါသော တည်ဆောက်ပုံရှိသည် — သင့်ဘာသာစကားကို နားလည်သော front end၊ ပစ်မှတ်စက်ကို သိသော back end နှင့် ၎င်းတို့ကြားရှိ optimizer တို့ဖြစ်သည်။",
-        "explanation2": "front end နှင့် back end သည် တိုက်ရိုက် စကားမပြောပါ။ ၎င်းတို့သည် IR (Intermediate Representation) မှတစ်ဆင့် ဆက်သွယ်သည် — ၎င်းသည် ကွန်ပလိုင်လာ၏ အဓိပ္ပာယ်သတ်မှတ်ထားသော ကုဒ်ပုံစံဖြစ်သည်။ ဤသပ်ရပ်သော နယ်နိမိတ်ကြောင့် front end တစ်ခုကို back end အများအပြားအတွက် ပြန်သုံးနိုင်သည် (retargeting)။",
-        "explanation3": "နောက်အဆင့်များအားလုံးကို စည်းမျဉ်းနှစ်ခုက ထိန်းချုပ်သည် — ကွန်ပလိုင်လာသည် သင့်ပရိုဂရမ်၏ အဓိပ္ပာယ်ကို မပျက်စီးစေရ နှင့် ပရိုဂရမ်ကို တစ်နည်းနည်းဖြင့် ပိုကောင်းအောင် လုပ်ပေးရမည်။",
-        "javaConcept": "Java သည် နှစ်မျိုးပေါင်းစပ်မှုဖြစ်သည် — javac က source ကို bytecode အဖြစ် compile လုပ်ပြီး (compilation) JVM က ထို bytecode ကို interpret လုပ်ကာ (interpretation) JIT compiler က hot code ကို runtime တွင် native machine code အဖြစ် ပြန်ဆိုပေးသည်။"
-      },
       "source": {
         "title": "အရင်းအမြစ်ကုဒ်",
         "subtitle": "လူဖတ်နိုင်သည့် ညွှန်ကြားချက်များ",

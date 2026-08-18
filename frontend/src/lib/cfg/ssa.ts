@@ -131,11 +131,9 @@ export function buildSsa(method: CfgMethod, instructions: TacInstruction[], basi
     }
   }
 
-  let counter = 0;
   for (const [varName, defs] of defsByVar) {
     const renamed: string[] = [];
     for (let i = 0; i < defs.length; i++) {
-      counter++;
       const renamedTo = `${varName}₁`.split('').map((c, idx) => {
         if (idx === varName.length) return subscriptDigit(i);
         return c;

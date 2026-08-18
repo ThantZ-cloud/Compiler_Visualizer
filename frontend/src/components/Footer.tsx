@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
             <button
               className="text-xs text-[var(--color-text-dim)] hover:text-[var(--color-neon)] transition-colors"
               style={{ fontFamily: 'var(--font-mono)' }}
-              onClick={() => navigate('/visualize/tokens')}
+              onClick={() => navigate('/visualize/lexical')}
             >
               {t('footer.visualize')}
             </button>

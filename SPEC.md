@@ -50,7 +50,7 @@ The developer knows HTML, CSS, JavaScript, J2SE, and MySQL. Learning React, Spri
 | **Boilerplate** | Lombok | latest | Reduces Java boilerplate (builders, getters, setters) |
 | **Validation** | spring-boot-starter-validation | 3.2 | Request validation via Jakarta annotations |
 | **Build Tool** | Maven | Spring wrapper | Standard Java build tool |
-| **Linting** | oxlint | ^1.71 | NOT ESLint -- faster, Rust-based |
+| **Linting** | ESLint | 10.x | Flat config (`eslint.config.js`) + typescript-eslint + react-hooks + react-refresh |
 
 ### Design System
 
@@ -101,7 +101,7 @@ All styling uses Tailwind CSS v4 with custom `@theme` tokens defined in `fronten
 |  +------------------+  +----------------------------------------+ |
 |  |   Sidebar        |  |      Route Content                     | |
 |  | (FileBrowser)    |  |                                        | |
-|  |  - Files         |  |  / -> LandingPage (BinaryRain hero)    | |
+|  |  - Files         |  |  / -> LandingPage (hero)                 | |
 |  |  (flat list)     |  |  /compiler -> EditorPage               | |
 |  |  (auth only)     |  |  /pipeline -> PipelinePage (Three.js)  | |
 |  +------------------+  |  /visualize/lexical -> LexicalAnalysis   | |
@@ -182,7 +182,6 @@ frontend/src/
     TokenChart.tsx           # D3.js token bar chart + token flow visualization
     SemanticTree.tsx         # D3.js collapsible tree for symbol table
     PipelineScene.tsx        # Three.js 3D pipeline visualization scene
-    BinaryRain.tsx           # Canvas-based Matrix-style binary rain animation
     Skeleton.tsx             # Loading skeleton placeholder component
     LoginModal.tsx           # Modal dialog for user login
     RegisterModal.tsx        # Modal dialog for user registration
@@ -213,7 +212,7 @@ frontend/src/
       separator.tsx          # shadcn/ui separator
       tabs.tsx               # shadcn/ui tabs
   pages/
-    LandingPage.tsx          # Hero with BinaryRain, typewriter, 9-phase terminal mockup, three-phase stepper
+    LandingPage.tsx          # Hero with typewriter, 8-phase terminal mockup, three-phase stepper
     EditorPage.tsx           # Monaco editor + terminal output
     PipelinePage.tsx         # Full-page Three.js 3D pipeline visualization
     VisualizeLayout.tsx      # Phase nav + FRONT END/OPTIMIZER/BACK END badge + empty-state LOAD SAMPLE CODE
@@ -236,7 +235,7 @@ frontend/src/
 
 | Route | Component | Description |
 |---|---|---|
-| `/` | LandingPage | Hero section with BinaryRain background, typewriter effect, CTA buttons, copyright at bottom |
+| `/` | LandingPage | Hero section with typewriter effect, terminal mockup, CTA buttons, copyright at bottom |
 | `/pipeline` | PipelinePage | Three.js 3D interactive pipeline visualization (lazy-loaded) |
 | `/compiler` | EditorPage | Monaco editor, file sidebar (when logged in), terminal output |
 | `/visualize` | VisualizeLayout | Phase nav bar + FRONT END/OPTIMIZER/BACK END badge + empty-state LOAD SAMPLE CODE + Outlet |
@@ -412,7 +411,7 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 ### Landing Page (`/`)
 ```
 +--------------------------------------------------------------+
-| BinaryRain canvas background (full page)                     |
+| Hero dot-grid background (subtle)                          |
 |                                                               |
 |                    [SYSTEM ONLINE]                            |
 |                    (status badge)                              |
@@ -436,10 +435,8 @@ Phases 1 and 2 run in parallel via `CompletableFuture`.
 ```
 - **No footer component** on landing page -- only a simple copyright line at the bottom
 - **Boot sequence**: Terminal-style boot animation plays on first load (skipped for prefers-reduced-motion)
-- **BinaryRain**: Full-page canvas animation behind content
-- **FloatingBinary**: Floating binary strings in background
 - **Hero CTAs**: "VIEW PIPELINE" navigates to `/pipeline`, "TRY THE VISUALIZER" navigates to `/visualize/lexical` (deep link straight into the visualizer's empty state), "BEGIN" / "OPEN COMPILER" navigates to `/compiler`
-- **Terminal mockup**: cycles all **9 pipeline panels** -- ANATOMY (three-phase compiler diagram, first) → SOURCE → TOKENS → AST → SEMANTIC → IR → OPTIMIZE → BYTECODE → EXECUTE -- auto-advancing every 2.6s with clickable dots; phase counter reads `PHASE x/9`, matching the boot line "Phases 1-9"
+- **Terminal mockup**: cycles all **8 pipeline panels** -- SOURCE → TOKENS → SYNTAX → SEMANTIC → IR → OPTIMIZER → BYTECODE → EXECUTE -- auto-advancing every 2.6s with clickable dots; phase counter reads `PHASE x/8`, matching the boot line "Phases 1-8"
 - **How-it-works stepper**: teaches the three-phase compiler structure -- FRONT END (scanner/parser/elaboration → IR) → OPTIMIZER (analysis + transformation) → BACK END (instruction selection, scheduling, register allocation) -- with Braces/Wand2/Cpu icons (`landing.protocol.*`)
 - The Footer.tsx component exists in `components/` but is **not imported or used** on any page
 
@@ -576,7 +573,6 @@ ThemeProvider
 
 ### Week 5: 3D Pipeline + UI Polish -- Done
 - Three.js 3D pipeline visualization (`/pipeline`)
-- BinaryRain background animation
 - Cyberpunk/terminal UI redesign (Orbitron fonts, neon green theme)
 - Login/Register modal dialogs
 - UserMenu dropdown
@@ -610,7 +606,7 @@ ThemeProvider
 ### Week 8: Visualizer Discoverability + Landing Teaches Three Phases -- Done
 - **LOAD SAMPLE CODE** in the visualizer empty state: `compileSample(source)` added to `CompileContext` (compiles in place, marks editor clean, shows "Compiling..." state); sample lives in `data/sampleCode.ts` (`SAMPLE_JAVA_CODE`, a factorial loop) so the CFG/optimizer panels have branches to display
 - **FRONT END / OPTIMIZER / BACK END phase badge** in the visualize sidebar (`visualize.phaseBadge.*`); hardcoded "Raw CFG" / "Raw Bytecode" Static-tab labels moved to i18n (`visualize.tabs.*`)
-- Landing page: hero mockup now cycles **9 panels** with an ANATOMY panel first (three-phase compiler diagram, `landing.preview.panels.anatomy.content`); "How it works" stepper rewritten to teach the three-phase structure (front end → optimizer → back end, `landing.protocol.*`); new hero CTA **TRY THE VISUALIZER** deep-links to `/visualize/lexical`
+- Landing page: hero mockup now cycles all **pipeline panels** starting from SOURCE (`landing.preview.panels.*`); "How it works" stepper rewritten to teach the three-phase structure (front end → optimizer → back end, `landing.protocol.*`); new hero CTA **TRY THE VISUALIZER** deep-links to `/visualize/lexical`
 
 ### Future Work
 - Step-by-step live visualization for the remaining phases (Syntax Analysis / AST, Semantic Analysis, Code Generation, Bytecode) — follow `docs/compiler-reference/visualization-guide.md` for each phase's steps

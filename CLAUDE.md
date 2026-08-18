@@ -57,7 +57,7 @@ Extracted book sections live in `docs/compiler-reference/` as markdown. Read the
 ### Frontend (`frontend/`)
 - `npm run dev` — Start Vite dev server (port 5173) — like running a local server for your HTML/JS
 - `npm run build` — TypeScript check + Vite production build — like compiling Java before deploying
-- `npm run lint` — Run oxlint (not ESLint — see below) — like a code style checker
+- `npm run lint` — Run ESLint (flat config `eslint.config.js`) — like a code style checker
 - `npm run preview` — Preview production build
 
 ### Backend (`backend/`)
@@ -121,7 +121,6 @@ frontend/src/
 │   ├── TokenChart.tsx   # D3.js token bar chart + token flow visualization
 │   ├── SemanticTree.tsx # D3.js collapsible tree for symbol table
 │   ├── PipelineScene.tsx # Three.js 3D pipeline visualization scene
-│   ├── BinaryRain.tsx   # Canvas-based Matrix-style binary rain animation
 │   ├── Skeleton.tsx     # Loading skeleton placeholder component
 │   ├── LoginModal.tsx   # Modal dialog for user login
 │   ├── RegisterModal.tsx # Modal dialog for user registration
@@ -130,7 +129,7 @@ frontend/src/
 │   └── ui/              # shadcn/ui components (button, input, card, dialog, etc.)
 ├── pages/
 │   ├── EditorPage.tsx   # Code editor (Monaco) + terminal output
-│   ├── LandingPage.tsx  # Landing page: BinaryRain, typewriter, 9-phase terminal mockup, three-phase compiler stepper
+│   ├── LandingPage.tsx  # Landing page: typewriter, 8-phase terminal mockup, three-phase compiler stepper
 │   ├── PipelinePage.tsx # Full-page Three.js 3D pipeline visualization
 │   ├── VisualizeLayout.tsx # Phase nav + FRONT END/OPTIMIZER/BACK END badge + empty-state LOAD SAMPLE CODE
 │   ├── TokensPanel.tsx  # Token visualization with chart/grid toggle
@@ -148,7 +147,7 @@ frontend/src/
 **How the frontend works:**
 1. `main.tsx` starts the app (like `main()` in Java) with React Router and CompileProvider
 2. `Layout.tsx` renders the header, sidebar (when logged in), and route content via `<Outlet />`
-3. User lands on `/` (LandingPage) with BinaryRain background and feature cards
+3. User lands on `/` (LandingPage) with the hero and feature cards
 4. User navigates to `/compiler` (EditorPage) to write Java code, clicks "Compile & Execute"
 5. `CompileContext.tsx` manages shared state (code, results, current file, save/load)
 6. `api.ts` sends the code to the backend via HTTP POST
@@ -159,14 +158,14 @@ frontend/src/
 
 **Route structure:**
 ```
-/                      → LandingPage (hero, BinaryRain, feature cards)
+/                      → LandingPage (hero, feature cards)
 /pipeline              → PipelinePage (Three.js 3D pipeline visualization)
 /compiler              → EditorPage (code editor + terminal)
 /visualize             → VisualizeLayout (phase nav + Outlet)
 /visualize/lexical     → LexicalAnalysisPanel (4-step pipeline; /visualize/tokens is an alias)
 /visualize/syntax      → AstPanel (D3.js collapsible tree; /visualize/ast is an alias)
 /visualize/semantic    → SemanticPanel (D3.js collapsible tree + symbol explorer)
-/visualize/cfg         → Optimizer panel (CFG, dominator tree, SSA, data flow)
+/visualize/cfg         → Optimizer panel (CFG, dominator tree, SSA, data flow; /visualize/optimizer is an alias)
 /visualize/codegen     → CodeGenerationPanel (TAC, basic blocks, scheduling, reg alloc)
 /visualize/bytecode    → BytecodePanel (listing, stack machine, execution flow)
 ```
@@ -252,7 +251,7 @@ Source Code
 - **CompileContext** shares code/results across routes — compile once, visualize anywhere
 - Visiting `/visualize/*` without results shows an empty state with a **LOAD SAMPLE CODE** button — `compileSample()` compiles `SAMPLE_JAVA_CODE` from `frontend/src/data/sampleCode.ts` (a factorial loop, chosen so the CFG/optimizer panels have branches to show) directly in the visualizer, no editor needed
 - The visualize sidebar shows a **FRONT END / OPTIMIZER / BACK END** phase badge (`visualize.phaseBadge.*`) for the active route, and the hardcoded "Raw CFG"/"Raw Bytecode" tab labels are i18n keys (`visualize.tabs.*`)
-- The landing page teaches the compiler's **three-phase structure** (front end → optimizer → back end, `landing.protocol.*`) and its terminal mockup cycles all 9 pipeline panels — ANATOMY first (`landing.preview.panels.*`), matching the boot line "Phases 1-9"
+- The landing page teaches the compiler's **three-phase structure** (front end → optimizer → back end, `landing.protocol.*`) and its terminal mockup cycles all 8 pipeline panels — SOURCE first (`landing.preview.panels.*`), matching the boot line "Phases 1-8"
 - **FileBrowser** provides VS Code-like sidebar with flat file list, saved to MySQL per user
 - **D3.js** visualizations: bar chart + token flow for tokens, collapsible trees for AST and semantic
 - All `/api/compile/**` endpoints return the full response (tokens + AST + symbol table + bytecode + output)
@@ -267,7 +266,7 @@ Source Code
 - Frontend uses TypeScript strict mode — respect existing types in `src/types/index.ts`
 - Backend DTOs use Lombok builders — add fields with `@Builder` pattern, not constructors
 - All compilation output is ephemeral (temp files cleaned up after each run)
-- The project uses oxlint, NOT ESLint — do not add `.eslintrc` or ESLint dependencies
+- The project uses ESLint (flat config `eslint.config.js`) with `typescript-eslint`, `eslint-plugin-react-hooks`, and `eslint-plugin-react-refresh` — run via `npm run lint`
 - D3.js visualizations use `useRef` for SVG containers and `useEffect` for rendering
 - CORS is configured in `SecurityConfig.java` — update `corsConfigurationSource()` bean if ports change
 - React Router routes are defined in `main.tsx` — add new routes there

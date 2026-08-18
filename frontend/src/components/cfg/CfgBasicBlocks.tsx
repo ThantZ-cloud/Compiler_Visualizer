@@ -94,7 +94,6 @@ const CfgBasicBlocks: React.FC<CfgBasicBlocksProps> = ({ method, isPlaying, isCo
   // Render with D3 — defer to next frame so layout is settled
   useEffect(() => {
     if (!svgRef.current || !containerRef.current) return;
-    let raf: number;
     const render = () => {
     const svg = d3.select(svgRef.current!);
     svg.selectAll('*').remove();
@@ -151,8 +150,8 @@ const CfgBasicBlocks: React.FC<CfgBasicBlocksProps> = ({ method, isPlaying, isCo
       .attr('fill', '#6A7B9B');
 
     for (const edge of edges) {
-      const from = posMap.get(typeof edge.from === 'number' ? edge.from : (edge.from as any).id);
-      const to = posMap.get(typeof edge.to === 'number' ? edge.to : (edge.to as any).id);
+      const from = posMap.get(edge.from);
+      const to = posMap.get(edge.to);
       if (!from || !to) continue;
 
       const color = getEdgeColor(edge.label);
@@ -216,7 +215,7 @@ const CfgBasicBlocks: React.FC<CfgBasicBlocksProps> = ({ method, isPlaying, isCo
       );
     }
     };
-    raf = requestAnimationFrame(render);
+    const raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
   }, [method, visibleBlocks]);
 

@@ -48,7 +48,7 @@ interactive D3.js trees, 3D Three.js scenes, and raw bytecode disassembly.
 | [Framer Motion](https://www.framer.com/motion/) | 12 | Butter-smooth phase transitions |
 | [React Router](https://reactrouter.com/) | 7 | Multi-page navigation |
 | [i18next](https://www.i18next.com/) | 26 | English + Myanmar (Burmese) 🌏 |
-| [oxlint](https://oxc.rs/docs/guide/usage/linter) | 1.73 | Rust-based linter — blazing fast, not ESLint |
+| [ESLint](https://eslint.org/) | 10 | Linting via flat config (typescript-eslint, react-hooks, react-refresh) |
 | [Axios](https://axios-http.com/) | 1 | HTTP client with JWT interceptors |
 
 ### Backend
@@ -74,7 +74,7 @@ Every push and every PR triggers two parallel jobs:
 
 | Job | Runner | Steps | Time |
 |-----|--------|-------|------|
-| 🎨 **Frontend** | `ubuntu-latest` + Node 22 LTS | `npm ci` → `oxlint` → `tsc + vite build` | ~25s |
+| 🎨 **Frontend** | `ubuntu-latest` + Node 22 LTS | `npm ci` → `eslint` → `tsc + vite build` | ~25s |
 | ☕ **Backend** | `ubuntu-latest` + Java 17 | `mvn clean package` (compile + JUnit tests) | ~30s |
 
 ```
@@ -133,7 +133,7 @@ npm run dev
 # Production build (TypeScript check + Vite build)
 npm run build
 
-# Lint (oxlint — not ESLint)
+# Lint (ESLint — flat config)
 npm run lint
 ```
 

@@ -124,11 +124,12 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
       if (response.data.classes?.length && !selectedClass) {
         setSelectedClass(response.data.classes[0].name);
       }
-    } catch (err: any) {
-      if (err.name === 'CanceledError' || err.name === 'AbortError') {
+    } catch (err) {
+      const error = err as { name?: string; response?: { data?: { message?: string } } };
+      if (error.name === 'CanceledError' || error.name === 'AbortError') {
         return;
       }
-      setError(err.response?.data?.message || 'Compilation failed');
+      setError(error.response?.data?.message || 'Compilation failed');
     } finally {
       setLoading(false);
     }
@@ -152,11 +153,12 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
       if (response.data.classes?.length) {
         setSelectedClass(response.data.classes[0].name);
       }
-    } catch (err: any) {
-      if (err.name === 'CanceledError' || err.name === 'AbortError') {
+    } catch (err) {
+      const error = err as { name?: string; response?: { data?: { message?: string } } };
+      if (error.name === 'CanceledError' || error.name === 'AbortError') {
         return;
       }
-      setError(err.response?.data?.message || 'Compilation failed');
+      setError(error.response?.data?.message || 'Compilation failed');
     } finally {
       setLoading(false);
     }

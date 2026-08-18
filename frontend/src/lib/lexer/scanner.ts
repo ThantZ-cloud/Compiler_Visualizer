@@ -130,8 +130,6 @@ export function simulateScanner(
     let lastAcceptState: typeof currentState | null = null;
     let lastAcceptPos = pos;
     let currentPos = pos;
-    let currentLine = line;
-    let currentCol = col;
 
     // Walk forward while the DFA can transition
     while (currentPos < code.length) {
@@ -152,13 +150,6 @@ export function simulateScanner(
 
       currentState = dfa.states.find(s => s.id === nextStateId)!;
 
-      // Track position for line/col
-      if (char === '\n') {
-        currentLine++;
-        currentCol = 1;
-      } else {
-        currentCol++;
-      }
       currentPos++;
 
       if (currentState.isAccept) {

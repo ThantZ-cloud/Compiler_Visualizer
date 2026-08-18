@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import BinaryRain from '../components/BinaryRain';
 import Footer from '../components/Footer';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useScrollMemory } from '../hooks/useScrollMemory';
@@ -38,44 +37,6 @@ function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 20
   return display;
 }
 
-// ── Floating binary strings (hero only) ──
-function FloatingBinary() {
-  const prefersReduced = usePrefersReducedMotion();
-
-  const bits = useRef(
-    Array.from({ length: 14 }, (_, i) => ({
-      id: i,
-      text: Array.from({ length: 6 + Math.floor(Math.random() * 10) }, () => Math.random() > 0.5 ? '1' : '0').join(''),
-      left: Math.random() * 100,
-      delay: Math.random() * 20,
-      duration: 15 + Math.random() * 25,
-      size: 10 + Math.random() * 4,
-    }))
-  ).current;
-
-  if (prefersReduced) return null;
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {bits.map(b => (
-        <span
-          key={b.id}
-          className="absolute text-[var(--color-neon)] floating-binary-digit"
-          style={{
-            left: `${b.left}%`,
-            fontSize: `${b.size}px`,
-            fontFamily: 'var(--font-mono)',
-            animation: `float-up ${b.duration}s linear ${b.delay}s infinite`,
-            writingMode: 'vertical-rl',
-          }}
-        >
-          {b.text}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 // Module-level flag: persists across React Router navigations (same JS session)
 // but resets on hard reload (new page load = new JS execution)
 let hasBootedInSession = false;
@@ -88,7 +49,7 @@ function BootSequence({ onComplete }: { onComplete: () => void }) {
     '[OK]   JavaParser loaded',
     '[OK]   D3.js visualization engine ready',
     '[OK]   Monaco Compiler loaded',
-    '[OK]   Phases 1-9: Anatomy → Execution — online',
+    '[OK]   Phases 1-8: Source → Execution — online',
     '[READY] Welcome, human.',
   ]);
 
@@ -175,13 +136,12 @@ function TerminalMockup() {
       { value: '}', type: 'delimiter' },
     ];
     return [
-      { key: 'anatomy', name: 'ANATOMY', color: 'var(--color-neon)', kind: 'pre' as const, content: t('landing.preview.panels.anatomy.content'), tokens: [] as typeof tokens },
       { key: 'source', name: 'SOURCE', color: 'var(--color-neon)', kind: 'pre' as const, content: t('landing.preview.panels.editor.code'), tokens: [] as typeof tokens },
       { key: 'tokens', name: 'TOKENS', color: 'var(--color-cyan)', kind: 'tokens' as const, content: '', tokens },
-      { key: 'ast', name: 'AST', color: 'var(--color-magenta)', kind: 'pre' as const, content: t('landing.preview.panels.ast.content'), tokens: [] as typeof tokens },
+      { key: 'ast', name: 'SYNTAX', color: 'var(--color-magenta)', kind: 'pre' as const, content: t('landing.preview.panels.ast.content'), tokens: [] as typeof tokens },
       { key: 'semantic', name: 'SEMANTIC', color: 'var(--color-cyan)', kind: 'pre' as const, content: t('landing.preview.panels.semantic.content'), tokens: [] as typeof tokens },
       { key: 'ir', name: 'IR', color: 'var(--color-amber)', kind: 'pre' as const, content: t('landing.preview.panels.ir.content'), tokens: [] as typeof tokens },
-      { key: 'optimize', name: 'OPTIMIZE', color: 'var(--color-magenta)', kind: 'pre' as const, content: t('landing.preview.panels.optimize.content'), tokens: [] as typeof tokens },
+      { key: 'optimize', name: 'OPTIMIZER', color: 'var(--color-magenta)', kind: 'pre' as const, content: t('landing.preview.panels.optimize.content'), tokens: [] as typeof tokens },
       { key: 'bytecode', name: 'BYTECODE', color: 'var(--color-amber)', kind: 'pre' as const, content: t('landing.preview.panels.bytecode.content'), tokens: [] as typeof tokens },
       { key: 'execute', name: 'EXECUTE', color: 'var(--color-neon)', kind: 'pre' as const, content: t('landing.preview.panels.execute.content'), tokens: [] as typeof tokens },
     ];
@@ -360,7 +320,6 @@ const LandingPage: React.FC = () => {
     'var(--color-cyan)',
     'var(--color-neon)',
     'var(--color-amber)',
-    'var(--color-magenta)',
   ], []);
 
   return (
@@ -372,8 +331,7 @@ const LandingPage: React.FC = () => {
       >
         {/* ═══ HERO — split: copy left, terminal mockup right ═══ */}
         <section className="relative flex items-center min-h-[calc(100dvh-3.5rem)] overflow-hidden">
-          <BinaryRain />
-          <FloatingBinary />
+          <div className="absolute inset-0 hero-dot-grid pointer-events-none" />
 
           <div className="absolute top-6 left-6 md:top-10 md:left-10 w-12 h-12 md:w-16 md:h-16 border-t-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
           <div className="absolute top-6 right-6 md:top-10 md:right-10 w-12 h-12 md:w-16 md:h-16 border-t-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
@@ -407,19 +365,19 @@ const LandingPage: React.FC = () => {
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-4">
                 <button
-                  className="btn-primary px-8 py-4 text-sm min-h-[48px] w-full sm:w-auto"
+                  className="btn-primary px-10 py-4 text-sm min-h-[48px] w-full sm:w-auto"
                   onClick={() => navigate('/compiler')}
                 >
                   {isAuthenticated ? t('landing.openCompiler') : t('landing.begin')}
                 </button>
                 <button
-                  className="btn-neon px-8 py-4 text-sm min-h-[48px] w-full sm:w-auto"
+                  className="btn-neon px-10 py-4 text-sm min-h-[48px] w-full sm:w-auto"
                   onClick={() => navigate('/pipeline', { state: { from: '/' } })}
                 >
                   <span>{t('landing.viewPipeline')}</span>
                 </button>
                 <button
-                  className="btn-neon px-8 py-4 text-sm min-h-[48px] w-full sm:w-auto"
+                  className="btn-neon px-10 py-4 text-sm min-h-[48px] w-full sm:w-auto"
                   onClick={() => navigate('/visualize/lexical')}
                 >
                   <span>{t('landing.exploreVisualizer')}</span>
@@ -587,7 +545,7 @@ const LandingPage: React.FC = () => {
                 </h2>
 
                 <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-                  {['0', '1', '2', '3', '4', '5', '6', '7', '8'].map((idx, i) => (
+                  {['0', '1', '2', '3', '4', '5', '6', '7'].map((idx, i) => (
                     <Fragment key={idx}>
                       <div
                         className="px-4 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] font-mono text-xs font-bold tracking-wider transition-colors hover:border-[var(--color-neon)]"
@@ -595,7 +553,7 @@ const LandingPage: React.FC = () => {
                       >
                         {t(`landing.pipelineTeaser.phases.${idx}`)}
                       </div>
-                      {i < 8 && <span className="text-[var(--color-neon)] opacity-40 font-mono">→</span>}
+                      {i < 7 && <span className="text-[var(--color-neon)] opacity-40 font-mono">→</span>}
                     </Fragment>
                   ))}
                 </div>

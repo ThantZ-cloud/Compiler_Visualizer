@@ -77,21 +77,36 @@ function parseAstJson(jsonStr: string): AstNode | null {
   }
 }
 
-function convertToAstNode(obj: any): AstNode {
+interface RawAstNode {
+  type?: unknown;
+  name?: unknown;
+  method?: unknown;
+  field?: unknown;
+  value?: unknown;
+  line?: unknown;
+  column?: unknown;
+  children?: unknown;
+}
+
+function convertToAstNode(obj: RawAstNode | null | undefined): AstNode {
   if (!obj || typeof obj !== 'object') {
     return { name: String(obj), type: 'Unknown' };
   }
 
-  const type = obj.type || 'Unknown';
-  const name = obj.name || obj.method || obj.field || obj.value || '';
-  const line = obj.line;
-  const column = obj.column;
+  const type = typeof obj.type === 'string' ? obj.type : 'Unknown';
+  const name =
+    (typeof obj.name === 'string' ? obj.name : '') ||
+    (typeof obj.method === 'string' ? obj.method : '') ||
+    (typeof obj.field === 'string' ? obj.field : '') ||
+    (typeof obj.value === 'string' ? obj.value : '');
+  const line = typeof obj.line === 'number' ? obj.line : undefined;
+  const column = typeof obj.column === 'number' ? obj.column : undefined;
 
   const children: AstNode[] = [];
   if (Array.isArray(obj.children)) {
-    obj.children.forEach((child: any) => {
+    obj.children.forEach((child) => {
       if (child && typeof child === 'object') {
-        children.push(convertToAstNode(child));
+        children.push(convertToAstNode(child as RawAstNode));
       }
     });
   }
@@ -100,7 +115,7 @@ function convertToAstNode(obj: any): AstNode {
     type,
     name,
     children: children.length > 0 ? children : undefined,
-    value: obj.value,
+    value: typeof obj.value === 'string' ? obj.value : undefined,
     line,
     column,
   };
@@ -170,8 +185,9 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
     const filteredData = filterCollapsed(astData);
     const root = d3.hierarchy(filteredData);
 
-    const nodeCount = root.descendants().length;
-    const treeHeight = Math.max(height - 80, nodeCount * 25);
+    const depth = root.height || 1; // levels below the root
+    // Natural full-height layout — the wrapper grows to fit, nothing is clipped.
+    const treeHeight = Math.max(height - 80, (depth + 1) * 55);
     const treeWidth = Math.max(width - 250, 400);
 
     const treeLayout = d3.tree<AstNode>().size([treeHeight, treeWidth]);
@@ -251,6 +267,8 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       const dx = (width - bounds.width) / 2 - bounds.x + leftPad;
       const dy = 40 - bounds.y;
       svg.call(zoom.transform, d3.zoomIdentity.translate(dx, dy));
+      // Grow the SVG to the full tree height so the bottom nodes stay visible.
+      svg.attr('height', Math.ceil(bounds.height + 80));
     }
 
     return () => {
@@ -270,7 +288,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
         <span className="ast-tree-hint">{t('ast.hint')}</span>
       </div>
       <div className="ast-tree-wrapper" ref={containerRef}>
-        <svg ref={svgRef} width="100%" height="100%" />
+        <svg ref={svgRef} width="100%" />
       </div>
       {selectedNode && (
         <div className="ast-node-detail">

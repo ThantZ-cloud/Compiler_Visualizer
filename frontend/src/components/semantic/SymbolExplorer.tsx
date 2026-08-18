@@ -192,8 +192,9 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
 
     if (selectedNode) {
       nodes.filter((_d, i) => {
-        const node = svg.selectAll('.node').nodes()[i] as any;
-        return node?.__data__?.data?.scopeId === selectedNode.scopeId;
+        const el = svg.selectAll('.node').nodes()[i];
+        const nodeData = (el as Element & { __data__?: d3.HierarchyPointNode<ScopeNode> })?.__data__;
+        return nodeData?.data?.scopeId === selectedNode.scopeId;
       }).select('circle').attr('stroke', 'var(--color-neon)').attr('stroke-width', 2);
     }
 
@@ -214,7 +215,7 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
       .text(d => `${d.data.kind}: ${d.data.name}`);
 
     // Collapsed badge
-    nodes.filter(d => collapsedNodes.has(getNodeId(d as any)) && !!d.data.children && d.data.children!.length > 0)
+    nodes.filter(d => collapsedNodes.has(getNodeId(d)) && !!d.data.children && d.data.children!.length > 0)
       .append('text')
       .attr('dy', '0.31em')
       .attr('x', 0)

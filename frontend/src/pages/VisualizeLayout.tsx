@@ -17,11 +17,11 @@ const VisualizeLayout: React.FC = () => {
   // Remember scroll position of the visualization panel across navigations
   useScrollMemory(panelScrollRef);
 
-  const isLexical = location.pathname.startsWith('/visualize/lexical') || location.pathname.startsWith('/visualize/tokens');
+  const isLexical = location.pathname === '/visualize' || location.pathname.startsWith('/visualize/lexical') || location.pathname.startsWith('/visualize/tokens');
   const isSyntax = location.pathname.startsWith('/visualize/syntax') || location.pathname.startsWith('/visualize/ast');
   const isSemantic = location.pathname.startsWith('/visualize/semantic');
   const isCodegen = location.pathname.startsWith('/visualize/codegen');
-  const isOptimizer = location.pathname.startsWith('/visualize/cfg');
+  const isOptimizer = location.pathname.startsWith('/visualize/cfg') || location.pathname.startsWith('/visualize/optimizer');
   const isBytecode = location.pathname.startsWith('/visualize/bytecode');
   const activeView = searchParams.get('view') === 'static' ? 'static' : 'dynamic';
 
@@ -71,7 +71,7 @@ const VisualizeLayout: React.FC = () => {
               to={phase.path}
               className={({ isActive }) =>
                 `flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold tracking-[0.12em] border transition-all font-display uppercase no-underline whitespace-nowrap ${
-                  isActive
+                  isActive || (location.pathname === '/visualize' && phase.path === '/visualize/lexical')
                     ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.05)] border-[var(--color-neon)] shadow-[0_0_10px_var(--color-neon-dim),inset_0_0_10px_var(--color-neon-dim)]'
                     : 'text-[var(--color-text-muted)] bg-transparent border-transparent hover:text-[var(--color-text)] hover:border-[var(--color-border)]'
                 }`

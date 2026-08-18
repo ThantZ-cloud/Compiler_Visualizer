@@ -262,14 +262,6 @@ a {
   94% { opacity: 1; }
 }
 
-/* ── Binary float keyframes ── */
-@keyframes float-up {
-  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-  10% { opacity: 0.6; }
-  90% { opacity: 0.6; }
-  100% { transform: translateY(-10vh) rotate(180deg); opacity: 0; }
-}
-
 /* ── Skeleton loading animation ── */
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 0.4; }
@@ -309,22 +301,15 @@ a {
   color: #FFFFFF;
 }
 
-/* Binary rain canvas opacity — brighter in light mode to compensate for darker green */
-.binary-rain-canvas {
-  opacity: 0.35;
+/* ── Hero dot grid ── */
+.hero-dot-grid {
+  background-image: radial-gradient(circle, var(--color-neon) 1.5px, transparent 1.5px);
+  background-size: 36px 36px;
+  opacity: 0.14;
 }
 
-[data-theme="light"] .binary-rain-canvas {
-  opacity: 0.25;
-}
-
-/* Floating binary digits — dimmer in light mode */
-.floating-binary-digit {
+[data-theme="light"] .hero-dot-grid {
   opacity: 0.08;
-}
-
-[data-theme="light"] .floating-binary-digit {
-  opacity: 0.04;
 }
 
 /* Corner brackets — subtler in light mode */

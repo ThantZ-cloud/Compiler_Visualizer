@@ -39,7 +39,7 @@ export const SYMBOL_CLASSES: Record<string, SymbolClass> = {
   '.': { name: '.', test: (c) => c === '.' },
   'ws': { name: 'ws', test: (c) => /\s/.test(c) },
   'op': { name: 'op', test: (c) => /[+\-*/=<>&|!^%~?:]/.test(c) },
-  'sep': { name: 'sep', test: (c) => /[(){};,.\[\]@]/.test(c) },
+  'sep': { name: 'sep', test: (c) => /[(){};,.[\]@]/.test(c) },
   '/': { name: '/', test: (c) => c === '/' },
   '*': { name: '*', test: (c) => c === '*' },
 };

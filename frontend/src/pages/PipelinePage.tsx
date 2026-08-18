@@ -153,6 +153,46 @@ const PipelinePage: React.FC = () => {
             >
               {t('pipeline.completeDescription')}
             </p>
+
+            {/* Three-phase compiler recap */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 text-left">
+              {(['frontEnd', 'optimizer', 'backEnd'] as const).map((key) => (
+                <div
+                  key={key}
+                  className="cyber-panel p-5 border border-[var(--color-border)] bg-[var(--color-card)]"
+                >
+                  <div
+                    className="text-[10px] font-bold tracking-[0.25em] uppercase mb-2"
+                    style={{ fontFamily: 'var(--font-display)', color: 'var(--color-neon)' }}
+                  >
+                    {t(`pipeline.threePhases.${key}.title`)}
+                  </div>
+                  <p
+                    className="text-xs text-[var(--color-text-dim)] leading-relaxed"
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  >
+                    {t(`pipeline.threePhases.${key}.description`)}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Why study compilers — microcosm of CS */}
+            <div className="cyber-panel p-5 border border-[var(--color-border)] bg-[var(--color-card)] mb-12 text-left max-w-3xl mx-auto">
+              <div
+                className="text-[10px] font-bold tracking-[0.25em] uppercase mb-2"
+                style={{ fontFamily: 'var(--font-display)', color: 'var(--color-neon)' }}
+              >
+                {t('pipeline.whyStudy.title')}
+              </div>
+              <p
+                className="text-xs text-[var(--color-text-dim)] leading-relaxed"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                {t('pipeline.whyStudy.body')}
+              </p>
+            </div>
+
             <button
               className="btn-neon px-8 py-3 text-xs tracking-[0.15em]"
               style={{ fontFamily: 'var(--font-display)' }}

@@ -22,7 +22,14 @@ export interface TypeCheckEntry {
   location: string;
   line: number;
   column: number;
-  [key: string]: any;
+  method?: string;
+  variable?: string;
+  symbol?: string;
+  declaredType?: string;
+  returnType?: string;
+  targetType?: string;
+  initType?: string;
+  argumentTypes?: unknown[];
 }
 
 export interface SemanticError {

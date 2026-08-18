@@ -76,7 +76,7 @@ jobs:
         # npm ci is faster than npm install in CI because it
         # installs EXACTLY what's in package-lock.json (no surprises)
 
-      # Step 4: Check code style with oxlint
+      # Step 4: Check code style with ESLint
       - name: Run linter
         run: npm run lint
 

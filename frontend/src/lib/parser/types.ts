@@ -65,6 +65,7 @@ export interface PdaTransition {
   from: string;
   to: string;
   label: string;
+  labelOffset?: number;
 }
 
 /** Stage names a parse can be in (PDA highlights) */

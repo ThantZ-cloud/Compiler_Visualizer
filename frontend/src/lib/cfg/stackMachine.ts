@@ -58,7 +58,7 @@ export function simulateExecution(
 
     const instr = instructions[instrIdx];
     const beforeStack = [...state.stack];
-    let description = '';
+    let description: string;
     let changed = false;
 
     switch (instr.opcode) {
@@ -96,14 +96,15 @@ export function simulateExecution(
         break;
 
       // Load/Store locals
-      case 'iload_0': case 'iload_1': case 'iload_2': case 'iload_3':
+      case 'iload_0': case 'iload_1': case 'iload_2': case 'iload_3': {
         const loadIdx = parseInt(instr.opcode.slice(-1));
         state.stack.push(state.locals[loadIdx] ?? 0);
         description = `Load local[${loadIdx}] = ${state.locals[loadIdx] ?? 0}`;
         state.pc = instr.offset + 1;
         changed = true;
         break;
-      case 'istore_0': case 'istore_1': case 'istore_2': case 'istore_3':
+      }
+      case 'istore_0': case 'istore_1': case 'istore_2': case 'istore_3': {
         const storeIdx = parseInt(instr.opcode.slice(-1));
         const val = state.stack.pop() ?? 0;
         state.locals[storeIdx] = val;
@@ -111,6 +112,7 @@ export function simulateExecution(
         state.pc = instr.offset + 1;
         changed = true;
         break;
+      }
 
       // Arithmetic
       case 'iadd': {

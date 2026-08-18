@@ -11,19 +11,28 @@ interface SymbolCollectorProps {
 
 function parseSymbols(jsonStr: string): SemanticSymbol[] {
   try {
-    const parsed = JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr) as { error?: boolean; scopeTree?: ScopeNode };
     if (parsed.error) return [];
     const symbols: SemanticSymbol[] = [];
 
-    function collectScope(node: any, parentScope: string) {
+    interface ScopeNode {
+      name?: string;
+      kind?: string;
+      type?: string;
+      returnType?: string;
+      modifiers?: string;
+      children?: ScopeNode[];
+    }
+
+    function collectScope(node: ScopeNode | undefined, parentScope: string) {
       if (!node) return;
 
       const scopeName = node.name || '(root)';
       const scopePath = parentScope ? `${parentScope}.${scopeName}` : scopeName;
 
-      if (['variable', 'parameter', 'field', 'method', 'constructor'].includes(node.kind)) {
+      if (node.kind && ['variable', 'parameter', 'field', 'method', 'constructor'].includes(node.kind)) {
         symbols.push({
-          name: node.name,
+          name: node.name || '',
           kind: node.kind,
           type: node.type || node.returnType || '',
           scope: scopePath,

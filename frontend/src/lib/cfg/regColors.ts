@@ -1,0 +1,1 @@
+export const REG_COLORS = ['#00FF88', '#00D4FF', '#FFB000', '#FF00FF', '#8A2BE2', '#FF3366'];

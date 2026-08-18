@@ -45,7 +45,7 @@ All compiler concepts, algorithms, terminology, and pipeline structure follow:
 | Parsing / AST | Chapter 4 — Parsing |
 | Semantic Analysis | Chapter 5 — Context-Sensitive Analysis |
 | Intermediate Representation | Chapter 6 — Intermediate Representations |
-| Code Generation | Chapters 7-8 — Machine Independence & Target Code Generation |
+| Code Generation | Chapters 11-13 — Instruction Selection, Scheduling & Register Allocation |
 | Optimization | Chapters 9-11 — (future scope) |
 
 ### Reference Docs

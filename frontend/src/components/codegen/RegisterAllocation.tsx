@@ -2,14 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Cpu } from 'lucide-react';
 import type { RegAllocationResult } from '../../lib/cfg/regalloc';
+import InterferenceGraph from './InterferenceGraph';
+import { REG_COLORS } from '../../lib/cfg/regColors';
 
 interface RegisterAllocationProps {
   allocation: RegAllocationResult;
   isPlaying: boolean;
   isCompleted: boolean;
 }
-
-const REG_COLORS = ['#00FF88', '#00D4FF', '#FFB000', '#FF00FF', '#8A2BE2', '#FF3366'];
 
 const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
@@ -63,27 +63,34 @@ const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isP
         <div className="text-[9px] font-mono text-[var(--color-text-muted)]">
           <span className="text-[#FF3366] font-bold">{allocation.spills.length}</span> spills
         </div>
+        <div className="text-[9px] font-mono text-[var(--color-text-muted)]">
+          <span className="text-[#00D4FF] font-bold">
+            {allocation.coalescedMoves.filter(m => m.eliminated).length}
+          </span> copies coalesced
+        </div>
       </div>
 
-      {/* Interference graph (edge list) */}
+      {/* Interference graph (D3 node-link) */}
       {allocation.interferenceGraph.length > 0 && (
-        <div className="bg-[var(--color-card)] border border-[var(--color-border)] p-3">
-          <div className="text-[9px] text-[#8A2BE2] font-bold font-display tracking-[0.1em] uppercase mb-2">
-            Interference Graph
+        <div className="bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
+          <div className="flex items-center justify-between px-3 pt-2.5 pb-1 gap-2 flex-wrap">
+            <div className="text-[9px] text-[#8A2BE2] font-bold font-display tracking-[0.1em] uppercase">
+              Interference Graph
+            </div>
+            <div className="flex items-center gap-2">
+              {allocation.variables.map(v => {
+                const reg = allocation.assignments.get(v);
+                const color = reg === undefined ? '#FF3366' : REG_COLORS[reg % REG_COLORS.length];
+                return (
+                  <span key={v} className="flex items-center gap-1 text-[8px] font-mono text-[var(--color-text-muted)]">
+                    <span className="w-2 h-2 rounded-full inline-block" style={{ background: color }} />
+                    {v}
+                  </span>
+                );
+              })}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {allocation.interferenceGraph.map((edge, i) => (
-              <div key={i} className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 bg-[rgba(138,43,226,0.06)] border border-[rgba(138,43,226,0.15)]">
-                <span className={`transition-colors duration-200 ${
-                  highlightVar === edge.from ? 'text-[#FF3366] font-bold' : 'text-[var(--color-text)]'
-                }`}>{edge.from}</span>
-                <span className="text-[#FF3366]">~</span>
-                <span className={`transition-colors duration-200 ${
-                  highlightVar === edge.to ? 'text-[#FF3366] font-bold' : 'text-[var(--color-text)]'
-                }`}>{edge.to}</span>
-              </div>
-            ))}
-          </div>
+          <InterferenceGraph allocation={allocation} highlightVar={highlightVar} />
         </div>
       )}
 
@@ -111,6 +118,67 @@ const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isP
                 >
                   R{reg}
                 </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Spill costs */}
+      {allocation.spillCosts.length > 0 && (
+        <div className="bg-[var(--color-card)] border border-[var(--color-border)] p-3">
+          <div className="text-[9px] text-[#FFB000] font-bold font-display tracking-[0.1em] uppercase mb-2">
+            Spill Cost Ranking
+          </div>
+          <p className="text-[8px] text-[var(--color-text-dim)] font-mono m-0 mb-2">
+            cost = references × (loop depth + 1) — the allocator spills the cheapest variable first
+          </p>
+          <div className="grid gap-px bg-[var(--color-border)]" style={{ gridTemplateColumns: '70px 50px 50px 50px 60px 1fr' }}>
+            <div className="bg-[var(--color-surface)] px-2 py-1 text-[8px] font-bold text-[var(--color-text-muted)] font-display uppercase">Variable</div>
+            <div className="bg-[var(--color-surface)] px-2 py-1 text-[8px] font-bold text-[var(--color-text-muted)] font-display uppercase">Cost</div>
+            <div className="bg-[var(--color-surface)] px-2 py-1 text-[8px] font-bold text-[var(--color-text-muted)] font-display uppercase">Refs</div>
+            <div className="bg-[var(--color-surface)] px-2 py-1 text-[8px] font-bold text-[var(--color-text-muted)] font-display uppercase">Loop</div>
+            <div className="bg-[var(--color-surface)] px-2 py-1 text-[8px] font-bold text-[var(--color-text-muted)] font-display uppercase">Register</div>
+            <div className="bg-[var(--color-surface)] px-2 py-1 text-[8px] font-bold text-[var(--color-text-muted)] font-display uppercase">Spill</div>
+            {allocation.spillCosts.map(sc => {
+              const reg = allocation.assignments.get(sc.variable);
+              const spilled = allocation.spills.includes(sc.variable);
+              return (
+                <React.Fragment key={sc.variable}>
+                  <div className="bg-[var(--color-card)] px-2 py-1 text-[9px] font-mono text-[var(--color-text)]">{sc.variable}</div>
+                  <div className="bg-[var(--color-card)] px-2 py-1 text-[9px] font-mono text-[#FFB000]">{sc.cost}</div>
+                  <div className="bg-[var(--color-card)] px-2 py-1 text-[9px] font-mono text-[var(--color-text-dim)]">{sc.references}</div>
+                  <div className="bg-[var(--color-card)] px-2 py-1 text-[9px] font-mono text-[var(--color-text-dim)]">{sc.loopDepth}</div>
+                  <div className="bg-[var(--color-card)] px-2 py-1 text-[9px] font-mono" style={{ color: reg === undefined ? '#FF3366' : REG_COLORS[reg % REG_COLORS.length] }}>
+                    {reg === undefined ? '[stack]' : `R${reg}`}
+                  </div>
+                  <div className="bg-[var(--color-card)] px-2 py-1 text-[9px] font-mono text-[var(--color-text-dim)]">
+                    {spilled ? 'spilled' : 'kept'}
+                  </div>
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Move coalescing */}
+      {allocation.coalescedMoves.length > 0 && (
+        <div className="bg-[var(--color-card)] border border-[var(--color-border)] p-3">
+          <div className="text-[9px] text-[#00D4FF] font-bold font-display tracking-[0.1em] uppercase mb-2">
+            Move Coalescing
+          </div>
+          <p className="text-[8px] text-[var(--color-text-dim)] font-mono m-0 mb-2">
+            Copy instructions (a = b) are eliminated when both operands land in the same register
+          </p>
+          <div className="flex flex-col gap-1">
+            {allocation.coalescedMoves.map((move, i) => (
+              <div key={i} className="flex items-center gap-2 text-[9px] font-mono">
+                <span className={move.eliminated ? 'text-[#00FF88]' : 'text-[#FF3366]'}>
+                  {move.eliminated ? 'ELIMINATED' : 'KEPT'}
+                </span>
+                <span className="text-[var(--color-text)]">{move.from} → {move.to}</span>
+                <span className="text-[var(--color-text-dim)]">{move.reason}</span>
               </div>
             ))}
           </div>

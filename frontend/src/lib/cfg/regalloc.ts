@@ -11,6 +11,29 @@ export interface InterferenceEdge {
   to: string;
 }
 
+export interface ColoringStep {
+  variable: string;
+  action: 'assign' | 'spill' | 'select';
+  register?: number;
+  neighbors: string[];
+  available: number[];
+  description: string;
+}
+
+export interface CoalescedMove {
+  from: string;
+  to: string;
+  eliminated: boolean;
+  reason: string;
+}
+
+export interface SpillCostInfo {
+  variable: string;
+  cost: number;
+  references: number;
+  loopDepth: number;
+}
+
 export interface RegAllocationResult {
   interferenceGraph: InterferenceEdge[];
   /** All variables that interfere (have overlapping live ranges) */
@@ -23,15 +46,10 @@ export interface RegAllocationResult {
   spills: string[];
   /** Step-by-step coloring log */
   coloringSteps: ColoringStep[];
-}
-
-export interface ColoringStep {
-  variable: string;
-  action: 'assign' | 'spill' | 'select';
-  register?: number;
-  neighbors: string[];
-  available: number[];
-  description: string;
+  /** Copy instructions analyzed for move coalescing */
+  coalescedMoves: CoalescedMove[];
+  /** Spill cost ranking (references × loop depth) */
+  spillCosts: SpillCostInfo[];
 }
 
 /**
@@ -194,6 +212,114 @@ function graphColor(
 }
 
 /**
+ * Analyze copy instructions (result = arg1) for move coalescing.
+ * A copy can be eliminated when both operands end up in the same register.
+ * From "Engineering a Compiler" §13.5.
+ */
+function coalesceMoves(
+  instructions: TacInstruction[],
+  assignments: Map<string, number>,
+  adjMap: Map<string, Set<string>>,
+): CoalescedMove[] {
+  const moves: CoalescedMove[] = [];
+  const seen = new Set<string>();
+
+  for (const instr of instructions) {
+    const isMove = instr.op === 'assign'
+      && instr.result !== null
+      && instr.arg1 !== null
+      && instr.arg2 === null
+      && instr.operator === null
+      && !instr.result.match(/^t\d+$/)
+      && !instr.arg1.match(/^t\d+$/)
+      && !instr.arg1.match(/^\d+$/)
+      && instr.result !== instr.arg1;
+    if (!isMove) continue;
+
+    const a = instr.result!;
+    const b = instr.arg1!;
+    const key = [a, b].sort().join('->');
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const aAssigned = assignments.has(a);
+    const bAssigned = assignments.has(b);
+
+    if (!aAssigned && !bAssigned) {
+      moves.push({ from: b, to: a, eliminated: false, reason: 'Both operands spilled to memory' });
+      continue;
+    }
+
+    const interfere = (adjMap.get(a) || new Set()).has(b);
+    if (interfere) {
+      moves.push({
+        from: b,
+        to: a,
+        eliminated: false,
+        reason: `${a} and ${b} interfere — cannot share a register`,
+      });
+      continue;
+    }
+
+    if (aAssigned && bAssigned && assignments.get(a) === assignments.get(b)) {
+      moves.push({
+        from: b,
+        to: a,
+        eliminated: true,
+        reason: `Both in R${assignments.get(a)} — copy is dead`,
+      });
+    } else if (aAssigned && bAssigned) {
+      moves.push({
+        from: b,
+        to: a,
+        eliminated: false,
+        reason: `Different registers (${a} → R${assignments.get(a)}, ${b} → R${assignments.get(b)})`,
+      });
+    } else {
+      moves.push({
+        from: b,
+        to: a,
+        eliminated: false,
+        reason: 'One operand not allocated a register',
+      });
+    }
+  }
+
+  return moves;
+}
+
+/**
+ * Estimate spill cost per variable: references × loop depth pressure.
+ * The allocator prefers to spill variables with the LOWEST cost.
+ * From "Engineering a Compiler" §13.4.
+ */
+function computeSpillCosts(
+  instructions: TacInstruction[],
+  adjMap: Map<string, Set<string>>,
+  liveVars: Set<string>,
+): SpillCostInfo[] {
+  const refs = new Map<string, number>();
+  const count = (name: string | null) => {
+    if (!name || !liveVars.has(name)) return;
+    refs.set(name, (refs.get(name) || 0) + 1);
+  };
+  for (const instr of instructions) {
+    count(instr.result);
+    count(instr.arg1);
+    count(instr.arg2);
+  }
+
+  return [...refs.entries()]
+    .map(([variable, references]) => {
+      // Loop-depth heuristic: more interference pressure ≤> higher loop depth
+      const neighbors = adjMap.get(variable)?.size || 0;
+      const loopDepth = Math.min(neighbors, 3);
+      return { variable, cost: references * (loopDepth + 1), references, loopDepth };
+    })
+    .sort((a, b) => b.cost - a.cost);
+}
+
+/**
  * Main entry: compute register allocation for a method.
  */
 export function computeRegAllocation(
@@ -226,5 +352,7 @@ export function computeRegAllocation(
     numRegisters,
     spills,
     coloringSteps: steps,
+    coalescedMoves: coalesceMoves(instructions, assignments, adjMap),
+    spillCosts: computeSpillCosts(instructions, adjMap, liveVars),
   };
 }

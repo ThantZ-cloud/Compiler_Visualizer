@@ -39,7 +39,6 @@ const SCOPE_COLORS: Record<string, string> = {
 function getScopeColor(kind: string): string {
   return SCOPE_COLORS[kind] || '#d4d4d4';
 }
-
 function parseScopeTree(jsonStr: string): ScopeNode | null {
   try {
     const parsed = JSON.parse(jsonStr);
@@ -50,21 +49,21 @@ function parseScopeTree(jsonStr: string): ScopeNode | null {
   }
 }
 
+// Post-order traversal — children revealed before parents
+function postOrder(node: ScopeNode, out: ScopeNode[], visited = new Set<number>()): ScopeNode[] {
+  if (visited.has(node.scopeId)) return out;
+  visited.add(node.scopeId);
+  for (const child of node.children ?? []) postOrder(child, out, visited);
+  out.push(node);
+  return out;
+}
+
 const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [revealCount, setRevealCount] = useState(0);
   const [treeSize, setTreeSize] = useState(0);
-
-  // Post-order traversal — children revealed before parents
-  function postOrder(node: ScopeNode, out: ScopeNode[], visited = new Set<number>()): ScopeNode[] {
-    if (visited.has(node.scopeId)) return out;
-    visited.add(node.scopeId);
-    for (const child of node.children ?? []) postOrder(child, out, visited);
-    out.push(node);
-    return out;
-  }
 
   useEffect(() => {
     if (!isPlaying) {
@@ -90,6 +89,7 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => 
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
+    svg.attr('width', width).attr('height', height);
 
     const g = svg.append('g');
     const zoom = d3.zoom<SVGSVGElement, unknown>()
@@ -98,6 +98,19 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => 
     svg.call(zoom);
 
     const root = d3.hierarchy(scopeData);
+    const buildLabel = (n: ScopeNode): string => {
+      let label = n.name;
+      if (n.type) label += `: ${n.type}`;
+      if (n.returnType) label = `${n.returnType} ${label}`;
+      if (n.modifiers) label = `${n.modifiers} ${label}`;
+      return label;
+    };
+    const labelCounts = new Map<string, number>();
+    for (const d of root.descendants()) {
+      const label = buildLabel(d.data);
+      labelCounts.set(label, (labelCounts.get(label) ?? 0) + 1);
+    }
+    const labelSeen = new Map<string, number>();
     const nodeCount = root.descendants().length;
     const treeHeight = Math.max(height - 80, nodeCount * 30);
     const treeWidth = Math.max(width - 250, 400);
@@ -128,24 +141,26 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => 
       .attr('opacity', d => (revealed.has(d.data) ? 1 : 0));
 
     nodesSel.append('circle')
-      .attr('r', d => (d.data.children?.length && d.data.children.length > 0 ? 8 : 5))
+      .attr('r', d => (d.data.children?.length && d.data.children.length > 0 ? 12 : 8))
       .attr('fill', d => getScopeColor(d.data.kind))
       .attr('stroke', '#1e1e1e')
       .attr('stroke-width', 1.5);
 
     nodesSel.append('text')
       .attr('dy', '0.31em')
-      .attr('x', d => (d.children ? -14 : 14))
+      .attr('x', d => (d.children ? -16 : 16))
       .attr('text-anchor', d => (d.children ? 'end' : 'start'))
       .text(d => {
-        let label = d.data.name;
-        if (d.data.type) label += `: ${d.data.type}`;
-        if (d.data.returnType) label = `${d.data.returnType} ${label}`;
-        if (d.data.modifiers) label = `${d.data.modifiers} ${label}`;
-        return label.length > 24 ? label.substring(0, 24) + '...' : label;
+        let label = buildLabel(d.data);
+        if ((labelCounts.get(label) ?? 0) > 1) {
+          const n = (labelSeen.get(label) ?? 0) + 1;
+          labelSeen.set(label, n);
+          label = `${label} #${n}`;
+        }
+        return label.length > 32 ? label.substring(0, 32) + '...' : label;
       })
       .attr('fill', '#d4d4d4')
-      .attr('font-size', '11px');
+      .attr('font-size', '12px');
 
     nodesSel.transition().duration(200).attr('opacity', d => (revealed.has(d.data) ? 1 : 0));
 
@@ -193,7 +208,7 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => 
             {Math.min(revealCount, treeSize)}/{treeSize} {t('syntax.step4.nodes')}
           </span>
         </div>
-        <div className="ast-tree-wrapper" ref={containerRef} style={{ minHeight: 420 }}>
+        <div className="ast-tree-wrapper" ref={containerRef} style={{ height: 420 }}>
           <svg ref={svgRef} width="100%" height="100%" />
         </div>
       </div>

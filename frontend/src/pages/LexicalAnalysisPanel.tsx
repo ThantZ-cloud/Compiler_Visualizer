@@ -97,6 +97,32 @@ const LexicalAnalysisPanel: React.FC = () => {
     }
   }, []);
 
+  // Handle play-one-phase: animate only the active phase, then stay on it.
+  // Each click advances at most one phase; skips any phase already played.
+  const handlePlayOnePhase = useCallback(() => {
+    if (autoplayTimer.current) {
+      clearTimeout(autoplayTimer.current);
+      autoplayTimer.current = null;
+    }
+
+    // Advance past already-completed phases
+    let step = currentStep;
+    while (step < 4 && completedSteps.has(step)) step++;
+    if (completedSteps.has(step)) return; // everything already played
+
+    setCurrentStep(step as PipelineStep);
+    setPlayState('playing');
+    scrollToStep(step);
+
+    const scannerDelay = scannerResult.steps.length * SCAN_MS_PER_CHAR + 1500;
+    const delays: number[] = [STEP_DELAYS[0], STEP_DELAYS[1], STEP_DELAYS[2], STEP_DELAYS[3], scannerDelay];
+    autoplayTimer.current = setTimeout(() => {
+      setCompletedSteps(prev => new Set(prev).add(step));
+      setPlayState('idle');
+      autoplayTimer.current = null;
+    }, delays[step]);
+  }, [currentStep, completedSteps, scrollToStep, scannerResult.steps.length]);
+
   // Handle next — gated by completion dependency (can't jump ahead of unfinished construction)
   const handleNext = useCallback(() => {
     if (currentStep < 4) {
@@ -256,6 +282,8 @@ const LexicalAnalysisPanel: React.FC = () => {
             onPrev={handlePrev}
             onNext={handleNext}
             onRestart={handleRestart}
+            onPlayOnePhase={handlePlayOnePhase}
+            playOneDisabled={[0, 1, 2, 3, 4].every(s => completedSteps.has(s))}
           />
         </>
       ) : (

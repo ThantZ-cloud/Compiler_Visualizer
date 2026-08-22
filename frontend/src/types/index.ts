@@ -1,5 +1,7 @@
 export interface Token {
   type: string;
+  /** Coarse backend category: KEYWORD | IDENTIFIER | LITERAL | OPERATOR | SEPARATOR | COMMENT | WHITESPACE */
+  category?: string;
   value: string;
   line: number;
   column: number;

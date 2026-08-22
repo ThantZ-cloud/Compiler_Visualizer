@@ -1,13 +1,27 @@
 import React, { useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
-import type { NFA } from '../../lib/lexer/types';
+import type { NFA, NFAState } from '../../lib/lexer/types';
 
 interface NfaGraphProps {
   nfa: NFA;
   isPlaying: boolean;
   isCompleted: boolean;
 }
+
+const R = 12; // state circle radius
+
+// ── Layout constants ──
+const START_X = 60;
+const START_Y = 46;
+const LANES_X0 = 170; // first column x for branch states
+const LANES_RIGHT = 780;
+const LANE_H = 104;
+const LANES_Y0 = 110;
+const MIN_STEP = 38;
+const COLLAPSE_ABOVE = 40; // lanes longer than this show head+ellipsis+tail
+const HEAD_SHOWN = 6;
+const TAIL_SHOWN = 3;
 
 const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
@@ -23,163 +37,255 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, isPlaying, isCompleted }) => {
     // draw everything instantly with no fade-in delays.
     const animate = isPlaying;
 
-    const width = 800;
-    const baseHeight = 500;
-
-    // ── Branch layout ──
-    // BFS from the unified start state to isolate each token group's
-    // regex branch (KEYWORD, IDENTIFIER, ...). Each branch becomes a lane.
+    // ── Branch discovery ──
+    // BFS from the unified start state to isolate each token group's regex
+    // branch (KEYWORD, IDENTIFIER, ...). States reachable through several
+    // branches (e.g. the shared keyword accept) are positioned once, in the
+    // first branch that reaches them.
     const startState = nfa.states.find(s => s.isStart);
-    const branches: Record<string, typeof nfa.states> = {};
+    const branchOrder: string[] = [];
+    const branchStates = new Map<string, NFAState[]>();
+    const owner = new Map<number, string>(); // stateId → first branch name
 
     if (startState) {
-      const startTransitions = nfa.transitions.filter(t => t.from === startState.id);
-      startTransitions.forEach(t => {
-        const visited = new Set<number>();
-        const queue: number[] = [t.to];
+      for (const t0 of nfa.transitions.filter(tr => tr.from === startState.id)) {
+        const visited: number[] = [];
+        const seen = new Set<number>();
+        const queue: number[] = [t0.to];
         let branchName = 'UNKNOWN';
 
         while (queue.length > 0) {
           const curr = queue.shift()!;
-          if (visited.has(curr)) continue;
-          visited.add(curr);
+          if (seen.has(curr)) continue;
+          seen.add(curr);
+          visited.push(curr);
 
-          const state = nfa.states.find(s => s.id === curr);
-          if (state?.acceptType) branchName = state.acceptType;
+          const st = nfa.states.find(s => s.id === curr);
+          if (st?.acceptType) branchName = st.acceptType;
 
           for (const tr of nfa.transitions) {
-            if (tr.from === curr) queue.push(tr.to);
+            if (tr.from === curr && !seen.has(tr.to) && tr.to !== startState.id) queue.push(tr.to);
           }
         }
 
-        branches[branchName] = Array.from(visited)
-          .map(id => nfa.states.find(s => s.id === id)!)
-          .sort((a, b) => a.id - b.id);
-      });
+        if (!branchStates.has(branchName)) {
+          branchOrder.push(branchName);
+          branchStates.set(branchName, []);
+        }
+        const bucket = branchStates.get(branchName)!;
+        for (const id of visited) {
+          if (!owner.has(id)) {
+            owner.set(id, branchName);
+            const st = nfa.states.find(s => s.id === id);
+            if (st) bucket.push(st);
+          }
+        }
+      }
+      for (const name of branchOrder) {
+        branchStates.get(name)!.sort((a, b) => a.id - b.id);
+      }
     }
 
-    const branchKeys = Object.keys(branches);
-    const laneHeight = 110;
-    const height = Math.max(baseHeight, (branchKeys.length + 1) * laneHeight + 40);
-    svg.attr('viewBox', `0 0 ${width} ${height}`);
-
-    // Position states: start state on the left, branch lanes below/above
+    // ── Positions ──
     const positions = new Map<number, { x: number; y: number }>();
-    if (startState) {
-      positions.set(startState.id, { x: 55, y: height / 2 });
+    const collapsedBridges: { fromId: number; toId: number; hidden: number; y: number; x1: number; x2: number }[] = [];
+    const laneLabels: { name: string; count: number; x: number; y: number }[] = [];
+
+    if (startState) positions.set(startState.id, { x: START_X, y: START_Y });
+
+    // First pass: measure lanes so the viewBox can grow when a lane needs
+    // more than LANES_RIGHT (e.g. the OPERATOR lane's 22 multi-char branches).
+    let width = 800;
+    const lanePlans = branchOrder.map((name, bi) => {
+      const states = branchStates.get(name)!;
+      const fits = states.length <= COLLAPSE_ABOVE;
+      const visibleCount = fits ? states.length : HEAD_SHOWN + TAIL_SHOWN;
+      return { name, states, bi, fits, visibleCount };
+    });
+    for (const plan of lanePlans) {
+      const step = Math.max(MIN_STEP, Math.min(95, (LANES_RIGHT - LANES_X0) / Math.max(1, plan.visibleCount - 1)));
+      width = Math.max(width, LANES_X0 + (plan.visibleCount - 1) * step + 40);
     }
 
-    branchKeys.forEach((key, bi) => {
-      const states = branches[key];
-      const y = laneHeight * (bi + 1);
-      states.forEach((s, si) => {
-        positions.set(s.id, { x: 160 + si * 95, y });
-      });
+    lanePlans.forEach(plan => {
+      const { name, states, bi, fits, visibleCount } = plan;
+      const yc = LANES_Y0 + bi * LANE_H + LANE_H / 2;
+      laneLabels.push({ name, count: states.length, x: 8, y: yc - 24 });
+
+      const step = Math.max(MIN_STEP, Math.min(95, (width - 40 - LANES_X0) / Math.max(1, visibleCount - 1)));
+
+      const place = (s: NFAState, si: number) => positions.set(s.id, { x: LANES_X0 + si * step, y: yc });
+
+      if (fits) {
+        states.forEach(place);
+      } else {
+        // head states … ellipsis … tail states (last one is typically accept)
+        states.slice(0, HEAD_SHOWN).forEach(place);
+        states.slice(states.length - TAIL_SHOWN).forEach((s, i) => place(s, HEAD_SHOWN + i));
+        collapsedBridges.push({
+          fromId: states[HEAD_SHOWN - 1].id,
+          toId: states[states.length - TAIL_SHOWN].id,
+          hidden: states.length - HEAD_SHOWN - TAIL_SHOWN,
+          y: yc,
+          x1: LANES_X0 + (HEAD_SHOWN - 1) * step + R + 4,
+          x2: LANES_X0 + HEAD_SHOWN * step - R - 4,
+        });
+      }
     });
 
-    // Define arrow marker
+    const height = LANES_Y0 + branchOrder.length * LANE_H + 30;
+    svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+    // ── Arrow marker ──
     svg
       .append('defs')
       .append('marker')
       .attr('id', 'arrow-nfa')
       .attr('viewBox', '0 -5 10 10')
-      .attr('refX', 18)
+      .attr('refX', 9)
       .attr('refY', 0)
-      .attr('markerWidth', 6)
-      .attr('markerHeight', 6)
+      .attr('markerWidth', 5)
+      .attr('markerHeight', 5)
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
       .attr('fill', 'var(--color-text-dim)');
 
-    // Draw transitions
     const transitionGroup = svg.append('g').attr('class', 'transitions');
 
+    const fadeIn = (sel: d3.Selection<d3.BaseType, unknown, null, undefined>, delay: number) =>
+      sel.style('opacity', animate ? 0 : 1).transition().duration(animate ? 400 : 0).delay(animate ? delay : 0).style('opacity', 1);
+
+    // ── Lane backgrounds + headers ──
+    laneLabels.forEach((lane, i) => {
+      transitionGroup
+        .append('rect')
+        .attr('x', 4)
+        .attr('y', LANES_Y0 + i * LANE_H + 4)
+        .attr('width', width - 8)
+        .attr('height', LANE_H - 8)
+        .attr('rx', 8)
+        .attr('fill', 'var(--color-surface-2)')
+        .attr('opacity', 0.35);
+      transitionGroup
+        .append('text')
+        .attr('x', lane.x)
+        .attr('y', lane.y)
+        .attr('fill', 'var(--color-neon)')
+        .style('font-size', '9px')
+        .style('font-family', 'JetBrains Mono, monospace')
+        .style('font-weight', 'bold')
+        .text(`${lane.name} (${lane.count})`);
+    });
+
+    // ── Transitions ──
     nfa.transitions.forEach((trans, i) => {
       const from = positions.get(trans.from);
       const to = positions.get(trans.to);
       if (!from || !to) return;
 
-      const isSelfLoop = trans.from === trans.to;
       const label = trans.symbol === '' ? t('lexical.step2.epsilon') : trans.symbol;
 
-      if (isSelfLoop) {
-        // Draw self-loop as arc above the node
-        const loopPath = `M ${from.x - 12} ${from.y - 12} C ${from.x - 30} ${from.y - 35}, ${from.x + 30} ${from.y - 35}, ${from.x + 12} ${from.y - 12}`;
+      // ε-fan from unified start to each branch head — straight lines
+      if (trans.from === nfa.startState) {
+        const dx = to.x - START_X - R;
+        const dy = to.y - START_Y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-        transitionGroup
-          .append('path')
-          .attr('d', loopPath)
-          .attr('fill', 'none')
+        const line = transitionGroup
+          .append('line')
+          .attr('x1', START_X + R + 2)
+          .attr('y1', START_Y)
+          .attr('x2', to.x - R - 4)
+          .attr('y2', to.y - 2)
           .attr('stroke', 'var(--color-border-bright)')
-          .attr('stroke-width', 1.5)
-          .attr('marker-end', 'url(#arrow-nfa)')
-          .style('opacity', animate ? 0 : 1)
-          .transition()
-          .duration(animate ? 400 : 0)
-          .delay(animate ? i * 80 : 0)
-          .style('opacity', 1);
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '3,3')
+          .attr('marker-end', 'url(#arrow-nfa)');
+        fadeIn(line as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 80);
 
-        transitionGroup
+        const lbl = transitionGroup
           .append('text')
-          .attr('x', from.x)
-          .attr('y', from.y - 38)
+          .attr('x', START_X + R + dist * 0.45)
+          .attr('y', START_Y + dy * 0.42)
           .attr('text-anchor', 'middle')
           .attr('fill', 'var(--color-text-muted)')
-          .style('font-size', '9px')
+          .style('font-size', '8px')
           .style('font-family', 'JetBrains Mono, monospace')
-          .text(label)
-          .style('opacity', animate ? 0 : 1)
-          .transition()
-          .duration(animate ? 400 : 0)
-          .delay(animate ? i * 80 + 200 : 0)
-          .style('opacity', 1);
+          .text(label);
+        fadeIn(lbl as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 80 + 200);
+        return;
+      }
+
+      if (trans.from === trans.to) {
+        // Self-loop above the node
+        const loopPath = `M ${from.x - 10} ${from.y - R + 2} C ${from.x - 26} ${from.y - R - 22}, ${from.x + 26} ${from.y - R - 22}, ${from.x + 10} ${from.y - R + 2}`;
+        const p = transitionGroup.append('path').attr('d', loopPath).attr('fill', 'none').attr('stroke', 'var(--color-border-bright)').attr('stroke-width', 1.5).attr('marker-end', 'url(#arrow-nfa)');
+        fadeIn(p as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 80);
+        const txt = transitionGroup.append('text').attr('x', from.x).attr('y', from.y - R - 14).attr('text-anchor', 'middle').attr('fill', 'var(--color-text-dim)').style('font-size', '9px').style('font-family', 'JetBrains Mono, monospace').text(label);
+        fadeIn(txt as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 80 + 200);
       } else {
         const dx = to.x - from.x;
         const dy = to.y - from.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const offsetX = (dx / dist) * 16;
-        const offsetY = (dy / dist) * 16;
+        const ux = dx / dist;
+        const uy = dy / dist;
 
-        transitionGroup
+        const line = transitionGroup
           .append('line')
-          .attr('x1', from.x + offsetX)
-          .attr('y1', from.y + offsetY)
-          .attr('x2', to.x - offsetX)
-          .attr('y2', to.y - offsetY)
+          .attr('x1', from.x + ux * (R + 2))
+          .attr('y1', from.y + uy * (R + 2))
+          .attr('x2', to.x - ux * (R + 4))
+          .attr('y2', to.y - uy * (R + 4))
           .attr('stroke', 'var(--color-border-bright)')
           .attr('stroke-width', 1.5)
-          .attr('marker-end', 'url(#arrow-nfa)')
-          .style('opacity', animate ? 0 : 1)
-          .transition()
-          .duration(animate ? 400 : 0)
-          .delay(animate ? i * 80 : 0)
-          .style('opacity', 1);
+          .attr('marker-end', 'url(#arrow-nfa)');
+        fadeIn(line as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 80);
 
-        // Label at midpoint
-        const midX = (from.x + to.x) / 2;
-        const midY = (from.y + to.y) / 2;
-        transitionGroup
-          .append('text')
-          .attr('x', midX)
-          .attr('y', midY - 6)
-          .attr('text-anchor', 'middle')
-          .attr('fill', 'var(--color-text-dim)')
-          .style('font-size', '9px')
-          .style('font-family', 'JetBrains Mono, monospace')
-          .text(label)
-          .style('opacity', animate ? 0 : 1)
-          .transition()
-          .duration(animate ? 400 : 0)
-          .delay(animate ? i * 80 + 200 : 0)
-          .style('opacity', 1);
+        // Label above midpoint only when there is room
+        if (dist >= MIN_STEP) {
+          const txt = transitionGroup
+            .append('text')
+            .attr('x', (from.x + to.x) / 2)
+            .attr('y', (from.y + to.y) / 2 - 7)
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'var(--color-text-dim)')
+            .style('font-size', '9px')
+            .style('font-family', 'JetBrains Mono, monospace')
+            .text(label);
+          fadeIn(txt as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 80 + 200);
+        }
       }
     });
 
-    // Draw states
+    // ── Collapse bridges ──
+    collapsedBridges.forEach((b, i) => {
+      const g = transitionGroup.append('g');
+      g.append('line')
+        .attr('x1', b.x1)
+        .attr('y1', b.y)
+        .attr('x2', b.x2)
+        .attr('y2', b.y)
+        .attr('stroke', 'var(--color-text-muted)')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-dasharray', '4,4');
+      g.append('text')
+        .attr('x', (b.x1 + b.x2) / 2)
+        .attr('y', b.y - 6)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'var(--color-text-muted)')
+        .style('font-size', '8px')
+        .style('font-family', 'JetBrains Mono, monospace')
+        .text(`+${b.hidden} states (char chains)`);
+      void b.fromId; void b.toId;
+      fadeIn(g as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 120);
+    });
+
+    // ── States ──
     const stateGroup = svg.append('g').attr('class', 'states');
 
-    nfa.states.forEach((state, i) => {
+    let si = 0;
+    nfa.states.forEach(state => {
       const pos = positions.get(state.id);
       if (!pos) return;
 
@@ -188,35 +294,31 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, isPlaying, isCompleted }) => {
         .attr('transform', `translate(${pos.x}, ${pos.y})`)
         .style('opacity', animate ? 0 : 1);
 
-      // Accept state gets double circle
       if (state.isAccept) {
         g.append('circle')
-          .attr('r', 16)
+          .attr('r', R + 4)
           .attr('fill', 'none')
           .attr('stroke', 'var(--color-neon)')
           .attr('stroke-width', 1.5);
       }
 
-      // Main circle
       g.append('circle')
-        .attr('r', 12)
-        .attr('fill', state.isStart ? 'var(--color-neon-dim)' : state.isAccept ? 'var(--color-neon-dim)' : 'var(--color-surface-3)')
-        .attr('stroke', state.isStart ? 'var(--color-neon)' : state.isAccept ? 'var(--color-neon)' : 'var(--color-border-bright)')
+        .attr('r', R)
+        .attr('fill', state.isStart || state.isAccept ? 'var(--color-neon-dim)' : 'var(--color-surface-3)')
+        .attr('stroke', state.isStart || state.isAccept ? 'var(--color-neon)' : 'var(--color-border-bright)')
         .attr('stroke-width', 2);
 
-      // Start state arrow
       if (state.isStart) {
         g.append('line')
-          .attr('x1', -24)
+          .attr('x1', -R - 12)
           .attr('y1', 0)
-          .attr('x2', -14)
+          .attr('x2', -R - 3)
           .attr('y2', 0)
           .attr('stroke', 'var(--color-neon)')
           .attr('stroke-width', 2)
           .attr('marker-end', 'url(#arrow-nfa)');
       }
 
-      // State label
       g.append('text')
         .attr('text-anchor', 'middle')
         .attr('dy', 4)
@@ -226,22 +328,19 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, isPlaying, isCompleted }) => {
         .style('font-weight', 'bold')
         .text(state.label);
 
-      // Accept type label below
       if (state.acceptType) {
         g.append('text')
           .attr('text-anchor', 'middle')
-          .attr('dy', 32)
+          .attr('dy', R + 16)
           .attr('fill', 'var(--color-neon)')
           .style('font-size', '8px')
           .style('font-family', 'JetBrains Mono, monospace')
           .style('font-weight', 'bold')
-          .text(state.acceptType);
+          .text(state.acceptType.length > 12 ? `${state.acceptType.slice(0, 11)}…` : state.acceptType);
       }
 
-      g.transition()
-        .duration(animate ? 400 : 0)
-        .delay(animate ? i * 60 : 0)
-        .style('opacity', 1);
+      g.transition().duration(animate ? 400 : 0).delay(animate ? si * 60 : 0).style('opacity', 1);
+      si++;
     });
 
     return () => {

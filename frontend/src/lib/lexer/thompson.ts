@@ -39,6 +39,7 @@ export const JAVA_KEYWORDS = [
 
 export const SYMBOL_CLASSES: Record<string, SymbolClass> = {
   'a-z': { name: 'a-z', test: (c) => /[a-zA-Z]/.test(c) },
+  'a-f': { name: 'a-f', test: (c) => /[a-fA-F]/.test(c) }, // hex digits only
   '0-9': { name: '0-9', test: (c) => /[0-9]/.test(c) },
   '_': { name: '_', test: (c) => c === '_' || c === '$' },
   '"': { name: '"', test: (c) => c === '"' },
@@ -169,10 +170,9 @@ function buildNumberNFA(): NFABuilderResult {
       { from: hex0.id, to: hexX.id, symbol: 'x' }, // 'x'
       { from: hex0.id, to: hexX.id, symbol: 'X' }, // 'X'
       { from: hexX.id, to: hexDigits.id, symbol: '0-9' },
-      { from: hexX.id, to: hexDigits.id, symbol: 'a-z' }, // hex a-f via class (simplified)
-      { from: hexX.id, to: hexDigits.id, symbol: 'A-Z' }, // not separate class — will be covered by a-z test for now; keep literal for X already
+      { from: hexX.id, to: hexDigits.id, symbol: 'a-f' }, // hex letters a-f/A-F only
       { from: hexDigits.id, to: hexDigits.id, symbol: '0-9' },
-      { from: hexDigits.id, to: hexDigits.id, symbol: 'a-z' },
+      { from: hexDigits.id, to: hexDigits.id, symbol: 'a-f' },
       { from: hexDigits.id, to: accept.id, symbol: '' },
       { from: intPart.id, to: intPart.id, symbol: '0-9' }, // digit loop
       { from: intPart.id, to: accept.id, symbol: '' }, // epsilon (integer accept)

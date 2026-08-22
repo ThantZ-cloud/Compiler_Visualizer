@@ -327,6 +327,7 @@
     "noCompilationResults": "ဘာသာပြန် ရလဒ်များ မရှိပါ",
     "selectPhase": "Java ကုဒ်ရေးပြီး COMPILE ကိုနှိပ်ပြီး မြင်ကွင်းကို ကြည့်ပါ။",
     "loadSample": "နမူနာကုဒ် ဖွင့်ရန်",
+    "playOnePhase": "တစ်ဆင့်ချင်း ဖွင့်ရန်",
     "phaseBadge": {
       "frontEnd": "FRONT END",
       "optimizer": "OPTIMIZER",

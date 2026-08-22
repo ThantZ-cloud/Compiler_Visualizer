@@ -327,6 +327,7 @@
     "noCompilationResults": "No Compilation Results",
     "selectPhase": "Write some Java code and click COMPILE to see the visualization.",
     "loadSample": "LOAD SAMPLE CODE",
+    "playOnePhase": "Play one phase",
     "phaseBadge": {
       "frontEnd": "FRONT END",
       "optimizer": "OPTIMIZER",

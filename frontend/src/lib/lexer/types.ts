@@ -1,5 +1,7 @@
 // ── Lexer types for NFA/DFA visualization ──
 
+import type { CharAlphabet } from './subsetConstruction';
+
 /** A token emitted by the scanner */
 export interface Token {
   type: string;
@@ -48,8 +50,17 @@ export interface DFAState {
 export interface DFATransition {
   from: number;
   to: number;
-  /** The input symbol class (e.g., 'a-z', '0-9') */
+  /** Primary display symbol class (e.g., 'a-z', '0-9' or a literal char) */
   symbol: string;
+  /**
+   * All symbol classes/literals merged into this edge (semantic alphabet).
+   * Several regex-level symbols can match the same character (e.g. 'a-z'
+   * and the literal 'i'); subset construction merges them into one
+   * deterministic edge whose label shows the primary symbols.
+   */
+  symbols?: string[];
+  /** Stable ids of every canonical character group this edge responds to */
+  classIds?: number[];
 }
 
 /** Full DFA representation */
@@ -57,6 +68,8 @@ export interface DFA {
   states: DFAState[];
   transitions: DFATransition[];
   startState: number;
+  /** Canonical character-group classifier (for deterministic scanning) */
+  alphabet?: CharAlphabet | null;
 }
 
 /** A token group with its regex pattern */

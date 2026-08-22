@@ -95,8 +95,18 @@ export function simulateScanner(
       const transitions = dfa.transitions.filter(t => t.from === currentState.id);
 
       let nextStateId: number | null = null;
+      // Deterministic per canonical character group: classify the char first,
+      // then follow the edge listing that group. A merged edge records every
+      // group it responds to (they all share the same target), so exactly one
+      // outgoing edge matches any group id.
+      const gid = dfa.alphabet ? dfa.alphabet.groupId(char) : -1;
       for (const t of transitions) {
-        if (testSymbol(t.symbol, char)) {
+        const hit = gid >= 0
+          ? !!t.classIds?.includes(gid)
+          : t.symbols
+            ? t.symbols.some(sym => testSymbol(sym, char))
+            : testSymbol(t.symbol, char);
+        if (hit) {
           nextStateId = t.to;
           break;
         }

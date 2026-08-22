@@ -2,11 +2,58 @@ import type { NFA, DFA, DFAState, DFATransition, SubsetConstructionStep } from '
 import { SYMBOL_CLASSES } from './thompson';
 
 // ── Subset Construction: NFA → DFA ──
-// Classic algorithm:
-// 1. Start with ε-closure of the NFA start state
-// 2. For each DFA state, for each input symbol, compute the set of NFA states reachable
-// 3. If the resulting set is new, create a new DFA state
-// 4. Repeat until no new states (fixed point)
+//
+// The NFA's transitions are labeled with a mix of literal characters ('i',
+// '>') and character classes ('a-z', 'op'). Several labels can match the SAME
+// input character (e.g. both the literal 'i' and the class 'a-z' match 'i').
+// Building the DFA with exact-string moves produces a *label-deterministic*
+// but *character-nondeterministic* machine: the scanner then picks whichever
+// edge happens to come first, mis-lexing "go" (goto branch wins, identifier
+// branch never advances), splitting ">=" into ">" + "=", and mangling
+// identifiers that start like keywords ("flag", "intValue").
+//
+// Fix: partition the character alphabet into canonical groups first. Every
+// character in a group matches exactly the same set of transition labels, so
+// one merged DFA edge per group is fully deterministic over characters.
+// Each edge keeps every matching label (`symbols`) plus a display label
+// (`symbol`) and the group id (`classId`) used by minimization.
+
+/** Test whether a transition label matches a concrete character */
+export function labelMatches(label: string, ch: string): boolean {
+  const cls = SYMBOL_CLASSES[label];
+  if (cls) return cls.test(ch);
+  return label === ch; // literal character
+}
+
+interface CanonicalGroup {
+  /** A representative character of the group */
+  char: string;
+  /** All transition labels that match this character */
+  labels: string[];
+}
+
+/**
+ * Partition the alphabet into groups of characters that match exactly
+ * the same set of NFA transition labels. We sample the full printable ASCII
+ * range (32-126) plus \t,\n,\r so that every character class boundary is
+ * represented — sparse per-class probes missed uppercase non-hex letters like
+ * 'M' which needs its own {a-z, any-str, not-nl} group distinct from the
+ * {a-z, a-f, any-str, not-nl} group of hex letters.
+ */
+function buildCanonicalGroups(symbols: string[]): CanonicalGroup[] {
+  const probes: string[] = [];
+  for (let c = 32; c <= 126; c++) probes.push(String.fromCharCode(c));
+  probes.push('\t', '\n', '\r');
+
+  const groups = new Map<string, CanonicalGroup>();
+  for (const p of probes) {
+    const matched = symbols.filter(s => labelMatches(s, p));
+    if (matched.length === 0) continue;
+    const key = matched.join('\u0000');
+    if (!groups.has(key)) groups.set(key, { char: p, labels: matched });
+  }
+  return Array.from(groups.values());
+}
 
 /** Compute ε-closure of a set of NFA states */
 function epsilonClosure(nfaStates: Set<number>, nfa: NFA): Set<number> {
@@ -15,7 +62,6 @@ function epsilonClosure(nfaStates: Set<number>, nfa: NFA): Set<number> {
 
   while (stack.length > 0) {
     const state = stack.pop()!;
-    // Find all ε-transitions from this state
     for (const t of nfa.transitions) {
       if (t.from === state && t.symbol === '' && !result.has(t.to)) {
         result.add(t.to);
@@ -27,12 +73,15 @@ function epsilonClosure(nfaStates: Set<number>, nfa: NFA): Set<number> {
   return result;
 }
 
-/** Compute the set of NFA states reachable from a set of states on a given symbol */
-function move(nfaStates: Set<number>, symbol: string, nfa: NFA): Set<number> {
+/**
+ * Compute the set of NFA states reachable from a set of states on a concrete
+ * character. Matches labels semantically (class tests), not by string equality.
+ */
+function move(nfaStates: Set<number>, ch: string, nfa: NFA): Set<number> {
   const result = new Set<number>();
   for (const state of nfaStates) {
     for (const t of nfa.transitions) {
-      if (t.from === state && t.symbol === symbol) {
+      if (t.from === state && t.symbol !== '' && labelMatches(t.symbol, ch)) {
         result.add(t.to);
       }
     }
@@ -40,7 +89,7 @@ function move(nfaStates: Set<number>, symbol: string, nfa: NFA): Set<number> {
   return result;
 }
 
-/** Get all input symbols used in the NFA (excluding ε) */
+/** Get all input symbols used in the NFA (excluding ε), in first-seen order */
 function getInputSymbols(nfa: NFA): string[] {
   const symbols = new Set<string>();
   for (const t of nfa.transitions) {
@@ -70,15 +119,71 @@ function findAcceptType(nfaStates: Set<number>, nfa: NFA): string | undefined {
   return undefined;
 }
 
+/** Sort edge labels for display: single-char literals first, then classes */
+function sortLabels(labels: string[], order: Map<string, number>): string[] {
+  return [...labels].sort((a, b) => {
+    const aLit = !SYMBOL_CLASSES[a] ? 0 : 1;
+    const bLit = !SYMBOL_CLASSES[b] ? 0 : 1;
+    if (aLit !== bLit) return aLit - bLit;
+    return (order.get(a) ?? 999) - (order.get(b) ?? 999);
+  });
+}
+
+/** Compact display label for an edge, e.g. "i|a-z" or "==|=|+" → "=|== +1" */
+function displayLabel(sortedLabels: string[]): string {
+  if (sortedLabels.length === 0) return '';
+  if (sortedLabels.length === 1) return sortedLabels[0];
+  const head = `${sortedLabels[0]}|${sortedLabels[1]}`;
+  return sortedLabels.length > 2 ? `${head} +${sortedLabels.length - 2}` : head;
+}
+
+/**
+ * Maps any input character to the index of the canonical character group it
+ * belongs to. Two different characters in the same group match exactly the
+ * same set of NFA transition labels, so the DFA edge for that group is the
+ * unique deterministic transition for both. The scanner uses this so that,
+ * from a state, a character follows exactly one edge (the one whose
+ * `classId` equals the group index) — avoiding the original bug where the
+ * `a-z` class label on several distinct edges caused `p` to wrongly follow
+ * the `a`-group edge.
+ */
+export class CharAlphabet {
+  private allSymbols: string[];
+  private groups: CanonicalGroup[];
+
+  constructor(allSymbols: string[], groups: CanonicalGroup[]) {
+    this.allSymbols = allSymbols;
+    this.groups = groups;
+  }
+
+  /** Index of the canonical group for `ch`, or -1 if it matches nothing */
+  groupId(ch: string): number {
+    outer: for (let i = 0; i < this.groups.length; i++) {
+      const labels = this.groups[i].labels;
+      for (const s of this.allSymbols) {
+        const m = labelMatches(s, ch);
+        if (m !== labels.includes(s)) continue outer;
+      }
+      return i;
+    }
+    return -1;
+  }
+}
+
 /**
  * Convert an NFA to a DFA using subset construction.
  * Returns the DFA and a log of each step for visualization.
  */
 export function subsetConstruction(nfa: NFA): { dfa: DFA; steps: SubsetConstructionStep[] } {
   const inputSymbols = getInputSymbols(nfa);
+  const symbolOrder = new Map(inputSymbols.map((s, i) => [s, i]));
+  const canonGroups = buildCanonicalGroups(inputSymbols);
+
+  // Pre-resolve each canonical group to its matching transitions per state:
+  // groupIndex -> (nfaState -> target list) speeds up move() below.
   const steps: SubsetConstructionStep[] = [];
 
-  // Start: ε-closure of NFA start state
+  // Start: ε-closure of the NFA start state
   const startClosure = epsilonClosure(new Set([nfa.startState]), nfa);
 
   const dfaStates: DFAState[] = [];
@@ -115,12 +220,17 @@ export function subsetConstruction(nfa: NFA): { dfa: DFA; steps: SubsetConstruct
   while (worklist.length > 0) {
     const { id: currentDfaId, nfaSet: currentNfaSet } = worklist.shift()!;
 
-    for (const symbol of inputSymbols) {
-      // move(currentSet, symbol)
-      const moveSet = move(currentNfaSet, symbol, nfa);
+    // One deterministic edge per canonical character group; groups whose
+    // closures coincide are merged into a single edge that records EVERY
+    // group id it responds to (the scanner classifies a char to its group
+    // and follows the edge listing that group).
+    const byTarget = new Map<string, { to: number; labels: string[]; isNew: boolean; acceptType?: string; groupIds: number[] }>();
+
+    for (let g = 0; g < canonGroups.length; g++) {
+      const group = canonGroups[g];
+      const moveSet = move(currentNfaSet, group.char, nfa);
       if (moveSet.size === 0) continue;
 
-      // ε-closure of move set
       const closure = epsilonClosure(moveSet, nfa);
       if (closure.size === 0) continue;
 
@@ -129,10 +239,10 @@ export function subsetConstruction(nfa: NFA): { dfa: DFA; steps: SubsetConstruct
       const isNew = existingId === undefined;
 
       let targetDfaId: number;
+      let acceptType: string | undefined;
 
       if (isNew) {
-        // Create new DFA state
-        const acceptType = findAcceptType(closure, nfa);
+        acceptType = findAcceptType(closure, nfa);
         const newState: DFAState = {
           id: nextId,
           label: `D${nextId}`,
@@ -150,22 +260,36 @@ export function subsetConstruction(nfa: NFA): { dfa: DFA; steps: SubsetConstruct
         targetDfaId = existingId!;
       }
 
-      // Add transition
+      const mergeKey = key;
+      const slot = byTarget.get(mergeKey);
+      if (slot) {
+        slot.labels.push(...group.labels);
+        slot.groupIds.push(g);
+      } else {
+        byTarget.set(mergeKey, { to: targetDfaId, labels: [...group.labels], isNew, acceptType, groupIds: [g] });
+      }
+    }
+
+    for (const { to, labels, isNew, acceptType, groupIds } of byTarget.values()) {
+      const sorted = sortLabels([...new Set(labels)], symbolOrder);
       dfaTransitions.push({
         from: currentDfaId,
-        to: targetDfaId,
-        symbol,
+        to,
+        symbol: displayLabel(sorted),
+        symbols: sorted,
+        classIds: groupIds,
       });
 
+      const labelStr = displayLabel(sorted);
       steps.push({
         dfaStateId: currentDfaId,
         nfaSubset: Array.from(currentNfaSet).sort((a, b) => a - b),
-        inputSymbol: symbol,
-        resultingNFAStates: Array.from(closure).sort((a, b) => a - b),
+        inputSymbol: labelStr,
+        resultingNFAStates: [],
         isNewState: isNew,
         description: isNew
-          ? `D${currentDfaId} --[${symbol}]--> {${Array.from(closure).sort((a, b) => a - b).map(s => `q${s}`).join(', ')}} → D${targetDfaId} (NEW STATE${acceptTypeLabel(closure, nfa)})`
-          : `D${currentDfaId} --[${symbol}]--> D${targetDfaId} (existing)`,
+          ? `D${currentDfaId} --[${labelStr}]--> D${to} (NEW STATE${acceptType ? `, accept: ${acceptType}` : ''})`
+          : `D${currentDfaId} --[${labelStr}]--> D${to} (existing)`,
       });
     }
   }
@@ -184,14 +308,10 @@ export function subsetConstruction(nfa: NFA): { dfa: DFA; steps: SubsetConstruct
       states: dfaStates,
       transitions: dfaTransitions,
       startState: 0,
+      alphabet: new CharAlphabet(inputSymbols, canonGroups),
     },
     steps,
   };
-}
-
-function acceptTypeLabel(closure: Set<number>, nfa: NFA): string {
-  const type = findAcceptType(closure, nfa);
-  return type ? `, accept: ${type}` : '';
 }
 
 /** Resolve a symbol class name to test a character */

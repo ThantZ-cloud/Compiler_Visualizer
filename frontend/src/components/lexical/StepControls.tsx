@@ -1,5 +1,6 @@
 import React from 'react';
-import { Play, Pause, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
+import { Play, Pause, ChevronUp, ChevronDown, RotateCcw, SkipForward } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { PlayState } from '../../lib/lexer/types';
 
 interface StepControlsProps {
@@ -10,6 +11,10 @@ interface StepControlsProps {
   onPrev: () => void;
   onNext: () => void;
   onRestart: () => void;
+  /** Play only the active phase, then stop */
+  onPlayOnePhase?: () => void;
+  /** Disable the one-phase button (all phases already played) */
+  playOneDisabled?: boolean;
   /** Optional per-step labels shown in the dots row */
   stepNames?: string[];
   /** Total number of steps (for enabling/disabling next button) */
@@ -26,9 +31,12 @@ const StepControls: React.FC<StepControlsProps> = ({
   onPrev,
   onNext,
   onRestart,
+  onPlayOnePhase,
+  playOneDisabled = false,
   stepNames = DEFAULT_STEP_NAMES,
   totalSteps = 4,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="sticky bottom-0 z-20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-1.5 bg-[var(--color-card)] border-t border-[var(--color-border-bright)]">
       {/* Left: icon-only nav buttons */}
@@ -60,6 +68,18 @@ const StepControls: React.FC<StepControlsProps> = ({
             className="flex items-center justify-center w-8 h-7 text-[var(--color-void)] bg-[var(--color-neon)] border border-[var(--color-neon)] cursor-pointer transition-all hover:shadow-[0_0_16px_var(--color-neon-dim)]"
           >
             <Play size={14} />
+          </button>
+        )}
+
+        {onPlayOnePhase && (
+          <button
+            onClick={onPlayOnePhase}
+            disabled={playOneDisabled}
+            aria-label="Play one phase"
+            title={t('visualize.playOnePhase', 'Play one phase')}
+            className="flex items-center justify-center w-7 h-7 text-[var(--color-text-dim)] border border-[var(--color-border)] bg-transparent cursor-pointer transition-all hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-[var(--color-text-dim)] disabled:hover:border-[var(--color-border)]"
+          >
+            <SkipForward size={14} />
           </button>
         )}
 

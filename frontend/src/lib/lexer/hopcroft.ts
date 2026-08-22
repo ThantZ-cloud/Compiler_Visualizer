@@ -28,15 +28,23 @@ export function hopcroftMinimization(dfa: DFA): HopcroftResult {
     return { minDfa: dfa, steps: [], originalStateCount: 0, minimizedStateCount: 0 };
   }
 
-  // Build transition map: stateId -> symbol -> targetId
+  // Build transition map: stateId -> canonicalGroupId -> targetId.
+  // A merged edge may respond to several character groups (all with the same
+  // target), so expand its classIds into one entry each. Falls back to the
+  // label string for hand-built DFAs without canonical groups.
   const transMap = new Map<number, Map<string, number>>();
   for (const t of dfa.transitions) {
     if (!transMap.has(t.from)) transMap.set(t.from, new Map());
-    transMap.get(t.from)!.set(t.symbol, t.to);
+    const m = transMap.get(t.from)!;
+    if (t.classIds && t.classIds.length > 0) {
+      for (const g of t.classIds) m.set(`c${g}`, t.to);
+    } else {
+      m.set(t.symbol, t.to);
+    }
   }
 
-  // Input symbols
-  const symbols = Array.from(new Set(dfa.transitions.map(t => t.symbol)));
+  // Canonical group keys in stable order
+  const symbols = Array.from(new Set(dfa.transitions.flatMap(t => (t.classIds && t.classIds.length > 0 ? t.classIds.map(g => `c${g}`) : [t.symbol]))));
 
   // Initial partition: group by acceptType (including non-accept)
   const groups = new Map<string, number[]>();
@@ -131,10 +139,10 @@ export function hopcroftMinimization(dfa: DFA): HopcroftResult {
   for (const t of dfa.transitions) {
     const fromMin = repMap.get(t.from)!;
     const toMin = repMap.get(t.to)!;
-    const key = `${fromMin}-${t.symbol}-${toMin}`;
+    const key = `${fromMin}-${t.classIds && t.classIds.length > 0 ? `c${t.classIds[0]}` : t.symbol}-${toMin}`;
     if (!seen.has(key)) {
       seen.add(key);
-      minTransitions.push({ from: fromMin, to: toMin, symbol: t.symbol });
+      minTransitions.push({ from: fromMin, to: toMin, symbol: t.symbol, symbols: t.symbols, classIds: t.classIds });
     }
   }
 
@@ -142,6 +150,7 @@ export function hopcroftMinimization(dfa: DFA): HopcroftResult {
     states: minStates,
     transitions: minTransitions,
     startState: repMap.get(dfa.startState) ?? 0,
+    alphabet: dfa.alphabet ?? null,
   };
 
   return {

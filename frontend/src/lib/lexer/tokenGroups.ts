@@ -5,6 +5,11 @@ import type { Token } from '../../types';
 // Simplified patterns for visualization — the actual NFA (thompson.ts) enumerates
 // keywords and includes escape handling, exponent, block comments, and multi-char ops.
 // Counts are derived from backend tokens; divergence is noted in the UI.
+//
+// Backend TokenDto sends `category` (KEYWORD | IDENTIFIER | LITERAL | OPERATOR |
+// SEPARATOR | COMMENT | WHITESPACE) plus a specific `type` ("PUBLIC",
+// "INT_LITERAL", "PLUS", ...). Matching prefers `category`; the type-based
+// fallbacks keep older/mock payloads working.
 
 export interface TokenGroupDef {
   name: string;
@@ -17,8 +22,10 @@ export interface TokenGroupDef {
   /** Count of tokens in this group */
   count: number;
   /** Token types from backend that belong to this group */
-  matches: (tokenType: string) => boolean;
+  matches: (token: Token) => boolean;
 }
+
+const hasCategory = (t: Token, cat: string) => t.category?.toUpperCase() === cat;
 
 export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
   {
@@ -28,8 +35,12 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     found: false,
     count: 0,
     matches: (t) => {
+      if (hasCategory(t, 'KEYWORD')) return true;
+      // true/false/null arrive as LITERAL/BOOLEAN_LITERAL & NULL_LITERAL but
+      // the displayed regex lists them as keywords — keep them in this group.
+      if (/^(BOOLEAN_LITERAL|NULL_LITERAL)$/i.test(t.type)) return true;
       const keywords = ['KEYWORD', 'RESERVED', 'PRIMITIVE_TYPE'];
-      return keywords.some(k => t.toUpperCase().includes(k));
+      return keywords.some(k => t.type.toUpperCase().includes(k));
     },
   },
   {
@@ -39,8 +50,9 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     found: false,
     count: 0,
     matches: (t) => {
+      if (hasCategory(t, 'IDENTIFIER')) return true;
       const idents = ['IDENTIFIER', 'NAME', 'ID'];
-      return idents.some(k => t.toUpperCase() === k) || t.toUpperCase() === 'IDENTIFIER';
+      return idents.some(k => t.type.toUpperCase() === k);
     },
   },
   {
@@ -50,8 +62,9 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     found: false,
     count: 0,
     matches: (t) => {
-      const strings = ['STRING', 'STRING_LITERAL', 'CHAR_LITERAL', 'CHAR'];
-      return strings.some(k => t.toUpperCase().includes(k));
+      if (hasCategory(t, 'STRING')) return true;
+      const strings = ['STRING_LITERAL', 'CHAR_LITERAL'];
+      return strings.some(k => t.type.toUpperCase().includes(k)) || /^CHAR$/i.test(t.type);
     },
   },
   {
@@ -61,8 +74,12 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     found: false,
     count: 0,
     matches: (t) => {
+      // LITERAL category holds INT/HEX/DOUBLE/FLOAT literals — but boolean/null
+      // literals are handled by KEYWORD above.
+      if (hasCategory(t, 'LITERAL') && !/(BOOLEAN|NULL)/i.test(t.type)) return true;
+      if (hasCategory(t, 'NUMBER')) return true;
       const nums = ['NUMBER', 'INT_LITERAL', 'LONG_LITERAL', 'DOUBLE_LITERAL', 'FLOAT_LITERAL', 'DECIMAL'];
-      return nums.some(k => t.toUpperCase().includes(k));
+      return nums.some(k => t.type.toUpperCase().includes(k));
     },
   },
   {
@@ -72,19 +89,21 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     found: false,
     count: 0,
     matches: (t) => {
+      if (hasCategory(t, 'OPERATOR')) return true;
       const ops = ['OPERATOR', 'OP', 'ASSIGN', 'ARITHMETIC', 'LOGICAL', 'BITWISE', 'RELATIONAL'];
-      return ops.some(k => t.toUpperCase().includes(k));
+      return ops.some(k => t.type.toUpperCase().includes(k));
     },
   },
   {
     name: 'SEPARATOR',
-    regexPattern: '[(){};,.\\[\\]@]',
+    regexPattern: '[(){};,.[\\]@]',
     color: '#8888AA',
     found: false,
     count: 0,
     matches: (t) => {
+      if (hasCategory(t, 'SEPARATOR')) return true;
       const seps = ['SEPARATOR', 'DELIMITER', 'BRACE', 'BRACKET', 'PAREN', 'SEMICOLON', 'COMMA', 'DOT', 'AT'];
-      return seps.some(k => t.toUpperCase().includes(k));
+      return seps.some(k => t.type.toUpperCase().includes(k));
     },
   },
   {
@@ -94,8 +113,9 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     found: false,
     count: 0,
     matches: (t) => {
+      if (hasCategory(t, 'WHITESPACE')) return true;
       const ws = ['WHITESPACE', 'SPACE', 'NEWLINE', 'TAB'];
-      return ws.some(k => t.toUpperCase().includes(k));
+      return ws.some(k => t.type.toUpperCase().includes(k));
     },
   },
   {
@@ -105,8 +125,9 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
     found: false,
     count: 0,
     matches: (t) => {
-      const comments = ['COMMENT', 'LINE_COMMENT', 'BLOCK_COMMENT', 'JAVADOC'];
-      return comments.some(k => t.toUpperCase().includes(k));
+      if (hasCategory(t, 'COMMENT')) return true;
+      const comments = ['COMMENT', 'JAVADOC'];
+      return comments.some(k => t.type.toUpperCase().includes(k));
     },
   },
 ];
@@ -117,7 +138,7 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
  */
 export function analyzeTokenGroups(tokens: Token[]): TokenGroupDef[] {
   return TOKEN_GROUP_DEFS.map(def => {
-    const matchingTokens = tokens.filter(t => def.matches(t.type));
+    const matchingTokens = tokens.filter(t => def.matches(t));
     return {
       ...def,
       found: matchingTokens.length > 0,
@@ -130,5 +151,6 @@ export function analyzeTokenGroups(tokens: Token[]): TokenGroupDef[] {
  * Given a token type string, find which group it belongs to.
  */
 export function findTokenGroup(tokenType: string): TokenGroupDef | null {
-  return TOKEN_GROUP_DEFS.find(def => def.matches(tokenType)) ?? null;
+  const probe: Token = { type: tokenType, value: '', line: 0, column: 0, length: 0 };
+  return TOKEN_GROUP_DEFS.find(def => def.matches(probe)) ?? null;
 }

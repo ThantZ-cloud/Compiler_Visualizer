@@ -69,7 +69,7 @@ const KIND_COLORS: Record<string, string> = {
   block: '#6a9955',
 };
 
-const SymbolCollector: React.FC<SymbolCollectorProps> = ({ symbolTableJson, isPlaying }) => {
+const SymbolCollector: React.FC<SymbolCollectorProps> = ({ symbolTableJson, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const [symbols, setSymbols] = useState<SemanticSymbol[]>([]);
   const [revealCount, setRevealCount] = useState(0);
@@ -80,7 +80,7 @@ const SymbolCollector: React.FC<SymbolCollectorProps> = ({ symbolTableJson, isPl
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(symbols.length);
+      setRevealCount(isCompleted ? symbols.length : 0);
       return;
     }
     setRevealCount(0);
@@ -88,7 +88,7 @@ const SymbolCollector: React.FC<SymbolCollectorProps> = ({ symbolTableJson, isPl
       setRevealCount(prev => prev + 1);
     }, 120);
     return () => clearInterval(interval);
-  }, [isPlaying, symbols.length]);
+  }, [isPlaying, isCompleted, symbols.length]);
 
   const visibleSymbols = symbols.slice(0, Math.min(revealCount, symbols.length));
   const total = symbols.length;

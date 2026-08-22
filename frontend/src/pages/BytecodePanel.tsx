@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
@@ -11,8 +11,9 @@ import StackMachineVisualizer from '../components/bytecode/StackMachineVisualize
 import ExecutionFlow from '../components/bytecode/ExecutionFlow';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { parseBytecode } from '../lib/cfg/bytecodeParser';
+import { simulateExecution } from '../lib/cfg/stackMachine';
 
-const STEP_DELAYS = [3000, 4000, 5000];
+const BASE_STEP_DELAYS = [3000, 4000, 5000];
 const BYTECODE_STEP_NAMES = ['Bytecode Listing', 'Stack Machine', 'Execution Flow'];
 
 const BytecodePanel: React.FC = () => {
@@ -37,11 +38,32 @@ const BytecodePanel: React.FC = () => {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, []);
 
+  const classes = result?.classes || [];
+  const bytecodeMap = result?.allBytecode || {};
+  const hasMultipleClasses = classes.length > 1;
+  const activeClass = selectedClass || classes[0]?.name || '';
+  const displayedBytecode = hasMultipleClasses
+    ? (bytecodeMap[activeClass] || result?.bytecode)
+    : result?.bytecode;
+
+  const parsed = useMemo(() => displayedBytecode ? parseBytecode(displayedBytecode) : null, [displayedBytecode]);
+  const firstMethod = parsed?.methods[0] || null;
+
   const handlePlay = useCallback(() => {
     setPlayState('playing');
     setCurrentStep(0);
     setCompletedSteps(new Set());
     scrollToStep(0);
+
+    // Dynamic step-2 delay: ~10s cap, adaptive pacing
+    const stepDelays = [...BASE_STEP_DELAYS];
+    if (firstMethod) {
+      const traceSteps = simulateExecution(firstMethod.instructions, firstMethod.maxLocals).steps.length;
+      if (traceSteps > 0) {
+        const msPerStep = Math.max(120, Math.min(600, Math.floor(10000 / traceSteps)));
+        stepDelays[1] = traceSteps * msPerStep + 1500;
+      }
+    }
 
     let step = 0;
     const advance = () => {
@@ -50,13 +72,13 @@ const BytecodePanel: React.FC = () => {
         step++;
         setCurrentStep(step as 0 | 1 | 2);
         scrollToStep(step);
-        autoplayTimer.current = setTimeout(advance, STEP_DELAYS[step]);
+        autoplayTimer.current = setTimeout(advance, stepDelays[step]);
       } else {
         setPlayState('completed');
       }
     };
-    autoplayTimer.current = setTimeout(advance, STEP_DELAYS[0]);
-  }, [scrollToStep]);
+    autoplayTimer.current = setTimeout(advance, stepDelays[0]);
+  }, [scrollToStep, firstMethod]);
 
   const handlePause = useCallback(() => {
     setPlayState('paused');
@@ -131,17 +153,6 @@ const BytecodePanel: React.FC = () => {
     );
   }
 
-  const classes = result.classes || [];
-  const bytecodeMap = result.allBytecode || {};
-  const hasMultipleClasses = classes.length > 1;
-  const activeClass = selectedClass || classes[0]?.name || '';
-  const displayedBytecode = hasMultipleClasses
-    ? (bytecodeMap[activeClass] || result.bytecode)
-    : result.bytecode;
-
-  const parsed = parseBytecode(displayedBytecode);
-  const firstMethod = parsed.methods[0] || null;
-
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Class selector tabs */}
@@ -166,14 +177,14 @@ const BytecodePanel: React.FC = () => {
       {activeTab === 'pipeline' ? (
         <>
           <div
-            className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2"
+            className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-2"
             onScroll={handleScroll}
           >
             {/* Step 1: Bytecode Listing */}
             <div ref={(el) => { stepRefs.current[0] = el; }}>
               <ErrorBoundary name="BytecodeListing">
                 <BytecodeListing
-                  bytecode={parsed}
+                  bytecode={parsed!}
                   isPlaying={playState === 'playing' && currentStep === 0}
                   isCompleted={completedSteps.has(0) || playState === 'completed'}
                 />

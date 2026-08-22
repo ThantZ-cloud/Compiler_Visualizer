@@ -142,7 +142,7 @@ const SemanticAnalysisPanel: React.FC = () => {
         <>
           {/* Scrollable pipeline */}
           <div
-            className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2"
+            className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-2"
             onScroll={handleScroll}
           >
             {/* Step 1: Scope Tree Construction */}

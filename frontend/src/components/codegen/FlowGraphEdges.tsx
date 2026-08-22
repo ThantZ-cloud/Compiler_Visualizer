@@ -40,7 +40,11 @@ const EDGE_COLORS: Record<string, string> = {
   goto: '#c586c0',
 };
 
-const FlowGraphEdges: React.FC<Props> = ({ data, isPlaying }) => {
+// Symmetric canvas padding so graph content stays centered in the SVG
+const GRAPH_PAD_X = 150;
+const GRAPH_PAD_Y = 45;
+
+const FlowGraphEdges: React.FC<Props> = ({ data, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -122,14 +126,12 @@ const FlowGraphEdges: React.FC<Props> = ({ data, isPlaying }) => {
       }
     }
 
-    // Update SVG dimensions
+    // Update SVG dimensions (symmetric padding around node centers keeps content centered)
     const xs = layoutNodes.map(n => n.x);
     const ys = layoutNodes.map(n => n.y);
-    const minX = Math.min(...xs) - BLOCK_W;
-    const maxX = Math.max(...xs) + BLOCK_W;
-    const minY = Math.min(...ys) - 20;
-    const maxY = Math.max(...ys) + BLOCK_H + 40;
-    setDimensions({ width: maxX - minX + 40, height: maxY - minY + 40 });
+    const spanX = Math.max(...xs) - Math.min(...xs);
+    const spanY = Math.max(...ys) - Math.min(...ys);
+    setDimensions({ width: spanX + GRAPH_PAD_X * 2, height: spanY + GRAPH_PAD_Y * 2 });
 
     return { nodes: layoutNodes, edges: layoutEdges };
   }, [data]);
@@ -137,7 +139,7 @@ const FlowGraphEdges: React.FC<Props> = ({ data, isPlaying }) => {
   // Reveal edges during animation
   useEffect(() => {
     if (!isPlaying) {
-      setRevealEdges(edges.length);
+      setRevealEdges(isCompleted ? edges.length : 0);
       return;
     }
     setRevealEdges(0);
@@ -151,22 +153,23 @@ const FlowGraphEdges: React.FC<Props> = ({ data, isPlaying }) => {
       });
     }, 300);
     return () => clearInterval(interval);
-  }, [isPlaying, edges.length]);
+  }, [isPlaying, isCompleted, edges.length]);
 
   // D3 rendering
   useEffect(() => {
     if (!svgRef.current || nodes.length === 0) return;
-
+    const isVisible = isPlaying || isCompleted;
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
+    if (!isVisible) return;
 
     const BLOCK_W = 200;
     const BLOCK_H = 40;
 
-    // Center offset
+    // Center content: translate node-center coordinates into the padded canvas
     const xs = nodes.map(n => n.x);
-    const offsetX = -Math.min(...xs) + 20;
-    const offsetY = -Math.min(...nodes.map(n => n.y)) + 20;
+    const offsetX = -Math.min(...xs) + GRAPH_PAD_X;
+    const offsetY = -Math.min(...nodes.map(n => n.y)) + GRAPH_PAD_Y;
 
     const g = svg.append('g').attr('transform', `translate(${offsetX},${offsetY})`);
 
@@ -238,7 +241,8 @@ const FlowGraphEdges: React.FC<Props> = ({ data, isPlaying }) => {
         .attr('fill', color);
     }
 
-    // Draw block nodes
+    // Draw block nodes — also gated by visibility so idle is blank like lexical
+    if (isVisible) {
     for (const node of nodes) {
       const color = BLOCK_COLORS[node.block.type] || BLOCK_COLORS.normal;
       const x = node.x - BLOCK_W / 2;
@@ -286,7 +290,8 @@ const FlowGraphEdges: React.FC<Props> = ({ data, isPlaying }) => {
         .attr('font-family', 'monospace')
         .text(`${node.block.instructions.length} instr`);
     }
-  }, [nodes, edges, revealEdges]);
+    }
+  }, [nodes, edges, revealEdges, isPlaying, isCompleted]);
 
   return (
     <motion.div
@@ -335,7 +340,7 @@ const FlowGraphEdges: React.FC<Props> = ({ data, isPlaying }) => {
           ref={svgRef}
           width={Math.max(dimensions.width, 400)}
           height={Math.max(dimensions.height, 200)}
-          className="block"
+          className="block mx-auto"
         />
       </div>
     </motion.div>

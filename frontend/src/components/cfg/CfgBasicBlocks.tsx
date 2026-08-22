@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useResizeObserver } from '../../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import { useTranslation } from 'react-i18next';
 import type { CfgMethod, CfgNode, CfgEdge } from '../../types';
@@ -68,6 +69,7 @@ const CfgBasicBlocks: React.FC<CfgBasicBlocksProps> = ({ method, isPlaying, isCo
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
   const [visibleBlocks, setVisibleBlocks] = useState<Set<number>>(new Set());
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -76,6 +78,8 @@ const CfgBasicBlocks: React.FC<CfgBasicBlocksProps> = ({ method, isPlaying, isCo
     if (!isPlaying) {
       if (isCompleted) {
         setVisibleBlocks(new Set(method.blocks.map(b => b.id)));
+      } else {
+        setVisibleBlocks(new Set());
       }
       return;
     }
@@ -101,7 +105,7 @@ const CfgBasicBlocks: React.FC<CfgBasicBlocksProps> = ({ method, isPlaying, isCo
 
     const container = containerRef.current!;
     const rect = container.getBoundingClientRect();
-    const width = rect.width || container.clientWidth || 800;
+    const width = observedWidth || rect.width || container.clientWidth || 800;
     const height = rect.height || container.clientHeight || 400;
 
     const g = svg.append('g');
@@ -218,7 +222,7 @@ const CfgBasicBlocks: React.FC<CfgBasicBlocksProps> = ({ method, isPlaying, isCo
     };
     const raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
-  }, [method, visibleBlocks]);
+  }, [method, visibleBlocks, observedWidth]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -234,7 +238,7 @@ const CfgBasicBlocks: React.FC<CfgBasicBlocksProps> = ({ method, isPlaying, isCo
       <p className="text-[10px] text-[var(--color-text-dim)] font-mono px-1 -mt-1">
         {t('optimizer.step1.description', 'The control flow graph is decomposed into basic blocks — sequences of instructions with no branches except at the end.')}
       </p>
-      <div ref={containerRef} className="w-full h-[320px] bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
+      <div ref={(el) => { containerRef.current = el; roSetRef(el); }} className="w-full h-[320px] bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
         <svg ref={svgRef} className="w-full h-full" />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useResizeObserver } from '../../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import { useTranslation } from 'react-i18next';
 import '../AstTree.css';
@@ -58,16 +59,17 @@ function postOrder(node: ScopeNode, out: ScopeNode[], visited = new Set<number>(
   return out;
 }
 
-const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => {
+const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
   const [revealCount, setRevealCount] = useState(0);
   const [treeSize, setTreeSize] = useState(0);
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(Number.MAX_SAFE_INTEGER);
+      setRevealCount(isCompleted ? Number.MAX_SAFE_INTEGER : 0);
       return;
     }
     setRevealCount(0);
@@ -75,7 +77,7 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => 
       setRevealCount(prev => prev + 1);
     }, 400);
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, isCompleted]);
 
   useEffect(() => {
     if (!svgRef.current || !containerRef.current || !symbolTableJson) return;
@@ -84,7 +86,7 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => 
     if (!scopeData) return;
 
     const container = containerRef.current;
-    const width = container.clientWidth || 600;
+    const width = observedWidth || container.clientWidth || 600;
     const height = container.clientHeight || 400;
 
     const svg = d3.select(svgRef.current);
@@ -176,7 +178,7 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => 
       svg.selectAll('*').remove();
       svg.on('.zoom', null);
     };
-  }, [symbolTableJson, revealCount]);
+  }, [symbolTableJson, revealCount, observedWidth]);
 
   if (!symbolTableJson) {
     return (
@@ -208,7 +210,7 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying }) => 
             {Math.min(revealCount, treeSize)}/{treeSize} {t('syntax.step4.nodes')}
           </span>
         </div>
-        <div className="ast-tree-wrapper" ref={containerRef} style={{ height: 420 }}>
+        <div className="ast-tree-wrapper" ref={(el) => { containerRef.current = el; roSetRef(el); }} style={{ height: 420 }}>
           <svg ref={svgRef} width="100%" height="100%" />
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash2, Circle, FilePlus, Pencil } from 'lucide-react';
+import { Trash2, Circle, FilePlus, Pencil, X, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCompile } from '../context/CompileContext';
 import { codeAPI } from '../services/api';
@@ -42,6 +42,9 @@ const FileBrowser: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const [pendingDeleteName, setPendingDeleteName] = useState('');
+
+  // Mobile drawer state (panel is a static column on md+ screens)
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Refs
   const inputRef = useRef<HTMLInputElement>(null);
@@ -183,24 +186,60 @@ const FileBrowser: React.FC = () => {
   };
 
   return (
-    <div className="w-[260px] min-w-[220px] max-w-[400px] bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col shrink-0 select-none">
-      {/* Header */}
-      <div className="px-5 py-2.5 border-b border-[var(--color-border)] flex items-center justify-around h-[36px]">
-        <span
-          className="text-[10px] font-bold text-[var(--color-text-dim)] tracking-[0.15em] uppercase"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          {t('fileBrowser.explorer')}
-        </span>
+    <>
+      {/* Mobile: floating toggle button (hidden once the drawer is open) */}
+      {!mobileOpen && (
         <button
-          className="p-1.5  rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
-          onClick={handleStartCreate}
-          title={t('fileBrowser.newFile')}
-          aria-label={t('fileBrowser.newFile')}
+          className="md:hidden fixed bottom-4 left-4 z-40 w-12 h-12 flex items-center justify-center bg-[var(--color-card)] border border-[var(--color-neon)] text-[var(--color-neon)] shadow-[0_0_16px_var(--color-neon-dim)] cursor-pointer transition-all"
+          onClick={() => setMobileOpen(true)}
+          aria-label={t('fileBrowser.openExplorer')}
+          title={t('fileBrowser.openExplorer')}
         >
-          <FilePlus size={15} />
+          <FolderOpen size={18} />
         </button>
-      </div>
+      )}
+
+      {/* Mobile backdrop — tap to close */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/60"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <div
+        className={`bg-[var(--color-card)] border-r border-[var(--color-border)] flex-col select-none shrink-0
+          ${mobileOpen
+            ? 'flex absolute inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] shadow-[16px_0_48px_rgba(0,0,0,0.45)]'
+            : 'hidden'}
+          md:relative md:flex md:w-[260px] md:min-w-[220px] md:max-w-[400px] md:shadow-none`}
+      >
+        {/* Header */}
+        <div className="px-5 py-2.5 border-b border-[var(--color-border)] flex items-center justify-around h-[36px]">
+          <span
+            className="text-[10px] font-bold text-[var(--color-text-dim)] tracking-[0.15em] uppercase"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {t('fileBrowser.explorer')}
+          </span>
+          <button
+            className="p-1.5  rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+            onClick={handleStartCreate}
+            title={t('fileBrowser.newFile')}
+            aria-label={t('fileBrowser.newFile')}
+          >
+            <FilePlus size={15} />
+          </button>
+          {/* Mobile close button */}
+          <button
+            className="md:hidden p-1.5 rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+            onClick={() => setMobileOpen(false)}
+            aria-label={t('fileBrowser.closeExplorer')}
+          >
+            <X size={15} />
+          </button>
+        </div>
 
       {/* File list */}
       <div className="flex-1 overflow-y-auto  py-2 px-2">
@@ -281,7 +320,7 @@ const FileBrowser: React.FC = () => {
             )}
 
             {!renamingId && (
-              <div className="flex items-center shrink-0 w-0 overflow-hidden opacity-0 group-hover:w-auto group-hover:opacity-100 transition-all duration-100">
+              <div className="flex items-center shrink-0 opacity-100 md:w-0 md:overflow-hidden md:opacity-0 md:group-hover:w-auto md:group-hover:opacity-100 transition-all duration-100">
                 <button
                   className="bg-transparent border-none p-1.5 ml-2 text-[var(--color-text-muted)] hover:text-[var(--color-neon)] transition-colors"
                   onClick={(e) => { e.stopPropagation(); handleStartRename(file); }}
@@ -321,7 +360,8 @@ const FileBrowser: React.FC = () => {
         onCancel={cancelDelete}
         danger
       />
-    </div>
+      </div>
+      </>
   );
 };
 

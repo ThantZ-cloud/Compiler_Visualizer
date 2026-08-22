@@ -21,6 +21,9 @@ const DataFlowAnalysis: React.FC<DataFlowAnalysisProps> = ({ method, result, isP
     if (!isPlaying) {
       if (isCompleted) {
         setVisibleSteps(new Set(result.steps.map((_, i) => i)));
+      } else {
+        setVisibleSteps(new Set());
+        setActiveBlock(null);
       }
       return;
     }
@@ -37,6 +40,7 @@ const DataFlowAnalysis: React.FC<DataFlowAnalysisProps> = ({ method, result, isP
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [isPlaying, isCompleted, result]);
 
+  const isVisible = isPlaying || isCompleted;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 px-1">
@@ -91,19 +95,19 @@ const DataFlowAnalysis: React.FC<DataFlowAnalysisProps> = ({ method, result, isP
               <React.Fragment key={block.id}>
                 <div className={`bg-[var(--color-card)] px-2 py-1.5 text-[10px] font-mono transition-colors duration-200 ${
                   isActive ? 'bg-[rgba(255,0,255,0.08)] text-[#FF00FF]' : 'text-[var(--color-text)]'
-                }`}>
+                } ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
                   B{block.id}
                 </div>
-                <div className="bg-[var(--color-card)] px-2 py-1.5 text-[9px] font-mono text-[#00FF88]">
+                <div className={`bg-[var(--color-card)] px-2 py-1.5 text-[9px] font-mono text-[#00FF88] ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
                   {state.in.size > 0 ? `{${[...state.in].join(', ')}}` : '∅'}
                 </div>
-                <div className="bg-[var(--color-card)] px-2 py-1.5 text-[9px] font-mono text-[#FF3366]">
+                <div className={`bg-[var(--color-card)] px-2 py-1.5 text-[9px] font-mono text-[#FF3366] ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
                   {state.out.size > 0 ? `{${[...state.out].join(', ')}}` : '∅'}
                 </div>
-                <div className="bg-[var(--color-card)] px-2 py-1.5 text-[9px] font-mono text-[#FFB000]">
+                <div className={`bg-[var(--color-card)] px-2 py-1.5 text-[9px] font-mono text-[#FFB000] ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
                   {state.use.size > 0 ? `{${[...state.use].join(', ')}}` : '∅'}
                 </div>
-                <div className="bg-[var(--color-card)] px-2 py-1.5 text-[9px] font-mono text-[#8A2BE2]">
+                <div className={`bg-[var(--color-card)] px-2 py-1.5 text-[9px] font-mono text-[#8A2BE2] ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
                   {state.def.size > 0 ? `{${[...state.def].join(', ')}}` : '∅'}
                 </div>
               </React.Fragment>

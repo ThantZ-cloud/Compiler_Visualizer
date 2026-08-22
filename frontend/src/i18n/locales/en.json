@@ -9,6 +9,7 @@
     "signIn": "SIGN IN",
     "register": "REGISTER",
     "skipToContent": "Skip to main content",
+    "toggleMenu": "Toggle navigation menu",
     "themeLabel": "Theme",
     "switchToMyanmar": "Switch to Myanmar",
     "switchToEnglish": "Switch to English"
@@ -302,6 +303,8 @@
   },
   "fileBrowser": {
     "explorer": "Explorer",
+    "openExplorer": "Open file explorer",
+    "closeExplorer": "Close file explorer",
     "snippets": "Snippets",
     "noFiles": "No files yet",
     "classNamePlaceholder": "ClassName.java",
@@ -516,6 +519,10 @@
         "title": "Execution Flow",
         "description": "Step-by-step execution showing how the JVM processes each bytecode instruction. Changes to stack and local variables are highlighted."
       }
+    },
+    "peephole": {
+      "title": "Peephole Optimization",
+      "patternsFound": "patterns found"
     }
   },
   "tac": {

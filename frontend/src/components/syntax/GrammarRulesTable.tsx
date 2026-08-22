@@ -127,11 +127,12 @@ const GrammarRulesTable: React.FC<GrammarRulesTableProps> = ({
             {rules.map((rule, i) => {
               const used = activeRuleIds.has(rule.id);
               const current = currentRuleId === rule.id;
+              const isVisible = isPlaying || isCompleted;
               return (
                 <motion.div
                   key={rule.id}
                   initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: used ? 1 : 0.35, x: 0 }}
+                  animate={isVisible ? { opacity: used ? 1 : 0.35, x: 0 } : { opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.08, duration: 0.35, ease: 'easeOut' }}
                   className={`px-4 py-2.5 ${
                     current

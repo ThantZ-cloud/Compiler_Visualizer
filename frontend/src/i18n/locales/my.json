@@ -9,6 +9,7 @@
     "signIn": "ဝင်ရောက်ရန်",
     "register": "စာရင်းသွင်းရန်",
     "skipToContent": "ပါဝင်မှုသို့ ကျော်ဖြတ်ရန်",
+    "toggleMenu": "လမ်းကြောင်းမီနူးကို ဖွင့်ပိတ်ရန်",
     "themeLabel": "အပြင်အဆင်",
     "switchToMyanmar": "မြန်မာဘာသာသို့ ပြောင်းရန်",
     "switchToEnglish": "အင်္ဂလိပ်ဘာသာသို့ ပြောင်းရန်"
@@ -302,6 +303,8 @@
   },
   "fileBrowser": {
     "explorer": "စူးစမ်းရှာဖွေရန်",
+    "openExplorer": "ဖိုင်စူးစမ်းရှာဖွေမှုကို ဖွင့်ရန်",
+    "closeExplorer": "ဖိုင်စူးစမ်းရှာဖွေမှုကို ပိတ်ရန်",
     "snippets": "ကုဒ်များ",
     "noFiles": "ဖိုင်များ မရှိသေးပါ",
     "classNamePlaceholder": "ClassName.java",
@@ -516,6 +519,10 @@
         "title": "Execution Flow",
         "description": "JVM က bytecode instruction တစ်ခုချင်းစီကို ဘယ်လို process လုပ်သည်ကို အဆင့်ဆင့် ပြသသည်။"
       }
+    },
+    "peephole": {
+      "title": "Peephole Optimization",
+      "patternsFound": "ပုံစံများ တွေ့ရှိသည်"
     }
   },
   "tac": {

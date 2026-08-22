@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useResizeObserver } from '../../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter } from 'lucide-react';
@@ -94,6 +95,11 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
+  const setContainerRef = useCallback((el: HTMLDivElement | null) => {
+    containerRef.current = el;
+    roSetRef(el);
+  }, [roSetRef]);
   const [scopeTree, setScopeTree] = useState<ScopeNode | null>(null);
   const [symbols, setSymbols] = useState<SymbolEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,7 +141,7 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
     svg.selectAll('*').remove();
 
     const container = containerRef.current;
-    const width = container.clientWidth || 600;
+    const width = observedWidth || container.clientWidth || 600;
     const height = Math.max(container.clientHeight || 400, 400);
     const g = svg.append('g');
 
@@ -198,6 +204,7 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
       }).select('circle').attr('stroke', 'var(--color-neon)').attr('stroke-width', 2);
     }
 
+    const isNarrow = width < 420;
     nodes.append('text')
       .attr('dy', '0.31em')
       .attr('x', d => (d.children ? -14 : 14))
@@ -207,10 +214,11 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
         if (d.data.returnType) label = `${d.data.returnType} ${label}`;
         if (d.data.type) label = `${label}: ${d.data.type}`;
         if (d.data.modifiers) label = `${d.data.modifiers} ${label}`;
-        return label.length > 24 ? label.substring(0, 24) + '...' : label;
+        const maxLen = isNarrow ? 14 : 24;
+        return label.length > maxLen ? label.substring(0, maxLen) + '…' : label;
       })
       .attr('fill', '#d4d4d4')
-      .attr('font-size', '11px')
+      .attr('font-size', isNarrow ? '10px' : '11px')
       .append('title')
       .text(d => `${d.data.kind}: ${d.data.name}`);
 
@@ -237,7 +245,7 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
       svg.selectAll('*').remove();
       svg.on('.zoom', null);
     };
-  }, [scopeTree, collapsedNodes, getNodeId, selectedNode, toggleCollapse]);
+  }, [scopeTree, collapsedNodes, getNodeId, selectedNode, toggleCollapse, observedWidth]);
 
   if (!symbolTableJson) {
     return (
@@ -252,7 +260,7 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
   return (
     <div className="ast-tree-container">
       {/* Controls */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-4">
         <div className="relative flex-1">
           <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
           <input
@@ -290,7 +298,7 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
       </div>
 
       {/* Scope tree visualization */}
-      <div className="ast-tree-wrapper" ref={containerRef} style={{ minHeight: 350 }}>
+      <div className="ast-tree-wrapper" ref={setContainerRef} style={{ minHeight: 350 }}>
         <svg ref={svgRef} width="100%" height="100%" />
       </div>
 

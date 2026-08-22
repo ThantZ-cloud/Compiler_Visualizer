@@ -20,7 +20,7 @@ function parseTypeResolutions(jsonStr: string): TypeResolutionEntry[] {
   }
 }
 
-const TypeResolutionFlow: React.FC<TypeResolutionFlowProps> = ({ symbolTableJson, isPlaying }) => {
+const TypeResolutionFlow: React.FC<TypeResolutionFlowProps> = ({ symbolTableJson, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const [resolutions, setResolutions] = useState<TypeResolutionEntry[]>([]);
@@ -36,7 +36,7 @@ const TypeResolutionFlow: React.FC<TypeResolutionFlowProps> = ({ symbolTableJson
   // Autoplay
   useEffect(() => {
     if (!isPlaying) {
-      setCurrentIndex(Math.max(totalSteps - 1, -1));
+      setCurrentIndex(isCompleted ? Math.max(totalSteps - 1, -1) : -1);
       return;
     }
     setCurrentIndex(-1);
@@ -50,7 +50,7 @@ const TypeResolutionFlow: React.FC<TypeResolutionFlowProps> = ({ symbolTableJson
       });
     }, 1500);
     return () => clearInterval(interval);
-  }, [isPlaying, totalSteps]);
+  }, [isPlaying, isCompleted, totalSteps]);
 
   useEffect(() => {
     setResolutions(parseTypeResolutions(symbolTableJson));

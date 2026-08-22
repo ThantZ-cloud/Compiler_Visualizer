@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FileCode } from 'lucide-react';
 import type { BytecodeClass } from '../../lib/cfg/bytecodeParser';
-import { getOpcodeDescription } from '../../lib/cfg/bytecodeParser';
+import { getOpcodeDetails } from '../../lib/cfg/bytecodeParser';
+import PeepholePatternCard from './PeepholePatternCard';
 
 interface BytecodeListingProps {
   bytecode: BytecodeClass;
   isPlaying: boolean;
   isCompleted: boolean;
+  isIdle?: boolean;
 }
 
 const BytecodeListing: React.FC<BytecodeListingProps> = ({ bytecode, isPlaying, isCompleted }) => {
@@ -20,6 +22,8 @@ const BytecodeListing: React.FC<BytecodeListingProps> = ({ bytecode, isPlaying, 
     if (!isPlaying) {
       if (isCompleted) {
         setVisibleMethods(new Set(bytecode.methods.map((_, i) => i)));
+      } else {
+        setVisibleMethods(new Set());
       }
       return;
     }
@@ -100,14 +104,26 @@ const BytecodeListing: React.FC<BytecodeListingProps> = ({ bytecode, isPlaying, 
                   onMouseEnter={() => setHoveredInstr(ii)}
                   onMouseLeave={() => setHoveredInstr(null)}
                 >
-                  <span className="text-[var(--color-text-muted)] w-8 text-right shrink-0">{instr.offset}:</span>
-                  <span className="w-28 shrink-0" style={{ color: getOpcodeColor(instr.opcode) }}>
+                  <span className="text-[var(--color-text-muted)] w-8 text-right shrink-0 text-[9px] sm:text-[10px]">{instr.offset}:</span>
+                  <span className="w-20 sm:w-28 shrink-0 text-[9px] sm:text-[10px]" style={{ color: getOpcodeColor(instr.opcode) }}>
                     {instr.opcode}
                   </span>
-                  <span className="text-[var(--color-text-dim)]">{instr.operands}</span>
+                  <span className="text-[var(--color-text-dim)] break-all text-[9px] sm:text-[10px]">{instr.operands}</span>
                   {hoveredInstr === ii && (
-                    <span className="text-[8px] text-[var(--color-text-muted)] ml-auto italic">
-                      {getOpcodeDescription(instr.opcode)}
+                    <span className="hidden lg:ml-auto lg:flex flex-col items-end gap-0.5 text-[8px] font-mono min-w-[180px] xl:min-w-[220px]">
+                      <span className="text-[var(--color-text)]">
+                        {getOpcodeDetails(instr.opcode).description}
+                      </span>
+                      <span className="text-[#FFB000]">
+                        {getOpcodeDetails(instr.opcode).category}
+                      </span>
+                      <span className="text-[var(--color-text-dim)] italic leading-snug text-right">
+                        {getOpcodeDetails(instr.opcode).pattern}
+                      </span>
+                      <span className="text-[var(--color-text-muted)]">
+                        selection cost: {getOpcodeDetails(instr.opcode).cost}
+                        {getOpcodeDetails(instr.opcode).example && ` · e.g. ${getOpcodeDetails(instr.opcode).example}`}
+                      </span>
                     </span>
                   )}
                 </div>
@@ -117,6 +133,7 @@ const BytecodeListing: React.FC<BytecodeListingProps> = ({ bytecode, isPlaying, 
                   (no instructions)
                 </div>
               )}
+              <PeepholePatternCard patterns={method.patterns ?? []} />
             </div>
           </div>
         );

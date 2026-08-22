@@ -338,10 +338,10 @@ const LandingPage: React.FC = () => {
           <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 w-12 h-12 md:w-16 md:h-16 border-b-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
           <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 w-12 h-12 md:w-16 md:h-16 border-b-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-30 z-10" />
 
-          <div className="relative z-20 w-full max-w-6xl mx-auto px-6 py-20 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
+          <div className="relative z-20 w-full max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-20 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 sm:gap-12 lg:gap-16 items-center">
             {/* Left — copy */}
             <motion.div variants={heroVariants} initial="hidden" animate="show">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 border border-[var(--color-neon)] bg-[var(--color-neon)]/5 rounded-full">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 sm:mb-8 border border-[var(--color-neon)] bg-[var(--color-neon)]/5 rounded-full">
                 <span className="w-1.5 h-1.5 bg-[var(--color-neon)] pulse-ring rounded-full" />
                 <span className="text-[10px] font-bold text-[var(--color-neon)] tracking-[0.25em] uppercase font-display">
                   {t('landing.statusBadge')}
@@ -349,35 +349,35 @@ const LandingPage: React.FC = () => {
               </div>
 
               <h1 className="font-display font-black tracking-wider text-[var(--color-text)]">
-                <span className="block text-4xl sm:text-6xl lg:text-7xl leading-none">COMPILER</span>
-                <span className="block text-4xl sm:text-6xl lg:text-7xl leading-none neon-text mt-2">VISUALIZER</span>
+                <span className="block text-3xl xs:text-4xl sm:text-6xl lg:text-7xl leading-none">COMPILER</span>
+                <span className="block text-3xl xs:text-4xl sm:text-6xl lg:text-7xl leading-none neon-text mt-2">VISUALIZER</span>
               </h1>
 
-              <div className="mt-8 mb-8 inline-flex items-center bg-[var(--color-card)] border border-[var(--color-border)] px-5 py-2.5 rounded-lg">
-                <span className="text-[var(--color-neon)] font-bold font-mono">$ </span>
-                <span className="text-[var(--color-text)] text-sm font-mono">{typed}</span>
-                <span className="cursor-blink" />
+              <div className="mt-6 sm:mt-8 mb-6 sm:mb-8 inline-flex items-center bg-[var(--color-card)] border border-[var(--color-border)] px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg max-w-full overflow-hidden">
+                <span className="text-[var(--color-neon)] font-bold font-mono shrink-0">$ </span>
+                <span className="text-[var(--color-text)] text-xs sm:text-sm font-mono truncate">{typed}</span>
+                <span className="cursor-blink shrink-0" />
               </div>
 
-              <p className="text-[var(--color-text-dim)] text-base md:text-lg max-w-md leading-relaxed font-sans mb-10">
+              <p className="text-[var(--color-text-dim)] text-sm sm:text-base md:text-lg max-w-md leading-relaxed font-sans mb-8 sm:mb-10">
                 {t('landing.description')}
               </p>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 sm:gap-4">
                 <button
-                  className="btn-primary px-10 py-4 text-sm min-h-[48px] w-full sm:w-auto"
+                  className="btn-primary px-6 sm:px-10 py-3.5 sm:py-4 text-sm min-h-[48px] w-full sm:w-auto"
                   onClick={() => navigate('/compiler')}
                 >
                   {isAuthenticated ? t('landing.openCompiler') : t('landing.begin')}
                 </button>
                 <button
-                  className="btn-neon px-10 py-4 text-sm min-h-[48px] w-full sm:w-auto"
+                  className="btn-neon px-6 sm:px-10 py-3.5 sm:py-4 text-sm min-h-[48px] w-full sm:w-auto"
                   onClick={() => navigate('/pipeline', { state: { from: '/' } })}
                 >
                   <span>{t('landing.viewPipeline')}</span>
                 </button>
                 <button
-                  className="btn-neon px-10 py-4 text-sm min-h-[48px] w-full sm:w-auto"
+                  className="btn-neon px-6 sm:px-10 py-3.5 sm:py-4 text-sm min-h-[48px] w-full sm:w-auto"
                   onClick={() => navigate('/visualize/lexical')}
                 >
                   <span>{t('landing.exploreVisualizer')}</span>
@@ -445,16 +445,16 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* ═══ BENTO FEATURE GRID — asymmetric, per-card accent ═══ */}
-        <section className="relative py-24">
-          <div className="max-w-6xl mx-auto px-6">
+        <section className="relative py-16 sm:py-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <Reveal>
               <SectionLabel>{t('landing.capabilities.label')}</SectionLabel>
-              <h2 className="text-3xl md:text-5xl font-black font-display text-[var(--color-text)]">
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-black font-display text-[var(--color-text)]">
                 {t('landing.capabilities.headline')}
               </h2>
             </Reveal>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mt-10 sm:mt-12">
               {features.map((f, i) => {
                 const Icon = f.icon;
                 return (

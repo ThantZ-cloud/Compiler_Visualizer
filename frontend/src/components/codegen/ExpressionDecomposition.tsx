@@ -89,14 +89,14 @@ const OP_COLORS: Record<string, string> = {
   label: '#6a9955',
 };
 
-const ExpressionDecomposition: React.FC<Props> = ({ data, isPlaying }) => {
+const ExpressionDecomposition: React.FC<Props> = ({ data, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const steps = useMemo(() => buildDecompositionSteps(data.instructions), [data]);
   const [revealCount, setRevealCount] = useState(0);
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(Number.MAX_SAFE_INTEGER);
+      setRevealCount(isCompleted ? Number.MAX_SAFE_INTEGER : 0);
       return;
     }
     setRevealCount(0);
@@ -104,9 +104,9 @@ const ExpressionDecomposition: React.FC<Props> = ({ data, isPlaying }) => {
       setRevealCount(prev => prev + 1);
     }, 500);
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, isCompleted]);
 
-  const visibleCount = isPlaying ? revealCount : steps.length;
+  const visibleCount = isPlaying ? revealCount : (isCompleted ? steps.length : 0);
 
   return (
     <motion.div

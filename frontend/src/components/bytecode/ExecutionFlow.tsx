@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play } from 'lucide-react';
 import type { BytecodeMethod } from '../../lib/cfg/bytecodeParser';
@@ -9,6 +9,7 @@ interface ExecutionFlowProps {
   method: BytecodeMethod;
   isPlaying: boolean;
   isCompleted: boolean;
+  isIdle?: boolean;
 }
 
 const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isCompleted }) => {
@@ -17,13 +18,16 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
   const [activeIdx, setActiveIdx] = useState<number>(-1);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const trace: ExecutionTrace = simulateExecution(method.instructions, method.maxLocals);
+  const trace: ExecutionTrace = useMemo(() => simulateExecution(method.instructions, method.maxLocals), [method]);
 
   useEffect(() => {
     if (!isPlaying) {
       if (isCompleted) {
         setVisibleSteps(new Set(trace.steps.map((_, i) => i)));
         setActiveIdx(trace.steps.length - 1);
+      } else {
+        setVisibleSteps(new Set());
+        setActiveIdx(-1);
       }
       return;
     }
@@ -72,6 +76,9 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
         <div className="text-[9px] font-mono text-[var(--color-text-muted)]">
           Total steps: <span className="text-[var(--color-text)] font-bold">{trace.totalSteps}</span>
         </div>
+        <div className="text-[9px] font-mono text-[var(--color-text-muted)]">
+          Max register pressure: <span className="text-[#00FF88] font-bold">{trace.maxPressure ?? 0}</span>
+        </div>
         {trace.finalState.output.length > 0 && (
           <div className="text-[9px] font-mono text-[var(--color-text-muted)]">
             Output: <span className="text-[#00FF88] font-bold">{trace.finalState.output.join(', ')}</span>
@@ -81,12 +88,13 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
 
       {/* Step-by-step execution */}
       <div className="bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
-        <div className="grid gap-px bg-[var(--color-border)]" style={{ gridTemplateColumns: '40px 28px 80px 1fr 80px' }}>
+        <div className="grid gap-px bg-[var(--color-border)]" style={{ gridTemplateColumns: '40px 28px 80px 1fr 80px 80px' }}>
           <div className="bg-[var(--color-surface-2)] px-2 py-1.5 text-[9px] font-bold text-[var(--color-text-muted)] font-display uppercase">Step</div>
           <div className="bg-[var(--color-surface-2)] px-1 py-1.5 text-[9px] font-bold text-[var(--color-text-muted)] font-display uppercase">PC</div>
           <div className="bg-[var(--color-surface-2)] px-2 py-1.5 text-[9px] font-bold text-[#FF00FF] font-display uppercase">Opcode</div>
           <div className="bg-[var(--color-surface-2)] px-2 py-1.5 text-[9px] font-bold text-[var(--color-text)] font-display uppercase">Effect</div>
           <div className="bg-[var(--color-surface-2)] px-2 py-1.5 text-[9px] font-bold text-[#00D4FF] font-display uppercase">Stack</div>
+          <div className="bg-[var(--color-surface-2)] px-2 py-1.5 text-[9px] font-bold text-[#00FF88] font-display uppercase">Live</div>
 
           {trace.steps.map((step, i) => {
             const visible = visibleSteps.has(i);
@@ -114,6 +122,11 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
                   step.changed ? 'text-[#00D4FF]' : 'text-[var(--color-text-muted)]'
                 }`}>
                   [{step.afterStack.join(',')}]
+                </div>
+                <div className={`px-2 py-1 text-[9px] font-mono bg-[var(--color-card)] ${visible ? 'opacity-100' : 'opacity-0'} ${
+                  step.changed ? 'text-[#00FF88]' : 'text-[var(--color-text-muted)]'
+                }`}>
+                  {step.liveLocals.length > 0 ? step.liveLocals.join(',') : '—'}
                 </div>
               </React.Fragment>
             );

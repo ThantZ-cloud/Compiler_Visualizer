@@ -29,7 +29,7 @@ const CHECK_COLORS: Record<string, string> = {
   binary_expression: '#d4d4d4',
 };
 
-const TypeCheckingMatrix: React.FC<TypeCheckingMatrixProps> = ({ symbolTableJson, isPlaying }) => {
+const TypeCheckingMatrix: React.FC<TypeCheckingMatrixProps> = ({ symbolTableJson, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const [checks, setChecks] = useState<TypeCheckEntry[]>([]);
   const [revealCount, setRevealCount] = useState(0);
@@ -40,7 +40,7 @@ const TypeCheckingMatrix: React.FC<TypeCheckingMatrixProps> = ({ symbolTableJson
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(checks.length);
+      setRevealCount(isCompleted ? checks.length : 0);
       return;
     }
     setRevealCount(0);
@@ -48,7 +48,7 @@ const TypeCheckingMatrix: React.FC<TypeCheckingMatrixProps> = ({ symbolTableJson
       setRevealCount(prev => prev + 1);
     }, 150);
     return () => clearInterval(interval);
-  }, [isPlaying, checks.length]);
+  }, [isPlaying, isCompleted, checks.length]);
 
   const visibleChecks = checks.slice(0, Math.min(revealCount, checks.length));
   const passed = visibleChecks.filter(c => c.result === 'pass').length;

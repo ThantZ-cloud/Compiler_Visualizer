@@ -37,6 +37,9 @@ const InstructionScheduling: React.FC<InstructionSchedulingProps> = ({ data, sch
       if (isCompleted) {
         setVisibleEntries(new Set(scheduling.schedule.map((_, i) => i)));
         setActiveCycle(scheduling.schedule.length > 0 ? Math.max(...scheduling.schedule.map(s => s.cycle)) : -1);
+      } else {
+        setVisibleEntries(new Set());
+        setActiveCycle(-1);
       }
       return;
     }

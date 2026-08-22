@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { useTranslation } from 'react-i18next';
+import { useResizeObserver } from '../../hooks/useResizeObserver';
 import '../AstTree.css';
 
 interface AstNode {
@@ -124,6 +125,7 @@ const AstTreeAnimation: React.FC<AstTreeAnimationProps> = ({ astJson, isPlaying,
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
   const [revealCount, setRevealCount] = useState(0);
   const [treeSize, setTreeSize] = useState(0);
 
@@ -145,7 +147,7 @@ const AstTreeAnimation: React.FC<AstTreeAnimationProps> = ({ astJson, isPlaying,
     if (!astData) return;
 
     const container = containerRef.current;
-    const width = container.clientWidth || 600;
+    const width = observedWidth || container.clientWidth || 600;
     const height = container.clientHeight || 400;
 
     const svg = d3.select(svgRef.current);
@@ -224,7 +226,7 @@ const AstTreeAnimation: React.FC<AstTreeAnimationProps> = ({ astJson, isPlaying,
       svg.selectAll('*').remove();
       svg.on('.zoom', null);
     };
-  }, [astJson, revealCount]);
+  }, [astJson, revealCount, observedWidth]);
 
   return (
     <div className="w-full max-w-5xl mx-auto">
@@ -247,7 +249,7 @@ const AstTreeAnimation: React.FC<AstTreeAnimationProps> = ({ astJson, isPlaying,
             {Math.min(revealCount, treeSize)}/{treeSize} {t('syntax.step4.nodes')}
           </span>
         </div>
-        <div className="ast-tree-wrapper" ref={containerRef} style={{ minHeight: 420 }}>
+        <div className="ast-tree-wrapper" ref={(el) => { containerRef.current = el; roSetRef(el); }} style={{ minHeight: 420 }}>
           <svg ref={svgRef} width="100%" />
         </div>
       </div>

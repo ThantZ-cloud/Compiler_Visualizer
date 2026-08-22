@@ -71,6 +71,7 @@ const ShiftReduceAnimation: React.FC<ShiftReduceAnimationProps> = ({
   const input = current?.inputRemaining ?? [];
   const stack = current?.stack ?? [];
   const done = current?.action.type === 'ACCEPT';
+  const isVisible = isPlaying || isCompleted;
 
   return (
     <div className="w-full max-w-5xl mx-auto">
@@ -84,6 +85,12 @@ const ShiftReduceAnimation: React.FC<ShiftReduceAnimationProps> = ({
         </p>
       </div>
 
+      {!isVisible ? (
+        <div className="border border-[var(--color-border-bright)] rounded-lg bg-[var(--color-card)] h-[280px] flex items-center justify-center">
+          <span className="text-[10px] font-mono text-[var(--color-text-muted)]">Press Play to animate shift-reduce parsing</span>
+        </div>
+      ) : (
+      <>
       {/* Action bar */}
       <div className="flex items-center justify-between gap-3 mb-4 px-4 py-2 border border-[var(--color-border-bright)] rounded-lg bg-[var(--color-card)]">
         <span className={`text-xs font-mono font-bold ${done ? 'text-[var(--color-amber)]' : 'text-[var(--color-neon)]'}`}>
@@ -206,6 +213,8 @@ const ShiftReduceAnimation: React.FC<ShiftReduceAnimationProps> = ({
           </AnimatePresence>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

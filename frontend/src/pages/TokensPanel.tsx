@@ -97,13 +97,13 @@ const TokensPanel: React.FC = () => {
   }, {} as Record<string, number>);
 
   return (
-    <div className="flex flex-col h-full gap-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-sm font-bold text-[var(--color-text)] font-display tracking-[0.12em] uppercase">
+    <div className="flex flex-col h-full gap-4 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <h2 className="text-sm font-bold text-[var(--color-text)] font-display tracking-[0.12em] uppercase shrink-0">
           {t('tokens.countSummary', { total: tokens.length, shown: filtered.length })}
         </h2>
-        <div className="flex items-center gap-3">
-          <div className="flex gap-0.5 bg-[var(--color-card)] border border-[var(--color-border)] p-0.5">
+        <div className="flex flex-col xs:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="flex gap-0.5 bg-[var(--color-card)] border border-[var(--color-border)] p-0.5 shrink-0 self-start sm:self-auto">
             <button
               className={`px-3 py-[5px] text-[10px] font-bold tracking-[0.1em] bg-transparent border-none cursor-pointer transition-all font-display uppercase flex items-center gap-1 ${
                 view === 'chart' ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
@@ -125,7 +125,7 @@ const TokensPanel: React.FC = () => {
           </div>
           <input
             type="text"
-            className="px-3 py-[5px] text-[11px] text-[var(--color-neon)] bg-[var(--color-card)] border border-[var(--color-border)] w-[250px] font-mono placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_8px_var(--color-neon-dim)]"
+            className="px-3 py-[5px] text-[11px] text-[var(--color-neon)] bg-[var(--color-card)] border border-[var(--color-border)] w-full sm:w-[220px] lg:w-[250px] font-mono placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_8px_var(--color-neon-dim)] min-w-0"
             placeholder={t('tokens.filterPlaceholder')}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -148,7 +148,7 @@ const TokensPanel: React.FC = () => {
       ) : (
         <ErrorBoundary name="Token Grid" inline>
           <motion.div
-            className="flex flex-wrap gap-1.5 overflow-auto"
+            className="flex flex-wrap gap-1.5 overflow-auto min-w-0"
             initial="hidden"
             animate="visible"
             variants={{
@@ -159,7 +159,7 @@ const TokensPanel: React.FC = () => {
             {filtered.map((token, index) => (
               <motion.div
                 key={index}
-                className={`flex flex-col px-3 py-2 bg-[var(--color-card)] border-l-2 min-w-[120px] transition-all hover:border-[var(--color-cyan)] hover:shadow-[0_0_10px_var(--color-cyan-dim)] ${getBorderClass(token.type)}`}
+                className={`flex flex-col px-2.5 sm:px-3 py-2 bg-[var(--color-card)] border-l-2 min-w-[96px] sm:min-w-[120px] max-w-full transition-all hover:border-[var(--color-cyan)] hover:shadow-[0_0_10px_var(--color-cyan-dim)] ${getBorderClass(token.type)}`}
                 variants={{
                   hidden: { opacity: 0, scale: 0.9 },
                   visible: { opacity: 1, scale: 1 },

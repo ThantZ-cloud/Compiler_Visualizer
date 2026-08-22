@@ -28,7 +28,7 @@
         "MYSQL_PASSWORD": "000000",
         "MYSQL_HOST": "localhost",
         "MYSQL_PORT": "3306",
-        "MYSQL_USE_PURE": "true"
+        "MYSQL_USE_PURE": "true" 
       }
     }
   }

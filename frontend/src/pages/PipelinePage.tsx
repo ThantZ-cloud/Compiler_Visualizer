@@ -1,15 +1,11 @@
-import React, { Suspense, lazy, useRef, useMemo } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
 import { getPipelineSteps } from '../data/pipelineData';
-import PipelineStep from '../components/PipelineStep';
-import ErrorBoundary from '../components/ErrorBoundary';
+import DocStep from '../components/pipeline/DocStep';
+import PipelineToc from '../components/pipeline/PipelineToc';
 import { useScrollSpy } from '../hooks/useScrollSpy';
 import { useScrollMemory } from '../hooks/useScrollMemory';
-
-const PipelineScene = lazy(() => import('../components/PipelineScene'));
 
 const PipelinePage: React.FC = () => {
   const { t } = useTranslation();
@@ -17,191 +13,163 @@ const PipelinePage: React.FC = () => {
   const pipelineSteps = useMemo(() => getPipelineSteps(t), [t]);
   const stepRefs = useRef<(HTMLElement | null)[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { activeIndex, scrollProgress, scrollTo } = useScrollSpy(scrollRef, stepRefs);
-  const activeStep = activeIndex;
+  const { activeIndex, scrollTo } = useScrollSpy(scrollRef, stepRefs);
 
-  // Remember scroll position across navigations (e.g. coming back from /about)
   useScrollMemory(scrollRef);
 
   const setStepRef = (el: HTMLElement | null, index: number) => {
     stepRefs.current[index] = el;
   };
 
-  const scrollToStep = (index: number) => scrollTo(index);
+  // Group ids for section dividers
+  const phaseGroups = [
+    { id: 'front-end', label: t('pipeline.threePhases.frontEnd.title', 'FRONT END'), desc: t('pipeline.threePhases.frontEnd.description'), from: 0, to: 4 },
+    { id: 'optimizer', label: t('pipeline.threePhases.optimizer.title', 'OPTIMIZER'), desc: t('pipeline.threePhases.optimizer.description'), from: 5, to: 5 },
+    { id: 'back-end', label: t('pipeline.threePhases.backEnd.title', 'BACK END'), desc: t('pipeline.threePhases.backEnd.description'), from: 6, to: 7 },
+  ];
 
   return (
-    <div className="relative flex flex-col h-full bg-[var(--color-void)] overflow-hidden">
-      {/* 3D cyberpunk tunnel — full page background */}
-      <div className="absolute inset-0 z-0">
-        <ErrorBoundary name="Pipeline 3D Scene" inline>
-          <Suspense fallback={null}>
-            <PipelineScene scrollProgress={scrollProgress} />
-          </Suspense>
-        </ErrorBoundary>
-      </div>
-
-      {/* Scrollable content overlaid on the tunnel */}
+    <div className="flex flex-col h-full bg-[var(--color-void)] overflow-hidden">
+      {/* Scroll container */}
       <div
         ref={scrollRef}
-        className="relative z-10 flex-1 min-h-0 overflow-y-auto"
-        style={{ scrollbarWidth: 'none' }}
+        data-scroll-root="true"
+        className="flex-1 min-h-0 overflow-y-auto"
       >
-        {/* ═══════ HERO ═══════ */}
-        <section className="relative min-h-[85vh] flex flex-col items-center justify-center overflow-hidden">
-          {/* Radial gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_45%,rgba(5,5,16,0.55),transparent_70%)] pointer-events-none" />
-
-          <motion.div
-            className="relative z-10 text-center px-6"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-          >
-            <div
-              className="text-[10px] font-bold tracking-[0.4em] uppercase mb-4 text-[var(--color-neon)]"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              {t('pipeline.title')}
+        {/* Breadcrumb + Hero — doc style, not cyberpunk */}
+        <div className="border-b border-[var(--color-border)] bg-[var(--color-card)]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="text-[10px] font-bold tracking-[0.25em] uppercase text-[var(--color-text-muted)] mb-2" style={{ fontFamily: 'var(--font-mono)' }}>
+              {t('pipeline.title')} — <span className="text-[var(--color-neon)]">{t('pipeline.subtitle', 'HOW JAVA COMPILES YOUR CODE')}</span>
             </div>
-            <h1
-              className="text-4xl md:text-6xl lg:text-7xl font-black tracking-wider text-[var(--color-text)] mb-4"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              {t('pipeline.subtitleLine1', 'HOW JAVA COMPILES')}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-[var(--color-text)]" style={{ fontFamily: 'var(--font-display)' }}>
+              {t('pipeline.subtitleLine1', 'HOW JAVA COMPILES')} <span className="text-[var(--color-neon)]">{t('pipeline.subtitleLine2', 'YOUR CODE')}</span>
             </h1>
-            <h2
-              className="text-4xl md:text-6xl lg:text-7xl font-black tracking-wider neon-text mb-8"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              {t('pipeline.subtitleLine2', 'YOUR CODE')}
-            </h2>
-            <p
-              className="text-sm text-[var(--color-text-dim)] max-w-xl mx-auto mb-12 leading-relaxed"
-              style={{ fontFamily: 'var(--font-mono)' }}
-            >
+            <p className="mt-3 text-sm md:text-[15px] leading-relaxed text-[var(--color-text-dim)] max-w-3xl" style={{ fontFamily: 'var(--font-sans)' }}>
               {t('pipeline.description')}
             </p>
-
-            {/* Step indicators */}
-            <div className="flex items-center justify-center gap-3 flex-wrap mb-10">
-              {pipelineSteps.map((step, i) => (
-                <button
-                  key={step.id}
-                  className="flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold tracking-wider border transition-all"
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    color: activeStep === i ? step.color : 'var(--color-text-muted)',
-                    borderColor: activeStep === i ? step.color : 'transparent',
-                    background: activeStep === i ? `${step.color}11` : 'transparent',
-                  }}
-                  onClick={() => scrollToStep(i)}
-                >
-                  <span>{step.phase}.</span>
-                  <span className="hidden sm:inline">{step.title}</span>
-                </button>
-              ))}
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                onClick={() => navigate('/compiler')}
+                className="px-5 py-2.5 text-xs font-bold tracking-[0.08em] bg-[var(--color-neon)] text-[var(--color-void)] border border-[var(--color-neon)] hover:brightness-110 transition-all"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                {t('pipeline.tryIt', 'TRY IT YOURSELF')}
+              </button>
+              <button
+                onClick={() => navigate('/visualize/lexical')}
+                className="px-5 py-2.5 text-xs font-bold tracking-[0.08em] bg-transparent text-[var(--color-text)] border border-[var(--color-border)] hover:border-[var(--color-neon)] hover:text-[var(--color-neon)] transition-colors"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Open Visualizer
+              </button>
             </div>
 
-            {/* Scroll down indicator */}
-            <motion.div
-              className="text-[var(--color-text-muted)]"
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <ChevronDown size={20} />
-            </motion.div>
-          </motion.div>
-        </section>
 
-        {/* ═══════ PIPELINE STEPS ═══════ */}
-        <div className="relative">
-          {/* Vertical connecting line */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-[var(--color-neon)]/20 via-[var(--color-border)] to-transparent pointer-events-none" />
-
-          {pipelineSteps.map((step, i) => (
-            <div key={step.id} ref={(el) => setStepRef(el, i)}>
-              <PipelineStep step={step} isLast={i === pipelineSteps.length - 1} />
-            </div>
-          ))}
+          </div>
         </div>
 
-        {/* ═══════ SUMMARY FOOTER ═══════ */}
-        <section className="relative py-20 px-6 text-center">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_50%,rgba(5,5,16,0.6),transparent_75%)] pointer-events-none" />
-          <motion.div
-            className="relative z-10 max-w-2xl mx-auto"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div
-              className="text-[10px] font-bold tracking-[0.4em] uppercase mb-4 text-[var(--color-neon)]"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              {t('pipeline.summaryLabel', '// FROM TEXT TO EXECUTION')}
-            </div>
-            <h2
-              className="text-3xl md:text-5xl font-black tracking-wider text-[var(--color-text)] mb-6"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              {t('pipeline.completeHeadline')}
-            </h2>
-            <p
-              className="text-sm text-[var(--color-text-dim)] leading-relaxed mb-10 font-mono"
-              style={{ fontFamily: 'var(--font-mono)' }}
-            >
-              {t('pipeline.completeDescription')}
-            </p>
+        {/* Main doc grid: Toc + Article */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            {/* TOC */}
+            <aside className="w-full lg:w-64 shrink-0">
+              <PipelineToc steps={pipelineSteps} activeIndex={activeIndex} onSelect={scrollTo} />
+            </aside>
 
-            {/* Three-phase compiler recap */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 text-left">
-              {(['frontEnd', 'optimizer', 'backEnd'] as const).map((key) => (
-                <div
-                  key={key}
-                  className="cyber-panel p-5 border border-[var(--color-border)] bg-[var(--color-card)]"
-                >
-                  <div
-                    className="text-[10px] font-bold tracking-[0.25em] uppercase mb-2"
-                    style={{ fontFamily: 'var(--font-display)', color: 'var(--color-neon)' }}
-                  >
-                    {t(`pipeline.threePhases.${key}.title`)}
+            {/* Article */}
+            <div className="flex-1 min-w-0">
+              {/* How to read this page — learnability aid */}
+              <div className="mb-8 p-4 border border-[var(--color-border)] bg-[var(--color-surface)]">
+                <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-1" style={{ fontFamily: 'var(--font-display)' }}>
+                  HOW TO LEARN FROM THIS PAGE
+                </div>
+                <p className="text-xs leading-relaxed text-[var(--color-text-dim)]" style={{ fontFamily: 'var(--font-sans)' }}>
+                  Each phase shows <span className="text-[var(--color-text)] font-semibold">Input → What happens → Output</span> with a tiny Java example.
+                  Think of it like the i18n pipeline you already know: <span className="text-[var(--color-neon)]">Frontend</span> understands code (like parsing JSX), <span className="text-[var(--color-cyan)]">Optimizer</span> rewrites it faster, <span className="text-[var(--color-magenta)]">Back End</span> emits what the machine runs.
+                  Use the left index to jump; click <span className="font-mono text-[var(--color-text)]">Copy</span> to try the code in the Compiler.
+                </p>
+              </div>
+
+              {phaseGroups.map(g => (
+                <div key={g.id} className="mb-2">
+                  <div id={`group-${g.id}`} className="scroll-mt-24 flex items-center gap-3 py-3 mt-4">
+                    <div className="h-px flex-1 bg-[var(--color-border)]" />
+                    <span className="text-[10px] font-bold tracking-[0.25em] uppercase px-3 py-1 border bg-[var(--color-card)] text-[var(--color-neon)] border-[var(--color-border)]" style={{ fontFamily: 'var(--font-display)' }}>
+                      {g.label}
+                    </span>
+                    <div className="h-px flex-1 bg-[var(--color-border)]" />
                   </div>
-                  <p
-                    className="text-xs text-[var(--color-text-dim)] leading-relaxed"
-                    style={{ fontFamily: 'var(--font-mono)' }}
-                  >
-                    {t(`pipeline.threePhases.${key}.description`)}
+                  <p className="text-xs text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-2" style={{ fontFamily: 'var(--font-sans)' }}>
+                    {g.desc}
                   </p>
+                  {pipelineSteps.slice(g.from, g.to + 1).map((step, idxInGroup) => {
+                    const globalIdx = g.from + idxInGroup;
+                    return (
+                      <div key={step.id} ref={el => setStepRef(el, globalIdx)}>
+                        <DocStep step={step} isLast={globalIdx === pipelineSteps.length - 1} />
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
-            </div>
 
-            {/* Why study compilers — microcosm of CS */}
-            <div className="cyber-panel p-5 border border-[var(--color-border)] bg-[var(--color-card)] mb-12 text-left max-w-3xl mx-auto">
-              <div
-                className="text-[10px] font-bold tracking-[0.25em] uppercase mb-2"
-                style={{ fontFamily: 'var(--font-display)', color: 'var(--color-neon)' }}
-              >
-                {t('pipeline.whyStudy.title')}
+              {/* Summary / Why study */}
+              <div className="mt-10 pt-8 border-t border-[var(--color-border)] space-y-6">
+                <div>
+                  <div className="text-[10px] font-bold tracking-[0.25em] uppercase text-[var(--color-neon)] mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                    {t('pipeline.summaryLabel', '// FROM TEXT TO EXECUTION')}
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[var(--color-text)]" style={{ fontFamily: 'var(--font-display)' }}>
+                    {t('pipeline.completeHeadline')}
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-dim)] max-w-2xl" style={{ fontFamily: 'var(--font-sans)' }}>
+                    {t('pipeline.completeDescription')}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {( ['frontEnd', 'optimizer', 'backEnd'] as const).map(key => (
+                    <div key={key} className="p-4 border border-[var(--color-border)] bg-[var(--color-card)]">
+                      <div className="text-[10px] font-bold tracking-[0.2em] uppercase mb-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-neon)' }}>
+                        {t(`pipeline.threePhases.${key}.title`)}
+                      </div>
+                      <p className="text-xs leading-relaxed text-[var(--color-text-dim)]" style={{ fontFamily: 'var(--font-sans)' }}>
+                        {t(`pipeline.threePhases.${key}.description`)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-4 border border-[var(--color-border)] bg-[var(--color-surface)] border-l-2" style={{ borderLeftColor: 'var(--color-neon)' }}>
+                  <div className="text-[10px] font-bold tracking-[0.2em] uppercase mb-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-neon)' }}>
+                    {t('pipeline.whyStudy.title')}
+                  </div>
+                  <p className="text-xs leading-relaxed text-[var(--color-text-dim)]" style={{ fontFamily: 'var(--font-sans)' }}>
+                    {t('pipeline.whyStudy.body')}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <button
+                    onClick={() => navigate('/compiler')}
+                    className="px-6 py-3 text-xs font-bold tracking-[0.1em] bg-[var(--color-neon)] text-[var(--color-void)] border border-[var(--color-neon)] hover:brightness-110 transition-all"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    {t('pipeline.tryIt', 'TRY IT YOURSELF')}
+                  </button>
+                  <button
+                    onClick={() => navigate('/visualize/lexical')}
+                    className="px-6 py-3 text-xs font-bold tracking-[0.1em] bg-transparent text-[var(--color-text)] border border-[var(--color-border)] hover:border-[var(--color-neon)] hover:text-[var(--color-neon)] transition-colors"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    Open Visualizer
+                  </button>
+                </div>
               </div>
-              <p
-                className="text-xs text-[var(--color-text-dim)] leading-relaxed"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                {t('pipeline.whyStudy.body')}
-              </p>
             </div>
-
-            <button
-              className="btn-neon px-8 py-3 text-xs tracking-[0.15em]"
-              style={{ fontFamily: 'var(--font-display)' }}
-              onClick={() => navigate('/compiler')}
-            >
-              <span>[ {t('pipeline.tryIt', 'TRY IT YOURSELF')} ]</span>
-            </button>
-          </motion.div>
-        </section>
+          </div>
+        </div>
       </div>
     </div>
   );

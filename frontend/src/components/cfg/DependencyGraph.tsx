@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useResizeObserver } from '../../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import type { TacInstruction } from '../../types';
 import type { SchedulingResult, ScheduleEntry } from '../../lib/cfg/scheduling';
@@ -47,6 +48,7 @@ function truncate(s: string, max: number) {
 const DependencyGraph: React.FC<DependencyGraphProps> = ({ instructions, scheduling, isPlaying, isCompleted }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const userZoomed = useRef(false);
   const [revealedEdges, setRevealedEdges] = useState<Set<number>>(new Set());
@@ -80,7 +82,7 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({ instructions, schedul
 
       const container = containerRef.current!;
       const rect = container.getBoundingClientRect();
-      const width = rect.width || container.clientWidth || 800;
+      const width = observedWidth || rect.width || container.clientWidth || 800;
       const height = rect.height || container.clientHeight || 380;
 
       const instrMap = new Map<number, TacInstruction>();
@@ -276,10 +278,10 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({ instructions, schedul
     };
     const raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
-  }, [scheduling, revealedEdges, instructions]);
+  }, [scheduling, revealedEdges, instructions, observedWidth]);
 
   return (
-    <div ref={containerRef} className="w-full h-[380px] overflow-hidden">
+    <div ref={(el) => { containerRef.current = el; roSetRef(el); }} className="w-full h-[380px] overflow-hidden">
       <svg ref={svgRef} className="w-full h-full block" />
     </div>
   );

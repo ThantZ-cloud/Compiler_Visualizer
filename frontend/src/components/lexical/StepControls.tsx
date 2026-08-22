@@ -30,9 +30,9 @@ const StepControls: React.FC<StepControlsProps> = ({
   totalSteps = 4,
 }) => {
   return (
-    <div className="sticky bottom-0 z-20 flex items-center justify-between gap-3 px-4 py-1.5 bg-[var(--color-card)] border-t border-[var(--color-border-bright)]">
+    <div className="sticky bottom-0 z-20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-1.5 bg-[var(--color-card)] border-t border-[var(--color-border-bright)]">
       {/* Left: icon-only nav buttons */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 shrink-0">
         <button
           onClick={onPrev}
           disabled={currentStep === 0}
@@ -86,23 +86,23 @@ const StepControls: React.FC<StepControlsProps> = ({
       </div>
 
       {/* Right: horizontal step dots */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none min-w-0">
         {stepNames.map((name, i) => (
-          <div key={i} className="flex items-center gap-1.5">
+          <div key={i} className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {i > 0 && (
               <div
-                className={`w-3 h-px ${
+                className={`w-2 sm:w-3 h-px ${
                   i <= currentStep ? 'bg-[var(--color-neon-dim)]' : 'bg-[var(--color-border-bright)]'
                 }`}
               />
             )}
             <div
-              className={`relative flex items-center gap-1.5 ${
+              className={`relative flex items-center gap-1 sm:gap-1.5 ${
                 i === currentStep ? 'text-[var(--color-neon)]' : i < currentStep ? 'text-[var(--color-text-dim)]' : 'text-[var(--color-text-muted)]'
               }`}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                className={`w-1.5 h-1.5 rounded-full transition-all shrink-0 ${
                   i === currentStep
                     ? 'bg-[var(--color-neon)] shadow-[0_0_6px_var(--color-neon)]'
                     : i < currentStep
@@ -110,7 +110,7 @@ const StepControls: React.FC<StepControlsProps> = ({
                     : 'bg-[var(--color-border-bright)]'
                 }`}
               />
-              <span className="text-[7px] font-mono uppercase tracking-wider hidden xl:inline">
+              <span className="text-[7px] font-mono uppercase tracking-wider hidden sm:inline lg:hidden xl:inline">
                 {name}
               </span>
             </div>

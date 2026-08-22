@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useResizeObserver } from '../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import { useTranslation } from 'react-i18next';
 import { ZoomIn, ZoomOut, RotateCcw, GitFork, ArrowDown, ArrowUp } from 'lucide-react';
@@ -70,6 +71,7 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
   const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
@@ -141,7 +143,7 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
     if (!svgRef.current || !containerRef.current || !currentMethod) return;
 
     const container = containerRef.current;
-    const width = container.clientWidth || 900;
+    const width = observedWidth || container.clientWidth || 900;
     const height = container.clientHeight || 600;
 
     const svg = d3.select(svgRef.current);
@@ -482,7 +484,7 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
       const ty = (height - bounds.height * scale) / 2 - bounds.y * scale;
       svg.call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
     }
-  }, [currentMethod, selectedBlockId, calculateNodeLevels]);
+  }, [currentMethod, selectedBlockId, calculateNodeLevels, observedWidth]);
 
   useEffect(() => {
     renderGraph();
@@ -525,9 +527,9 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
   return (
     <div className="flex flex-col h-full gap-3 bg-[var(--color-void)]">
       {/* Control Header */}
-      <div className="flex justify-between items-center px-4 py-2 bg-[var(--color-card)] border border-[var(--color-border)] rounded-md shrink-0">
-        <div className="flex items-center gap-3">
-          <label className="text-xs font-bold text-[var(--color-text-muted)] font-display tracking-wider uppercase">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-card)] border border-[var(--color-border)] rounded-md shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
+          <label className="text-xs font-bold text-[var(--color-text-muted)] font-display tracking-wider uppercase shrink-0">
             METHOD:
           </label>
           <select
@@ -536,7 +538,7 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
               setSelectedMethod(e.target.value);
               setSelectedBlockId(null);
             }}
-            className="px-3 py-1 text-xs font-mono bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] rounded outline-none focus:border-[var(--color-neon)] cursor-pointer"
+            className="px-3 py-1 text-xs font-mono bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] rounded outline-none focus:border-[var(--color-neon)] cursor-pointer w-full sm:w-auto min-w-0 max-w-full truncate"
           >
             {methodOptions.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -544,8 +546,8 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
           </select>
 
           {currentMethod && (
-            <span className="text-xs font-mono text-[var(--color-text-muted)] ml-2">
-              {currentMethod.blocks.length} Basic Blocks &middot; {currentMethod.edges.length} Flow Edges
+            <span className="text-xs font-mono text-[var(--color-text-muted)] sm:ml-2 truncate">
+              {currentMethod.blocks.length} BB &middot; {currentMethod.edges.length} Edges
             </span>
           )}
         </div>
@@ -597,7 +599,7 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
 
       {/* SVG Canvas */}
       <div
-        ref={containerRef}
+        ref={(el) => { containerRef.current = el; roSetRef(el); }}
         className="flex-1 min-h-[400px] bg-[var(--color-card)] border border-[var(--color-border)] rounded-md overflow-hidden relative"
         onClick={() => setSelectedBlockId(null)}
       >

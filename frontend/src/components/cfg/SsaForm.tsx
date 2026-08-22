@@ -23,6 +23,9 @@ const SsaForm: React.FC<SsaFormProps> = ({ method, ssa, instructions, isPlaying,
       if (isCompleted) {
         setVisiblePhis(new Set(ssa.phiFunctions.map((_, i) => i)));
         setVisibleRenames(new Set(ssa.varDefs.map((_, i) => i)));
+      } else {
+        setVisiblePhis(new Set());
+        setVisibleRenames(new Set());
       }
       return;
     }
@@ -131,7 +134,7 @@ const SsaForm: React.FC<SsaFormProps> = ({ method, ssa, instructions, isPlaying,
         <div className="flex flex-col gap-0.5 max-h-[300px] overflow-y-auto">
           {instructions.map((instr, i) => {
             const rename = renameMap.get(instr.line);
-            const visible = visibleRenames.has(i) || !isPlaying;
+            const visible = visibleRenames.has(i);
             // Build the display line
             const result = rename ? rename.renamedTo : instr.result || '';
             const arg1 = instr.arg1 || '';
@@ -158,7 +161,7 @@ const SsaForm: React.FC<SsaFormProps> = ({ method, ssa, instructions, isPlaying,
               <div
                 key={instr.line}
                 className={`flex items-center gap-2 text-[10px] font-mono transition-all duration-200 ${
-                  visible ? 'opacity-100' : 'opacity-30'
+                  visible ? 'opacity-100' : 'opacity-0'
                 } ${rename ? 'bg-[rgba(0,212,255,0.05)]' : ''}`}
               >
                 <span className="text-[var(--color-text-muted)] w-6 text-right shrink-0">{instr.line}:</span>

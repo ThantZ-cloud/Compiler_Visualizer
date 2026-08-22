@@ -33,13 +33,13 @@ const PipelineStep: React.FC<Props> = ({ step, isLast }) => {
 
   return (
     <motion.section
-      className="relative min-h-[80vh] flex items-center py-16 md:py-24"
+      className="relative min-h-[60vh] sm:min-h-[80vh] flex items-center py-10 sm:py-16 md:py-24"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: false, amount: 0.15 }}
       transition={{ duration: 0.6 }}
     >
-      <div className="w-full max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-10 lg:gap-16 items-center">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8 sm:gap-10 lg:gap-16 items-center">
         {/* Left: Step indicator + visual */}
         <motion.div
           className="flex flex-col items-center lg:items-end gap-6"

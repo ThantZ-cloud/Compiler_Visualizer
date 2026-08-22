@@ -74,74 +74,76 @@ const EditorPage: React.FC = () => {
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-[var(--color-void)]">
       {/* Editor section */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Toolbar — terminal tab bar */}
-        <div className="flex justify-between items-center px-5 h-10 bg-[var(--color-card)] border-b border-[var(--color-border)] shrink-0">
-          <div className="flex items-center gap-3">
+        {/* Toolbar — terminal tab bar (wraps on narrow screens) */}
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-y-2 justify-between items-stretch sm:items-center px-3 sm:px-5 min-h-10 py-2 sm:py-1 bg-[var(--color-card)] border-b border-[var(--color-border)] shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
             {/* File tab */}
-            <div className="flex items-center gap-2 px-3 py-1 border border-[var(--color-border)] bg-[var(--color-surface)]">
-              <span className="text-[var(--color-neon)]">
+            <div className="flex items-center gap-2 px-3 py-1 border border-[var(--color-border)] bg-[var(--color-surface)] min-w-0 max-w-full">
+              <span className="text-[var(--color-neon)] shrink-0">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 0h-9L7 1.5V6H2.5L1 7.5v15.07L2.5 24h12.07L16 22.57V18h4.7l1.3-1.43V4.5L17.5 0zm0 2.12l2.38 2.38H17.5V2.12zm-3 20.38h-12v-15H7v9.07L8.5 18h6v4.5zm6-6h-12v-15H16V6h4.5v10.5z"/></svg>
               </span>
-              <span className="text-[11px] font-medium text-[var(--color-text)]"
+              <span className="text-[11px] font-medium text-[var(--color-text)] truncate"
                 style={{ fontFamily: 'var(--font-mono)' }}>
                 {currentFileName}
               </span>
-              {isDirty && <Circle size={8} className="fill-[var(--color-amber)] text-[var(--color-amber)]" />}
+              {isDirty && <Circle size={8} className="fill-[var(--color-amber)] text-[var(--color-amber)] shrink-0" />}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {/* Save button */}
-            <button
-              className="px-4 py-2 text-xs font-bold text-[var(--color-cyan)] border border-[var(--color-cyan)] hover:bg-[var(--color-cyan)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] disabled:opacity-40 flex items-center gap-1.5"
-              style={{ fontFamily: 'var(--font-display)' }}
-              onClick={handleSave}
-              disabled={saving}
-              title="Save (Ctrl+S)"
-            >
-              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-              {t('editor.save')}
-            </button>
-
-            {/* Compile button */}
-            <button
-              className={`px-4 py-2 text-xs font-bold text-[var(--color-neon)] border border-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] disabled:opacity-40 flex items-center gap-1.5 ${loading ? 'opacity-70' : ''}`}
-              style={{ fontFamily: 'var(--font-display)' }}
-              onClick={handleCompile}
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : (
-                <Play size={12} />
-              )}
-              {loading ? t('nav.compiling') : t('nav.compile')}
-            </button>
-
-            {/* Cancel button — only visible during compilation */}
-            {loading && (
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Save button */}
               <button
-                className="px-4 py-2 text-xs tracking-[0.12em] flex items-center gap-1.5 border border-[var(--color-rose)] text-[var(--color-rose)] hover:bg-[var(--color-rose)] hover:text-[var(--color-void)] transition-all"
+                className="px-3 sm:px-4 py-2 text-xs font-bold text-[var(--color-cyan)] border border-[var(--color-cyan)] hover:bg-[var(--color-cyan)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] disabled:opacity-40 flex items-center gap-1.5 min-h-[36px]"
                 style={{ fontFamily: 'var(--font-display)' }}
-                onClick={handleCancel}
+                onClick={handleSave}
+                disabled={saving}
+                title="Save (Ctrl+S)"
               >
-                <Square size={10} />
-                {t('editor.cancel')}
+                {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                {t('editor.save')}
               </button>
-            )}
+
+              {/* Compile button */}
+              <button
+                className={`px-3 sm:px-4 py-2 text-xs font-bold text-[var(--color-neon)] border border-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] disabled:opacity-40 flex items-center gap-1.5 min-h-[36px] ${loading ? 'opacity-70' : ''}`}
+                style={{ fontFamily: 'var(--font-display)' }}
+                onClick={handleCompile}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Play size={12} />
+                )}
+                {loading ? t('nav.compiling') : t('nav.compile')}
+              </button>
+
+              {/* Cancel button — only visible during compilation */}
+              {loading && (
+                <button
+                  className="px-3 sm:px-4 py-2 text-xs tracking-[0.12em] flex items-center gap-1.5 border border-[var(--color-rose)] text-[var(--color-rose)] hover:bg-[var(--color-rose)] hover:text-[var(--color-void)] transition-all min-h-[36px]"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                  onClick={handleCancel}
+                >
+                  <Square size={10} />
+                  {t('editor.cancel')}
+                </button>
+              )}
+            </div>
 
             {/* Separator */}
-            <div className="w-px h-5 bg-[var(--color-border)]" />
+            <div className="hidden sm:block w-px h-5 bg-[var(--color-border)]" />
 
-            {/* Stdin input */}
-            <div className="flex items-center gap-2">
-              <label htmlFor="stdin" className="text-[10px] text-[var(--color-text-muted)] tracking-wider"
+            {/* Stdin input — full width on mobile, inline on tablet+ */}
+            <div className="flex items-center gap-2 w-full sm:w-auto sm:flex-initial min-w-0 basis-full sm:basis-auto mt-1 sm:mt-0">
+              <label htmlFor="stdin" className="text-[10px] text-[var(--color-text-muted)] tracking-wider shrink-0"
                 style={{ fontFamily: 'var(--font-display)' }}>
                 {t('editor.stdin')}
               </label>
               <input
                 id="stdin"
                 type="text"
-                className="h-7 w-56 px-3 text-[11px] bg-[var(--color-void)] border border-[var(--color-border)] text-[var(--color-neon)] outline-none focus:border-[var(--color-neon)] transition-colors"
+                className="h-7 flex-1 w-full sm:w-56 max-w-full px-3 text-[11px] bg-[var(--color-void)] border border-[var(--color-border)] text-[var(--color-neon)] outline-none focus:border-[var(--color-neon)] transition-colors min-w-0"
                 style={{ fontFamily: 'var(--font-mono)' }}
                 placeholder={t('editor.stdinPlaceholder')}
                 value={stdinInput}
@@ -181,7 +183,7 @@ const EditorPage: React.FC = () => {
       </div>
 
       {/* Terminal section */}
-      <div className="h-[220px] min-h-[120px] flex flex-col bg-[var(--color-card)] shrink-0 border-t border-[var(--color-neon)]/20">
+      <div className="h-[200px] sm:h-[220px] min-h-[120px] flex flex-col bg-[var(--color-card)] shrink-0 border-t border-[var(--color-neon)]/20">
         {/* Terminal header */}
         <div className="flex justify-between items-center px-5 h-8 border-b border-[var(--color-border)] shrink-0 bg-[var(--color-surface)]">
           <div className="flex items-center gap-3">

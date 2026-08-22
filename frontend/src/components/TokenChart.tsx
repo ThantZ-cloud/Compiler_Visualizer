@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { useTranslation } from 'react-i18next';
+import { useResizeObserver } from '../hooks/useResizeObserver';
 
 interface Token {
   type: string;
@@ -47,6 +48,8 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
   const { t } = useTranslation();
   const barChartRef = useRef<SVGSVGElement>(null);
   const flowChartRef = useRef<SVGSVGElement>(null);
+  const { ref: barWrapRef, width: barWrapWidth } = useResizeObserver<HTMLDivElement>();
+  const { ref: flowWrapRef, width: flowWrapWidth } = useResizeObserver<HTMLDivElement>();
 
   // Bar chart: token type distribution
   useEffect(() => {
@@ -59,8 +62,11 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
     const data = Array.from(grouped, ([type, count]) => ({ type, count }))
       .sort((a, b) => b.count - a.count);
 
-    const margin = { top: 10, right: 60, bottom: 10, left: 120 };
-    const width = 500 - margin.left - margin.right;
+    const isSmall = (barWrapWidth || 500) < 400;
+    const isXSmall = (barWrapWidth || 500) < 360;
+    const margin = { top: 10, right: isSmall ? 30 : 60, bottom: 10, left: isXSmall ? 92 : isSmall ? 100 : 120 };
+    const fullWidth = Math.max(barWrapWidth || 500, 280);
+    const width = Math.max(fullWidth - margin.left - margin.right, 80);
     const barHeight = 26;
     const height = data.length * barHeight;
 
@@ -94,6 +100,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .delay((_, i) => i * 50)
       .attr('width', d => xScale(d.count));
 
+    const labelFontSize = isXSmall ? '9px' : isSmall ? '10px' : '11px';
     g.selectAll('.label')
       .data(data)
       .join('text')
@@ -103,9 +110,12 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       .attr('dy', '0.35em')
       .attr('text-anchor', 'end')
       .attr('fill', 'var(--color-text-dim)')
-      .attr('font-size', '11px')
+      .attr('font-size', labelFontSize)
       .attr('font-family', "'Consolas', 'Monaco', monospace")
-      .text(d => d.type);
+      .text(d => {
+        const maxLen = isXSmall ? 13 : isSmall ? 15 : 20;
+        return d.type.length > maxLen ? d.type.slice(0, maxLen - 1) + '…' : d.type;
+      });
 
     g.selectAll('.count')
       .data(data)
@@ -128,7 +138,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       svg.selectAll('.bar').on('mouseenter', null).on('mouseleave', null);
       svg.selectAll('*').remove();
     };
-  }, [tokens]);
+  }, [tokens, barWrapWidth]);
 
   // Flow chart: tokens as colored blocks in sequence
   useEffect(() => {
@@ -138,7 +148,7 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
     svg.selectAll('*').remove();
 
     const container = flowChartRef.current.parentElement;
-    const fullWidth = container ? container.clientWidth : 800;
+    const fullWidth = Math.max(flowWrapWidth || (container ? container.clientWidth : 800), 240);
     const margin = { top: 20, right: 20, bottom: 30, left: 20 };
     const width = fullWidth - margin.left - margin.right;
     const height = 200;
@@ -248,32 +258,32 @@ const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {
       rects.on('mouseover', null).on('mouseout', null);
       svg.selectAll('*').remove();
     };
-  }, [tokens]);
+  }, [tokens, flowWrapWidth]);
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-6 h-full min-w-0">
+      <div className="flex flex-col gap-2 min-w-0">
         <h3 className="text-sm font-medium text-[var(--color-text)] m-0">{t('tokens.distributionTitle')}</h3>
-        <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-[6px] p-3 overflow-x-auto">
+        <div ref={barWrapRef} className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-[6px] p-2 sm:p-3 overflow-x-auto -mx-1 sm:mx-0">
           <svg
             ref={barChartRef}
-            className="block"
+            className="block max-w-none"
             role="img"
             aria-label={t('tokens.distributionTitle')}
           />
         </div>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 min-w-0">
         <h3 className="text-sm font-medium text-[var(--color-text)] m-0">{t('tokens.flowTitle')}</h3>
-        <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-[6px] p-3 overflow-x-auto">
+        <div ref={flowWrapRef} className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-[6px] p-2 sm:p-3 overflow-x-auto -mx-1 sm:mx-0">
           <svg
             ref={flowChartRef}
-            className="block"
+            className="block max-w-none"
             role="img"
             aria-label={t('tokens.flowTitle')}
           />
         </div>
-        <div className="text-[11px] text-[var(--color-text-muted)] text-right">{t('tokens.hoverHint')}</div>
+        <div className="text-[11px] text-[var(--color-text-muted)] text-right hidden sm:block">{t('tokens.hoverHint')}</div>
       </div>
     </div>
   );

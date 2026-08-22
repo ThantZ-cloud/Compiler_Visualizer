@@ -21,6 +21,9 @@ const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isP
     if (!isPlaying) {
       if (isCompleted) {
         setVisibleSteps(new Set(allocation.coloringSteps.map((_, i) => i)));
+      } else {
+        setVisibleSteps(new Set());
+        setHighlightVar(null);
       }
       return;
     }
@@ -37,6 +40,7 @@ const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isP
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [isPlaying, isCompleted, allocation]);
 
+  const isVisible = isPlaying || isCompleted;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 px-1">
@@ -52,6 +56,12 @@ const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isP
         {t('codegen.regalloc.description', 'Variables are assigned to physical registers using graph coloring. Variables that interfere (are simultaneously live) cannot share a register. Excess variables are spilled to memory.')}
       </p>
 
+      {!isVisible ? (
+        <div className="border border-[var(--color-border)] bg-[var(--color-card)] h-[120px] flex items-center justify-center">
+          <span className="text-[10px] font-mono text-[var(--color-text-muted)]">Press Play to animate register allocation</span>
+        </div>
+      ) : (
+      <>
       {/* Stats */}
       <div className="flex gap-4 px-1">
         <div className="text-[9px] font-mono text-[var(--color-text-muted)]">
@@ -231,6 +241,8 @@ const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isP
             })}
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );

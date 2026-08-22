@@ -18,6 +18,11 @@
       "headers": {
         "Authorization": "Bearer ctx7sk-4142dfc6-1eff-40bd-893f-377e737ee6d1"
       }
+    },
+    "canva": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote@latest", "https://mcp.canva.com/mcp"],
+      "enabled": true
     }
   }
 }

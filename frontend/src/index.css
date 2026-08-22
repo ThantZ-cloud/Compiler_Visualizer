@@ -70,7 +70,15 @@
 
 html, body {
   height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+@supports (height: 100dvh) {
+  html, body {
+    height: 100dvh;
+  }
 }
 
 body {
@@ -83,6 +91,23 @@ body {
 
 #root {
   height: 100%;
+  min-height: 100%;
+}
+
+/* Ensure touch scrolling feels native on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+  html, body {
+    overflow-y: auto;
+  }
+  /* Allow landing/about pages to scroll naturally on mobile while
+     keeping internal panels (editor/visualize) still clipped */
+  body:has([data-scroll-root="true"]) {
+    overflow: hidden;
+  }
 }
 
 a {

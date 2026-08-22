@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import { useTranslation } from 'react-i18next';
+import { useResizeObserver } from '../hooks/useResizeObserver';
 import './AstTree.css';
 
 interface AstNode {
@@ -125,6 +126,11 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
+  const setContainerRef = useCallback((el: HTMLDivElement | null) => {
+    containerRef.current = el;
+    roSetRef(el);
+  }, [roSetRef]);
   const [selectedNode, setSelectedNode] = useState<AstNode | null>(null);
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
 
@@ -156,7 +162,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
     if (!astData) return;
 
     const container = containerRef.current;
-    const width = container.clientWidth || 600;
+    const width = observedWidth || container.clientWidth || 600;
     const height = container.clientHeight || 400;
 
     const svg = d3.select(svgRef.current);
@@ -275,7 +281,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       svg.selectAll('*').remove();
       svg.on('.zoom', null);
     };
-  }, [astJson, collapsedNodes, getNodeId, toggleCollapse]);
+  }, [astJson, collapsedNodes, getNodeId, toggleCollapse, observedWidth]);
 
   if (!astJson) {
     return <div className="ast-tree-container"><div className="ast-tree-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>{t('ast.noData')}</div></div>;
@@ -287,7 +293,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
         <h3>{t('ast.title')}</h3>
         <span className="ast-tree-hint">{t('ast.hint')}</span>
       </div>
-      <div className="ast-tree-wrapper" ref={containerRef}>
+      <div className="ast-tree-wrapper" ref={setContainerRef}>
         <svg ref={svgRef} width="100%" />
       </div>
       {selectedNode && (

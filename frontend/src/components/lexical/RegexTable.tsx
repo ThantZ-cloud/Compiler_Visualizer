@@ -27,9 +27,10 @@ const RegexTable: React.FC<RegexTableProps> = ({ groups, isPlaying, isCompleted 
       </div>
 
       {/* Table */}
-      <div className="border border-[var(--color-border-bright)] rounded-lg overflow-hidden bg-[var(--color-card)]">
+      <div className="border border-[var(--color-border-bright)] rounded-lg overflow-hidden bg-[var(--color-card)] overflow-x-auto">
+        <div className="min-w-[320px]">
         {/* Header */}
-        <div className="grid grid-cols-[180px_1fr_80px] gap-2 px-4 py-3 bg-[var(--color-surface-2)] border-b border-[var(--color-border-bright)]">
+        <div className="grid grid-cols-[110px_1fr_60px] sm:grid-cols-[140px_1fr_70px] lg:grid-cols-[180px_1fr_80px] gap-2 px-3 sm:px-4 py-3 bg-[var(--color-surface-2)] border-b border-[var(--color-border-bright)]">
           <span className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-text-muted)] font-display">
             {t('lexical.step1.columnType')}
           </span>
@@ -52,7 +53,7 @@ const RegexTable: React.FC<RegexTableProps> = ({ groups, isPlaying, isCompleted 
                 : { opacity: 0, x: -20 }
             }
             transition={{ delay: i * 0.15, duration: 0.4, ease: 'easeOut' }}
-            className={`grid grid-cols-[180px_1fr_80px] gap-2 px-4 py-3 border-b border-[var(--color-border)] items-center ${
+            className={`grid grid-cols-[110px_1fr_60px] sm:grid-cols-[140px_1fr_70px] lg:grid-cols-[180px_1fr_80px] gap-2 px-3 sm:px-4 py-3 border-b border-[var(--color-border)] items-center ${
               group.found
                 ? 'bg-[var(--color-card)]'
                 : 'bg-[var(--color-card)] opacity-50'
@@ -91,10 +92,11 @@ const RegexTable: React.FC<RegexTableProps> = ({ groups, isPlaying, isCompleted 
             </span>
           </motion.div>
         ))}
+        </div>
       </div>
 
       {/* Legend */}
-      <div className="mt-4 flex items-center gap-4 text-[10px] font-mono text-[var(--color-text-muted)]">
+      <div className="mt-4 flex flex-wrap items-center gap-4 text-[10px] font-mono text-[var(--color-text-muted)]">
         <span className="flex items-center gap-1">
           <span className="text-[var(--color-neon)]">●</span>
           {t('lexical.step1.foundInCode')}

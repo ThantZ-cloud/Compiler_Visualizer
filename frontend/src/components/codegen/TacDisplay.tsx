@@ -58,7 +58,7 @@ function formatInstruction(instr: TacInstruction): string {
   }
 }
 
-const TacDisplay: React.FC<Props> = ({ data, isPlaying }) => {
+const TacDisplay: React.FC<Props> = ({ data, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const [revealCount, setRevealCount] = useState(0);
 
@@ -67,7 +67,7 @@ const TacDisplay: React.FC<Props> = ({ data, isPlaying }) => {
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(Number.MAX_SAFE_INTEGER);
+      setRevealCount(isCompleted ? Number.MAX_SAFE_INTEGER : 0);
       return;
     }
     setRevealCount(0);
@@ -75,9 +75,9 @@ const TacDisplay: React.FC<Props> = ({ data, isPlaying }) => {
       setRevealCount(prev => prev + 1);
     }, 150);
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, isCompleted]);
 
-  const visibleCount = isPlaying ? revealCount : displayInstructions.length;
+  const visibleCount = isPlaying ? revealCount : (isCompleted ? displayInstructions.length : 0);
 
   return (
     <motion.div

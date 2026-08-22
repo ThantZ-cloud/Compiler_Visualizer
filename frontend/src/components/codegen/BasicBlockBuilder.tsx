@@ -37,13 +37,13 @@ function formatInstruction(instr: TacInstruction): string {
   }
 }
 
-const BasicBlockBuilder: React.FC<Props> = ({ data, isPlaying }) => {
+const BasicBlockBuilder: React.FC<Props> = ({ data, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const [revealCount, setRevealCount] = useState(0);
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(Number.MAX_SAFE_INTEGER);
+      setRevealCount(isCompleted ? Number.MAX_SAFE_INTEGER : 0);
       return;
     }
     setRevealCount(0);
@@ -51,9 +51,9 @@ const BasicBlockBuilder: React.FC<Props> = ({ data, isPlaying }) => {
       setRevealCount(prev => prev + 1);
     }, 600);
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, isCompleted]);
 
-  const visibleCount = isPlaying ? revealCount : data.basicBlocks.length;
+  const visibleCount = isPlaying ? revealCount : (isCompleted ? data.basicBlocks.length : 0);
 
   return (
     <motion.div

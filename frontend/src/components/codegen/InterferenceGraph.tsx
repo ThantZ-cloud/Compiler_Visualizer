@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useResizeObserver } from '../../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import type { RegAllocationResult } from '../../lib/cfg/regalloc';
 import { REG_COLORS } from '../../lib/cfg/regColors';
@@ -22,6 +23,7 @@ interface GraphEdge extends d3.SimulationLinkDatum<GraphNode> {
 const InterferenceGraph: React.FC<InterferenceGraphProps> = ({ allocation, highlightVar }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
 
   useEffect(() => {
     if (!svgRef.current || !containerRef.current) return;
@@ -30,7 +32,7 @@ const InterferenceGraph: React.FC<InterferenceGraphProps> = ({ allocation, highl
       svg.selectAll('*').remove();
 
       const container = containerRef.current!;
-      const width = container.clientWidth || 600;
+      const width = observedWidth || container.clientWidth || 600;
       const height = container.clientHeight || 240;
 
       const nodes: GraphNode[] = allocation.variables.map(v => ({ id: v }));
@@ -123,10 +125,10 @@ const InterferenceGraph: React.FC<InterferenceGraphProps> = ({ allocation, highl
     };
     const raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
-  }, [allocation, highlightVar]);
+  }, [allocation, highlightVar, observedWidth]);
 
   return (
-    <div ref={containerRef} className="w-full h-[240px] overflow-hidden">
+    <div ref={(el) => { containerRef.current = el; roSetRef(el); }} className="w-full h-[240px] overflow-hidden">
       <svg ref={svgRef} className="w-full h-full block" />
     </div>
   );

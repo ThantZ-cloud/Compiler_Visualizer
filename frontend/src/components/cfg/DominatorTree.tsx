@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useResizeObserver } from '../../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import { useTranslation } from 'react-i18next';
 import type { CfgMethod } from '../../types';
@@ -16,6 +17,7 @@ const DomTree: React.FC<DominatorTreeProps> = ({ method, dominators, isPlaying, 
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
   const [revealedEdges, setRevealedEdges] = useState<Set<string>>(new Set());
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -24,6 +26,8 @@ const DomTree: React.FC<DominatorTreeProps> = ({ method, dominators, isPlaying, 
     if (!isPlaying) {
       if (isCompleted) {
         setRevealedEdges(new Set(dominators.treeEdges.map(e => `${e.from}-${e.to}`)));
+      } else {
+        setRevealedEdges(new Set());
       }
       return;
     }
@@ -43,13 +47,18 @@ const DomTree: React.FC<DominatorTreeProps> = ({ method, dominators, isPlaying, 
   // Render dominator tree + CFG overlay — defer to next frame so layout is settled
   useEffect(() => {
     if (!svgRef.current || !containerRef.current) return;
+    const isVisible = isPlaying || isCompleted;
+    if (!isVisible) {
+      d3.select(svgRef.current!).selectAll('*').remove();
+      return;
+    }
     const render = () => {
     const svg = d3.select(svgRef.current!);
     svg.selectAll('*').remove();
 
     const container = containerRef.current!;
     const rect = container.getBoundingClientRect();
-    const width = rect.width || container.clientWidth || 800;
+    const width = observedWidth || rect.width || container.clientWidth || 800;
     const height = rect.height || container.clientHeight || 420;
 
     const g = svg.append('g');
@@ -168,19 +177,31 @@ const DomTree: React.FC<DominatorTreeProps> = ({ method, dominators, isPlaying, 
       }
     }
 
-    // Fit view
+    // Fit view: scale to fit and center the tree in the viewport
     const allPos = [...positions.values()];
-    if (allPos.length > 0) {
-      const pad = 60;
+    if (allPos.length > 0 && width > 0 && height > 0) {
+      const pad = 40;
+      const minX = Math.min(...allPos.map(p => p.x));
+      const maxX = Math.max(...allPos.map(p => p.x)) + NODE_W;
+      const minY = Math.min(...allPos.map(p => p.y)) - 8; // room above node tops
+      const maxY = Math.max(...allPos.map(p => p.y)) + NODE_H + 18; // idom label below nodes
+      const contentW = maxX - minX;
+      const contentH = maxY - minY;
+      const scale = Math.max(0.2, Math.min(
+        1.5,
+        (width - pad * 2) / contentW,
+        (height - pad * 2) / contentH
+      ));
       svg.call(zoom.transform, d3.zoomIdentity
-        .translate(pad, pad)
-        .scale(Math.min(1.5, (width - pad * 2) / ((Math.max(...allPos.map(p => p.x)) - Math.min(...allPos.map(p => p.x)) || 1) + NODE_W + pad * 2)))
+        .translate(width / 2 - ((minX + maxX) / 2) * scale,
+                   height / 2 - ((minY + maxY) / 2) * scale)
+        .scale(scale)
       );
     }
     };
     const raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
-  }, [method, dominators, revealedEdges]);
+  }, [method, dominators, revealedEdges, observedWidth, isPlaying, isCompleted]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -196,7 +217,7 @@ const DomTree: React.FC<DominatorTreeProps> = ({ method, dominators, isPlaying, 
       <p className="text-[10px] text-[var(--color-text-dim)] font-mono px-1 -mt-1">
         {t('optimizer.step2.description', 'Block A dominates block B if every path from the entry to B must go through A. The dominator tree shows these immediate domination relationships.')}
       </p>
-      <div ref={containerRef} className="w-full h-[420px] bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
+      <div ref={(el) => { containerRef.current = el; roSetRef(el); }} className="w-full h-[420px] bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
         <svg ref={svgRef} className="w-full h-full" />
       </div>
     </div>

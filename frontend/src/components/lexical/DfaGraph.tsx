@@ -243,13 +243,14 @@ const DfaGraph: React.FC<DfaGraphProps> = ({ dfa, steps, isPlaying, isCompleted 
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
         {/* DFA Graph */}
-        <div className="border border-[var(--color-border-bright)] rounded-lg overflow-hidden bg-[var(--color-card)] p-4">
+        <div className="border border-[var(--color-border-bright)] rounded-lg overflow-hidden bg-[var(--color-card)] p-2 sm:p-4 overflow-x-auto">
           <svg
             ref={svgRef}
-            className="w-full"
-            style={{ minHeight: '450px' }}
+            className="w-full min-w-[480px] sm:min-w-[520px]"
+            style={{ minHeight: '380px' }}
             role="img"
             aria-label="DFA state diagram"
+            preserveAspectRatio="xMinYMin meet"
           />
         </div>
 

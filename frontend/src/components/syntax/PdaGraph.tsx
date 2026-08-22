@@ -58,6 +58,7 @@ const PdaGraph: React.FC<PdaGraphProps> = ({ steps, isPlaying, isCompleted }) =>
   const stackItems = current?.stack.slice(-12) ?? [];
 
   const activeEdge = PDA_TRANSITIONS.find(tr => tr.to === activeStage && tr.from !== activeStage);
+  const isVisible = isPlaying || isCompleted;
 
   return (
     <div className="w-full max-w-5xl mx-auto">
@@ -71,6 +72,11 @@ const PdaGraph: React.FC<PdaGraphProps> = ({ steps, isPlaying, isCompleted }) =>
         </p>
       </div>
 
+      {!isVisible ? (
+        <div className="border border-[var(--color-border-bright)] rounded-lg bg-[var(--color-card)] h-[280px] flex items-center justify-center">
+          <span className="text-[10px] font-mono text-[var(--color-text-muted)]">Press Play to animate the PDA</span>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
         {/* PDA state machine */}
         <div className="border border-[var(--color-border-bright)] rounded-lg bg-[var(--color-card)] p-3 min-w-0">
@@ -255,6 +261,7 @@ const PdaGraph: React.FC<PdaGraphProps> = ({ steps, isPlaying, isCompleted }) =>
           )}
         </div>
       </div>
+      )}
     </div>
   );
 };

@@ -261,14 +261,15 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, isPlaying, isCompleted }) => {
         </p>
       </div>
 
-      {/* Graph */}
-      <div className="border border-[var(--color-border-bright)] rounded-lg overflow-hidden bg-[var(--color-card)] p-4">
+      {/* Graph — horizontally scrollable on small screens */}
+      <div className="border border-[var(--color-border-bright)] rounded-lg overflow-hidden bg-[var(--color-card)] p-2 sm:p-4 overflow-x-auto">
         <svg
           ref={svgRef}
-          className="w-full"
-          style={{ minHeight: '500px' }}
+          className="w-full min-w-[520px] sm:min-w-[640px]"
+          style={{ minHeight: '380px' }}
           role="img"
           aria-label="NFA state diagram"
+          preserveAspectRatio="xMinYMin meet"
         />
       </div>
 

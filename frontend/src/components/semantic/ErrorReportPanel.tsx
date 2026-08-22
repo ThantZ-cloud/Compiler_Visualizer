@@ -20,7 +20,7 @@ function parseErrors(jsonStr: string): SemanticError[] {
   }
 }
 
-const ErrorReportPanel: React.FC<ErrorReportPanelProps> = ({ symbolTableJson, isPlaying }) => {
+const ErrorReportPanel: React.FC<ErrorReportPanelProps> = ({ symbolTableJson, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const [errors, setErrors] = useState<SemanticError[]>([]);
   const [revealCount, setRevealCount] = useState(0);
@@ -31,7 +31,7 @@ const ErrorReportPanel: React.FC<ErrorReportPanelProps> = ({ symbolTableJson, is
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(errors.length);
+      setRevealCount(isCompleted ? errors.length : 0);
       return;
     }
     setRevealCount(0);
@@ -39,7 +39,7 @@ const ErrorReportPanel: React.FC<ErrorReportPanelProps> = ({ symbolTableJson, is
       setRevealCount(prev => prev + 1);
     }, 200);
     return () => clearInterval(interval);
-  }, [isPlaying, errors.length]);
+  }, [isPlaying, isCompleted, errors.length]);
 
   const visibleErrors = errors.slice(0, Math.min(revealCount, errors.length));
   const errorCount = errors.filter(e => e.severity === 'ERROR').length;

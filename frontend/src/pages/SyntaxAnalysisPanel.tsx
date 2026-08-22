@@ -33,11 +33,15 @@ const SyntaxAnalysisPanel: React.FC = () => {
 
   // Token stream (from lexical analysis) + AST (final output)
   const tokens = result?.tokens ?? [];
+  const astError = useMemo(() => {
+    if (!result?.astJson) return null;
+    try { const p = JSON.parse(result.astJson); return p?.error ?? null; } catch { return null; }
+  }, [result?.astJson]);
 
   const parseSteps = useMemo(() => {
-    if (!result?.tokens || !result.astJson) return [];
+    if (!result?.tokens || !result.astJson || astError) return [];
     return generateParseSteps(result.tokens, result.astJson);
-  }, [result]);
+  }, [result, astError]);
 
   // Grammar rules exercised by the input program
   const activeRuleIds = useMemo(() => {
@@ -156,6 +160,16 @@ const SyntaxAnalysisPanel: React.FC = () => {
     );
   }
 
+  if (astError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center gap-3 px-6">
+        <div className="text-[var(--color-error)] font-mono text-sm font-bold">Syntax Error</div>
+        <div className="text-[var(--color-text-dim)] font-mono text-xs max-w-xl whitespace-pre-wrap">{String(astError)}</div>
+        <div className="text-[10px] font-mono text-[var(--color-text-muted)]">The parser rejected the input before building an AST (ch.3 §3.5.1). Fix the error at the indicated location and recompile.</div>
+      </div>
+    );
+  }
+
   if (!result?.tokens || result.tokens.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-center gap-3">
@@ -174,6 +188,10 @@ const SyntaxAnalysisPanel: React.FC = () => {
             className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-2"
             onScroll={handleScroll}
           >
+            {/* Disclosure banners for audit fidelity */}
+            <div className="rounded border border-[var(--color-amber-dim)] bg-[var(--color-amber-dim)]/30 px-3 py-2 text-[10px] font-mono leading-relaxed text-[var(--color-amber)]">
+              Simulated trace — reconstructed from the final AST, not from a live LR(1) Action/Goto table (ch.3 Fig 3.15). PDA diagram is a 5-state schematic, not the canonical collection CC (ch.3 §3.4.2).
+            </div>
             {/* Step 1: Grammar rules + token ingestion */}
             <div ref={(el) => { stepRefs.current[0] = el; }}>
               <ErrorBoundary name="GrammarRulesTable">

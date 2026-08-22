@@ -375,18 +375,24 @@
       "epsilon": "\u03B5"
     },
     "step3": {
-      "title": "Fixed Point (NFA \u2192 DFA)",
-      "description": "Subset construction သည် NFA ကို DFA အဖြစ်သို့ ပြောင်းလဲသည်။ algorithm သည် state အသစ်များ မတွေ့သောအခါ ရပ်တန့်သည် \u2014 ၎င်းသည် fixed point ဖြစ်သည်။",
+      "title": "Subset Construction (NFA → DFA)",
+      "description": "Subset construction သည် NFA ကို DFA အဖြစ်သို့ ပြောင်းလဲသည် — ပထမ fixed point။",
       "epsilonClosure": "\u03B5-closure",
       "newState": "state အသစ်",
       "existingState": "ရှိပြီးသား",
-      "fixedPointReached": "Fixed point ရောက်ရှိပါပြီ",
+      "fixedPointReached": "Subset fixed point ရောက်ရှိပါပြီ",
       "dfaStates": "DFA states",
       "subsetLog": "Subset Construction မှတ်တမ်း"
     },
+    "minimization": {
+      "title": "DFA Minimization (Hopcroft)",
+      "description": "Hopcroft algorithm သည် DFA states များကို မခွဲနိုင်တော့မချင်း ပိုင်းခြားသည် — ဒုတိယ fixed point။",
+      "partitionLog": "Partition မှတ်တမ်း",
+      "fixedPointReached": "Minimization fixed point ရောက်ရှိပါပြီ"
+    },
     "step4": {
-      "title": "Scanner",
-      "description": "DFA scanner သည် သင့်ရင်းမြစ်ကုဒ်ကို အကာရက်တာတစ်ခုချင်းစီ ဖတ်ပြီး states အကြား ပြောင်းလဲသည်။ accept state ရောက်သောအခါ တိုကင်တစ်ခု ထုတ်ပေးသည်။",
+      "title": "Scanner (on minimized DFA)",
+      "description": "Minimized DFA scanner သည် ကုဒ်ကို Δ ဖြင့် ဖတ်ပြီး longest-match ဖြင့် တိုကင်ထုတ်သည်။",
       "sourceCode": "ရင်းမြစ် ကုဒ်",
       "dfaState": "DFA State",
       "tokensEmitted": "ထုတ်ပေးခဲ့သော တိုကင်များ",

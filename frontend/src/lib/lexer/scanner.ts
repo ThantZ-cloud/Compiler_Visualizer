@@ -1,25 +1,15 @@
 import type { DFA, Token, ScannerStep } from './types';
 import { testSymbol } from './subsetConstruction';
+import { JAVA_KEYWORDS } from './thompson';
 
 // ── Scanner Simulation ──
 // Simulates running the DFA over the source code character by character.
 // At each step, tracks the current DFA state and emits tokens when accept states are reached.
-
-// Mirrors the backend JavaLexer: multi-char operator lookups win before the DFA,
-// keeping the token stream in sync between the dynamic and static views.
-const TWO_CHAR_OPERATORS = new Set([
-  '==', '!=', '<=', '>=', '&&', '||', '<<', '>>',
-  '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '->', '::',
-]);
-
-/** Find the maximal multi-char operator at pos, or null */
-function matchOperator(code: string, pos: number): string | null {
-  const three = code.slice(pos, pos + 3);
-  if (three === '>>>') return three;
-  const two = code.slice(pos, pos + 2);
-  if (TWO_CHAR_OPERATORS.has(two)) return two;
-  return null;
-}
+// Operator handling is now via the DFA's multi-char branches (thompson.ts: OPERATOR NFA)
+// so longest-match is demonstrated by Δ, not by a hand-coded table — fixing ch.2 §2.4.5 fidelity.
+// Comment handling remains a hybrid bypass for block comments (/*…*/) because the
+// visualized NFA is a simplified educational subset; see ch.2 §2.3(5).
+const KEYWORD_SET = new Set<string>(JAVA_KEYWORDS as unknown as string[]);
 
 /**
  * Simulate the scanner running over source code.
@@ -43,8 +33,10 @@ export function simulateScanner(
   let col = 1;
 
   while (pos < code.length) {
-    // Comments take priority over operators, matching real lexer behaviour:
-    // `// ...` runs to end of line, `/* ... */` runs to the closing marker.
+    // Comments: hybrid bypass — block comments require multi-line lookahead that
+    // the simplified NFA visualization does not fully model (ch.2 §2.3(5)).
+    // The DFA now includes a block-comment branch, but the scanner keeps a
+    // direct `indexOf('*/')` fast-path for correct unterminated handling.
     if (code.startsWith('//', pos) || code.startsWith('/*', pos)) {
       const isBlock = code.startsWith('/*', pos);
       let end: number;
@@ -73,7 +65,7 @@ export function simulateScanner(
         dfaStateLabel: 'COMMENT',
         isAccept: true,
         emittedToken: token,
-        description: `Token emitted: [COMMENT: "${tokenValue}"]`,
+        description: `Token emitted: [COMMENT: "${tokenValue}"] (hybrid: direct scan for ${isBlock ? 'block' : 'line'} comment)`,
       });
 
       const consumed = tokenValue.split('');
@@ -86,40 +78,6 @@ export function simulateScanner(
         }
       }
       pos = end;
-      continue;
-    }
-
-    // Multi-char operators take priority over the single-char DFA rules
-    if (matchOperator(code, pos)) {
-      const tokenValue = matchOperator(code, pos)!;
-      const token: Token = {
-        type: 'OPERATOR',
-        value: tokenValue,
-        line,
-        column: col,
-        length: tokenValue.length,
-      };
-      emittedTokens.push(token);
-
-      steps.push({
-        position: pos,
-        char: tokenValue[0],
-        dfaStateId: -1,
-        dfaStateLabel: 'OPERATOR',
-        isAccept: true,
-        emittedToken: token,
-        description: `Token emitted: [OPERATOR: "${tokenValue}"]`,
-      });
-
-      for (const c of tokenValue) {
-        if (c === '\n') {
-          line++;
-          col = 1;
-        } else {
-          col++;
-        }
-      }
-      pos += tokenValue.length;
       continue;
     }
 
@@ -171,7 +129,13 @@ export function simulateScanner(
     // Emit token if we found an accept state
     if (lastAcceptState && lastAcceptPos > pos) {
       const tokenValue = code.slice(pos, lastAcceptPos);
-      const acceptType = lastAcceptState.acceptType || 'UNKNOWN';
+      let acceptType = lastAcceptState.acceptType || 'UNKNOWN';
+      // Reclassify identifiers that are reserved words — ch.2 §2.5.4 alternative:
+      // the DFA's KEYWORD branch only accepts exact keywords; generic identifiers
+      // that look like keywords are resolved here to match backend JavaLexer reclassification.
+      if (acceptType === 'IDENTIFIER' && KEYWORD_SET.has(tokenValue)) {
+        acceptType = 'KEYWORD';
+      }
 
       const token: Token = {
         type: acceptType,
@@ -190,7 +154,7 @@ export function simulateScanner(
         dfaStateLabel: lastAcceptState.label,
         isAccept: true,
         emittedToken: token,
-        description: `Token emitted: [${acceptType}: "${tokenValue}"]`,
+        description: `Token emitted: [${acceptType}: "${tokenValue}"]${acceptType === 'KEYWORD' && lastAcceptState.acceptType === 'IDENTIFIER' ? ' (reclassified from IDENTIFIER via reserved-word table)' : ''}`,
       });
 
       // Advance position

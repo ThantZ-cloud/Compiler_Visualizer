@@ -7,6 +7,9 @@ import { findGrammarRule } from './javaGrammar';
 // as ground truth. Tokens from the lexical phase are shifted one by one in
 // source order; as soon as every symbol of an AST node sits at the top of the
 // stack, that node is reduced with its grammar production.
+// NOTE: This is a simulated trace reconstructed from the final AST, not a live
+// LR(1) parser with Action/Goto tables (ch.3 Fig 3.15). See SyntaxAnalysisPanel
+// banner. Epsilon productions (ε) are shown explicitly rather than skipped.
 
 interface AstNode {
   type: string;
@@ -232,7 +235,8 @@ export function generateParseSteps(tokens: Token[], astJson: string): ParseStep[
   let remaining = input.map(r => ({ ...r }));
 
   const matchesTop = (items: Item[]): boolean => {
-    if (items.length === 0 || stack.length < items.length) return false;
+    if (items.length === 0) return true; // ε-production — reducible when stack matches context (simplified: always eligible after its parent's siblings are shifted)
+    if (stack.length < items.length) return false;
     const top = stack.slice(stack.length - items.length);
     for (let i = 0; i < items.length; i++) {
       const expected = items[i];
@@ -265,18 +269,27 @@ export function generateParseSteps(tokens: Token[], astJson: string): ParseStep[
     remaining = remaining.slice(1);
     emit({ type: 'SHIFT', token, detail: `SHIFT '${token.value}'  [${token.type}]` });
 
-    // Reduce any node whose items now top the stack
+    // Reduce any node whose items now top the stack (one action per tick for pedagogical clarity)
     for (const info of order) {
       if (info.reduced) continue;
       const items = itemMap.get(info.node) ?? [];
-      if (items.length === 0) continue;
       if (!matchesTop(items)) continue;
+      // For ε-productions, do not pop; just push the lhs (covers empty ClassBody, empty BlockStmt)
+      if (items.length === 0) {
+        stack.push({ id: ++idCounter, symbol: info.node.type, kind: 'nonterminal', nodeId: info.id });
+        info.reduced = true;
+        const rule = makeRule(info.node, items);
+        if (findGrammarRule(info.node.type)) usedRules.add(rule.id);
+        emit({ type: 'REDUCE', rule, detail: `REDUCE ${rule.lhs} → ε` });
+        break; // one reduce per SHIFT to preserve Action[state,word] single-action semantics (ch.3 Fig 3.15)
+      }
       stack = stack.slice(0, stack.length - items.length);
       stack.push({ id: ++idCounter, symbol: info.node.type, kind: 'nonterminal', nodeId: info.id });
       info.reduced = true;
       const rule = makeRule(info.node, items);
       if (findGrammarRule(info.node.type)) usedRules.add(rule.id);
       emit({ type: 'REDUCE', rule, detail: `REDUCE ${rule.lhs} → ${rule.rhs.join(' ')}` });
+      break; // exactly one reduce per loop iteration to mirror LR single-action discipline
     }
   }
 

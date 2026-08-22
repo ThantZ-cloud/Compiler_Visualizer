@@ -375,18 +375,24 @@
       "epsilon": "\u03B5"
     },
     "step3": {
-      "title": "Fixed Point (NFA \u2192 DFA)",
-      "description": "Subset construction converts the NFA into a deterministic Finite Automaton. The algorithm iterates until no new states are discovered \u2014 this is the fixed point.",
+      "title": "Subset Construction (NFA \u2192 DFA)",
+      "description": "Subset construction converts the NFA into a deterministic FA. This is the first fixed point — the algorithm iterates until no new DFA states are discovered.",
       "epsilonClosure": "\u03B5-closure",
       "newState": "NEW STATE",
       "existingState": "existing",
-      "fixedPointReached": "Fixed point reached",
+      "fixedPointReached": "Subset fixed point reached",
       "dfaStates": "DFA states",
       "subsetLog": "Subset Construction Log"
     },
+    "minimization": {
+      "title": "DFA Minimization (Hopcroft)",
+      "description": "Hopcroft's algorithm refines the partition of DFA states until no group can be split — the second fixed point. Each minimal state merges an equivalence class of original states.",
+      "partitionLog": "Partition Refinement Log",
+      "fixedPointReached": "Minimization fixed point reached"
+    },
     "step4": {
-      "title": "Scanner",
-      "description": "The DFA scanner reads your source code character by character, transitioning between states. When an accept state is reached, a token is emitted.",
+      "title": "Scanner (on minimized DFA)",
+      "description": "The minimized DFA scanner reads your source code character by character, transitioning between states via Δ. Longest-match with rollback is shown; comments use a hybrid fast-path (block comments need multi-char lookahead).",
       "sourceCode": "Source Code",
       "dfaState": "DFA State",
       "tokensEmitted": "Tokens Emitted",

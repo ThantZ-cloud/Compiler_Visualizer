@@ -2,6 +2,9 @@ import type { Token } from '../../types';
 
 // ── Token Group Definitions ──
 // 8 grouped categories for a clean NFA diagram
+// Simplified patterns for visualization — the actual NFA (thompson.ts) enumerates
+// keywords and includes escape handling, exponent, block comments, and multi-char ops.
+// Counts are derived from backend tokens; divergence is noted in the UI.
 
 export interface TokenGroupDef {
   name: string;
@@ -42,7 +45,7 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
   },
   {
     name: 'STRING',
-    regexPattern: '"[^"]*"',
+    regexPattern: '"([^"\\\\]|\\\\.)*"',
     color: '#FFB000',
     found: false,
     count: 0,
@@ -64,7 +67,7 @@ export const TOKEN_GROUP_DEFS: TokenGroupDef[] = [
   },
   {
     name: 'OPERATOR',
-    regexPattern: '==|!=|<=|>=|&&|\\|\\||[-+*/=<>&|!^%~?:]',
+    regexPattern: '>>>|>>|<<|==|!=|<=|>=|&&|\\|\\||[-+*/=<>&|!^%~?:]|->|::',
     color: '#FF3366',
     found: false,
     count: 0,

@@ -5,6 +5,7 @@ import { useCompile } from '../context/CompileContext';
 import { analyzeTokenGroups } from '../lib/lexer/tokenGroups';
 import { buildNFA } from '../lib/lexer/thompson';
 import { subsetConstruction } from '../lib/lexer/subsetConstruction';
+import { hopcroftMinimization } from '../lib/lexer/hopcroft';
 import { simulateScanner } from '../lib/lexer/scanner';
 import type { PlayState, PipelineStep } from '../lib/lexer/types';
 import StepControls from '../components/lexical/StepControls';
@@ -12,11 +13,12 @@ import PipelineConnector from '../components/lexical/PipelineConnector';
 import RegexTable from '../components/lexical/RegexTable';
 import NfaGraph from '../components/lexical/NfaGraph';
 import DfaGraph from '../components/lexical/DfaGraph';
+import MinimizedDfaGraph from '../components/lexical/MinimizedDfaGraph';
 import ScannerAnimation from '../components/lexical/ScannerAnimation';
 import TokensPanel from './TokensPanel';
 import ErrorBoundary from '../components/ErrorBoundary';
 
-const STEP_DELAYS = [2000, 4000, 5000, 8000]; // ms per step during autoplay
+const STEP_DELAYS = [2000, 4000, 5000, 3200, 8000]; // ms per step — 5 steps: RE→NFA→DFA(subset)→MinDFA(Hopcroft)→Scan
 const SCAN_MS_PER_CHAR = 25; // must match ScannerAnimation interval
 
 const LexicalAnalysisPanel: React.FC = () => {
@@ -39,11 +41,13 @@ const LexicalAnalysisPanel: React.FC = () => {
   const nfa = useMemo(() => buildNFA(), []);
 
   const { dfa, steps: subsetSteps } = useMemo(() => subsetConstruction(nfa), [nfa]);
+  const { minDfa, steps: hopcroftSteps } = useMemo(() => hopcroftMinimization(dfa), [dfa]);
 
   const scannerResult = useMemo(() => {
     if (!code) return { steps: [], emittedTokens: [] };
-    return simulateScanner(code, dfa);
-  }, [code, dfa]);
+    // Use minimized DFA for scanning demo — demonstrates the pipeline's second fixed point is not decorative
+    return simulateScanner(code, minDfa);
+  }, [code, minDfa]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -60,21 +64,19 @@ const LexicalAnalysisPanel: React.FC = () => {
     }
   }, []);
 
-  // Handle play
+  // Handle play — 5 steps: RE(0) → NFA(1) → DFA(2) → MinDFA(3) → Scan(4)
   const handlePlay = useCallback(() => {
     setPlayState('playing');
     setCurrentStep(0);
     setCompletedSteps(new Set());
     scrollToStep(0);
 
-    // Auto-advance through steps. The scanner step needs enough time to
-    // finish its char-by-char animation, so its delay scales with input size.
     const scannerDelay = scannerResult.steps.length * SCAN_MS_PER_CHAR + 1500;
-    const delays: number[] = [STEP_DELAYS[0], STEP_DELAYS[1], STEP_DELAYS[2], scannerDelay];
+    const delays: number[] = [STEP_DELAYS[0], STEP_DELAYS[1], STEP_DELAYS[2], STEP_DELAYS[3], scannerDelay];
     let step = 0;
     const advance = () => {
       setCompletedSteps(prev => new Set(prev).add(step));
-      if (step < 3) {
+      if (step < 4) {
         step++;
         setCurrentStep(step as PipelineStep);
         scrollToStep(step);
@@ -95,9 +97,9 @@ const LexicalAnalysisPanel: React.FC = () => {
     }
   }, []);
 
-  // Handle next
+  // Handle next — gated by completion dependency (can't jump ahead of unfinished construction)
   const handleNext = useCallback(() => {
-    if (currentStep < 3) {
+    if (currentStep < 4) {
       const next = (currentStep + 1) as PipelineStep;
       setCompletedSteps(prev => new Set(prev).add(currentStep));
       setCurrentStep(next);
@@ -133,7 +135,7 @@ const LexicalAnalysisPanel: React.FC = () => {
     if (!container) return;
     const containerHeight = container.clientHeight;
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       const el = stepRefs.current[i];
       if (el) {
         const rect = el.getBoundingClientRect();
@@ -214,24 +216,41 @@ const LexicalAnalysisPanel: React.FC = () => {
 
             <PipelineConnector active={completedSteps.has(2) || currentStep >= 3} />
 
-            {/* Step 4: Scanner */}
+            {/* Step 4: DFA Minimization (Hopcroft) — second fixed point */}
             <div ref={(el) => { stepRefs.current[3] = el; }}>
-              <ErrorBoundary name="ScannerAnimation">
-                <ScannerAnimation
-                  sourceCode={code}
-                  steps={scannerResult.steps}
-                  emittedTokens={scannerResult.emittedTokens}
+              <ErrorBoundary name="MinimizedDfaGraph">
+                <MinimizedDfaGraph
+                  dfa={dfa}
+                  minDfa={minDfa}
+                  hopcroftSteps={hopcroftSteps}
                   isPlaying={playState === 'playing' && currentStep === 3}
                   isCompleted={completedSteps.has(3) || playState === 'completed'}
                 />
               </ErrorBoundary>
             </div>
+
+            <PipelineConnector active={completedSteps.has(3) || currentStep >= 4} />
+
+            {/* Step 5: Scanner (on minimized DFA) */}
+            <div ref={(el) => { stepRefs.current[4] = el; }}>
+              <ErrorBoundary name="ScannerAnimation">
+                <ScannerAnimation
+                  sourceCode={code}
+                  steps={scannerResult.steps}
+                  emittedTokens={scannerResult.emittedTokens}
+                  isPlaying={playState === 'playing' && currentStep === 4}
+                  isCompleted={completedSteps.has(4) || playState === 'completed'}
+                />
+              </ErrorBoundary>
+            </div>
           </div>
 
-          {/* Sticky controls */}
+          {/* Sticky controls — 5 steps: RE → NFA → DFA → MinDFA → Scan */}
           <StepControls
             currentStep={currentStep}
             playState={playState}
+            stepNames={['Regex', 'NFA', 'DFA', 'Min-DFA', 'Scan']}
+            totalSteps={5}
             onPlay={handlePlay}
             onPause={handlePause}
             onPrev={handlePrev}

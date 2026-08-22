@@ -96,5 +96,5 @@ export interface ScannerStep {
 /** Play state for the animation */
 export type PlayState = 'idle' | 'playing' | 'paused' | 'completed';
 
-/** Which step in the pipeline */
-export type PipelineStep = 0 | 1 | 2 | 3;
+/** Which step in the pipeline — ch.2: RE → NFA → DFA (subset) → Min DFA (Hopcroft) → Scan */
+export type PipelineStep = 0 | 1 | 2 | 3 | 4;

@@ -3,6 +3,10 @@ import type { GrammarRule, PdaStateNode, PdaTransition } from './types';
 // ── Java Context-Free Grammar (curated subset for visualization) ──
 // Each rule mirrors a production of the Java Language Specification so the
 // shift-reduce animation can label reductions with real grammar rules.
+// NOTE: `?` `*` and `,` in RHS are EBNF shorthands for optional/repetition
+// (ch.3 §3.3.1). The true CFG expands them via ε-productions (e.g.
+// MemberDecl* → MemberDecl MemberDecl* | ε). Shown in compact form for
+// readability — see wiki/chapter_3.md:97-99 and Fig 3.4.
 
 export const GRAMMAR_RULES: GrammarRule[] = [
   { id: 'G01', lhs: 'CompilationUnit', rhs: ['PackageDecl?', 'Import*', 'TypeDecl*'], description: 'A Java file: optional package, imports, then type declarations.' },
@@ -25,17 +29,17 @@ export const GRAMMAR_RULES: GrammarRule[] = [
   { id: 'G18', lhs: 'BlockStmt', rhs: ["'{'", 'Stmt*', "'}'"], description: 'A block groups zero or more statements.' },
   { id: 'G19', lhs: 'Stmt', rhs: ['ExpressionStmt'], description: 'An expression followed by a semicolon.' },
   { id: 'G20', lhs: 'Stmt', rhs: ['IfStmt'], description: 'An if statement.' },
-  { id: 'G21', lhs: 'IfStmt', rhs: ["'if'", "'('", 'Expr', "')'", 'Stmt', "'else'?", 'Stmt?'], description: '`if (cond) ... else ...`' },
+  { id: 'G21', lhs: 'IfStmt', rhs: ["'if'", "'('", 'Expr', "')'", 'Stmt', "'else'?", 'Stmt?'], description: '`if (cond) ... else ...` — classic dangling-else ambiguity (ch.3 §3.2.2); Java binds else to the innermost unclosed if (shift on else). Table shows EBNF shorthand; true grammar rewrites via WithElse.' },
   { id: 'G22', lhs: 'Stmt', rhs: ['WhileStmt'], description: 'A while loop.' },
   { id: 'G23', lhs: 'WhileStmt', rhs: ["'while'", "'('", 'Expr', "')'", 'Stmt'], description: '`while (cond) ...`' },
   { id: 'G24', lhs: 'Stmt', rhs: ['ForStmt'], description: 'A classic for loop.' },
   { id: 'G25', lhs: 'Stmt', rhs: ['ReturnStmt'], description: 'A return statement.' },
   { id: 'G26', lhs: 'ReturnStmt', rhs: ["'return'", 'Expr?', "';'"], description: '`return [expr];`' },
   { id: 'G27', lhs: 'Stmt', rhs: ['LocalClassDeclarationStmt'], description: 'A class declared inside a method body.' },
-  { id: 'G28', lhs: 'Expr', rhs: ['AssignExpr'], description: 'Assignment expressions (`x = ...`).' },
-  { id: 'G29', lhs: 'AssignExpr', rhs: ['Expr', 'op', 'Expr'], description: '`lhs op rhs`' },
-  { id: 'G30', lhs: 'Expr', rhs: ['BinaryExpr'], description: 'Binary arithmetic / logical expressions.' },
-  { id: 'G31', lhs: 'BinaryExpr', rhs: ['Expr', 'op', 'Expr'], description: '`a op b`' },
+  { id: 'G28', lhs: 'Expr', rhs: ['AssignExpr'], description: 'Assignment expressions (`x = ...`) — right-associative via recursive RHS (ch.3 §3.5.4).' },
+  { id: 'G29', lhs: 'AssignExpr', rhs: ['Expr', 'op', 'Expr'], description: '`lhs op rhs` — `=` is right-assoc; tree shape shows it.' },
+  { id: 'G30', lhs: 'Expr', rhs: ['BinaryExpr'], description: 'Binary arithmetic / logical expressions. Precedence is encoded by stratification in a full grammar (Expr→Term→Factor, Fig 3.1); this table collapses tiers for brevity — the AST tree shape (a+b*c → a+(b*c)) still demonstrates precedence.' },
+  { id: 'G31', lhs: 'BinaryExpr', rhs: ['Expr', 'op', 'Expr'], description: '`a op b` — `* / %` bind tighter than `+ -` because the subtree for `b*c` is built first. See ch.3 §3.2.4.' },
   { id: 'G32', lhs: 'Expr', rhs: ['UnaryExpr'], description: 'Unary expressions like `-x` or `!flag`.' },
   { id: 'G33', lhs: 'Expr', rhs: ['MethodCallExpr'], description: 'Calling a method with arguments.' },
   { id: 'G34', lhs: 'MethodCallExpr', rhs: ['Scope', 'Identifier', "'('", 'Args?', "')'"], description: '`target.method(args...)`' },
@@ -49,24 +53,42 @@ export const GRAMMAR_RULES: GrammarRule[] = [
   { id: 'G42', lhs: 'Modifier', rhs: ['ModifierKeyword'], description: '`public`, `private`, `static`, `final`, ...' },
 ];
 
-/** Lookup table: AST node type name → curated rule id */
-const RULE_BY_LHS: Record<string, string> = {};
+/** Lookup table: AST node type name → curated rule id (supports multiple rules per LHS) */
+const RULE_BY_LHS_MULTI: Record<string, string[]> = {};
 for (const rule of GRAMMAR_RULES) {
-  if (!RULE_BY_LHS[rule.lhs]) RULE_BY_LHS[rule.lhs] = rule.id;
+  if (!RULE_BY_LHS_MULTI[rule.lhs]) RULE_BY_LHS_MULTI[rule.lhs] = [];
+  RULE_BY_LHS_MULTI[rule.lhs].push(rule.id);
 }
 
-/** Find the curated rule for an AST node type, or null */
+/** Find the curated rule for an AST node type, or null.
+ *  Handles LHS collisions (e.g. TypeDecl alternatives) and EBNF RHS aliases:
+ *  if no direct LHS match, search for a rule whose RHS mentions the node type.
+ */
 export function findGrammarRule(nodeType: string): GrammarRule | null {
-  const id = RULE_BY_LHS[nodeType];
-  if (id) return GRAMMAR_RULES.find(r => r.id === id) ?? null;
+  const ids = RULE_BY_LHS_MULTI[nodeType];
+  if (ids && ids.length > 0) return GRAMMAR_RULES.find(r => r.id === ids[0]) ?? null;
+  // Fallback: rhs alias (e.g. EnumDeclaration → G03 TypeDecl → EnumDeclaration)
+  for (const rule of GRAMMAR_RULES) {
+    if (rule.rhs.includes(nodeType)) return rule;
+  }
   return null;
 }
 
+/** All curated rules for a given LHS (for active highlighting) */
+export function findGrammarRulesForLhs(lhs: string): GrammarRule[] {
+  const ids = RULE_BY_LHS_MULTI[lhs];
+  if (!ids) return [];
+  return ids.map(id => GRAMMAR_RULES.find(r => r.id === id)!).filter(Boolean);
+}
+
 // ── Pushdown Automaton diagram ──
-// The parser is a PDA: a finite-state controller plus a stack memory.
+// Schematic PDA (artist's impression) — not the LR(1) canonical collection CC.
+// A true LR(1) PDA per ch.3 §3.4.2 is closure/goto over LR(1) items (tens–hundreds of states);
+// this 5-state figure summarizes phases (header/body/statement) for pedagogy and is driven
+// by the simulated shift-reduce trace's `stage` heuristic (parseSimulator.ts: classifyStage).
 
 export const PDA_STATES: PdaStateNode[] = [
-  { id: 'start', label: 'q₀ START', description: 'Awaiting the first token', x: 40, y: 40, isStart: true },
+  { id: 'start', label: 'q₀ START', description: 'Awaiting the first token (schematic)', x: 40, y: 40, isStart: true },
   { id: 'header', label: 'q₁ HEADER', description: 'Parsing a type declaration header', x: 250, y: 50 },
   { id: 'body', label: 'q₂ BODY', description: 'Parsing members between { }', x: 460, y: 50 },
   { id: 'statement', label: 'q₃ STATEMENT', description: 'Parsing a statement inside a block', x: 460, y: 150 },

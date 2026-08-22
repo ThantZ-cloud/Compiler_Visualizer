@@ -112,12 +112,24 @@ function convertToAstNode(obj: RawAstNode | null | undefined): AstNode {
   };
 }
 
-/** Post-order (children first) — the order reductions happen */
-function postOrder(root: AstNode, out: AstNode[] = [], visited = new Set<AstNode>()): AstNode[] {
-  if (visited.has(root)) return out;
-  visited.add(root);
-  for (const child of root.children ?? []) postOrder(child, out, visited);
-  out.push(root);
+/** Post-order (children first) — iterative to avoid call-stack blow-up on deep nesting (ch.3 §3.5.4 depth 100+) */
+function postOrder(root: AstNode): AstNode[] {
+  const out: AstNode[] = [];
+  const visited = new Set<AstNode>();
+  const stack: { node: AstNode; idx: number }[] = [{ node: root, idx: 0 }];
+  while (stack.length > 0) {
+    const top = stack[stack.length - 1];
+    if (visited.has(top.node)) { stack.pop(); continue; }
+    const children = top.node.children ?? [];
+    if (top.idx < children.length) {
+      const child = children[top.idx++];
+      if (!visited.has(child)) stack.push({ node: child, idx: 0 });
+    } else {
+      visited.add(top.node);
+      out.push(top.node);
+      stack.pop();
+    }
+  }
   return out;
 }
 

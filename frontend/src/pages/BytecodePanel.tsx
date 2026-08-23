@@ -80,6 +80,37 @@ const BytecodePanel: React.FC = () => {
     autoplayTimer.current = setTimeout(advance, stepDelays[0]);
   }, [scrollToStep, firstMethod]);
 
+  // Handle play-one-phase: animate only the active phase, then stay on it.
+  // Each click advances at most one phase; skips any phase already played.
+  const handlePlayOnePhase = useCallback(() => {
+    if (autoplayTimer.current) {
+      clearTimeout(autoplayTimer.current);
+      autoplayTimer.current = null;
+    }
+
+    let step = currentStep;
+    while (step < 2 && completedSteps.has(step)) step++;
+    if (completedSteps.has(step)) return;
+
+    setCurrentStep(step as 0 | 1 | 2);
+    setPlayState('playing');
+    scrollToStep(step);
+
+    const stepDelays = [...BASE_STEP_DELAYS];
+    if (firstMethod) {
+      const traceSteps = simulateExecution(firstMethod.instructions, firstMethod.maxLocals).steps.length;
+      if (traceSteps > 0) {
+        const msPerStep = Math.max(120, Math.min(600, Math.floor(10000 / traceSteps)));
+        stepDelays[1] = traceSteps * msPerStep + 1500;
+      }
+    }
+    autoplayTimer.current = setTimeout(() => {
+      setCompletedSteps(prev => new Set(prev).add(step));
+      setPlayState('idle');
+      autoplayTimer.current = null;
+    }, stepDelays[step]);
+  }, [currentStep, completedSteps, scrollToStep, firstMethod]);
+
   const handlePause = useCallback(() => {
     setPlayState('paused');
     if (autoplayTimer.current) {
@@ -240,6 +271,8 @@ const BytecodePanel: React.FC = () => {
             onNext={handleNext}
             onPrev={handlePrev}
             onRestart={handleRestart}
+            onPlayOnePhase={handlePlayOnePhase}
+            playOneDisabled={[0, 1, 2].every(s => completedSteps.has(s))}
           />
         </>
       ) : (

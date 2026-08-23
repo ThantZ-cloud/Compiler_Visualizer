@@ -100,6 +100,26 @@ const CfgPanel: React.FC = () => {
     autoplayTimer.current = setTimeout(advance, STEP_DELAYS[0]);
   }, [scrollToStep]);
 
+  // Handle play-one-phase: animate only the active phase, then stay on it.
+  // Each click advances at most one phase; skips any phase already played.
+  const handlePlayOnePhase = useCallback(() => {
+    if (autoplayTimer.current) { clearTimeout(autoplayTimer.current); autoplayTimer.current = null; }
+
+    let step = currentStep;
+    while (step < 4 && completedSteps.has(step)) step++;
+    if (completedSteps.has(step)) return;
+
+    setCurrentStep(step as 0 | 1 | 2 | 3 | 4);
+    setPlayState('playing');
+    scrollToStep(step);
+
+    autoplayTimer.current = setTimeout(() => {
+      setCompletedSteps(prev => new Set(prev).add(step));
+      setPlayState('idle');
+      autoplayTimer.current = null;
+    }, STEP_DELAYS[step]);
+  }, [currentStep, completedSteps, scrollToStep]);
+
   const handlePause = useCallback(() => {
     setPlayState('paused');
     if (autoplayTimer.current) { clearTimeout(autoplayTimer.current); autoplayTimer.current = null; }
@@ -263,6 +283,8 @@ const CfgPanel: React.FC = () => {
             onNext={handleNext}
             onPrev={handlePrev}
             onRestart={handleRestart}
+            onPlayOnePhase={handlePlayOnePhase}
+            playOneDisabled={[0, 1, 2, 3, 4].every(s => completedSteps.has(s))}
           />
         </>
       ) : (

@@ -98,6 +98,31 @@ const SyntaxAnalysisPanel: React.FC = () => {
     autoplayTimer.current = setTimeout(advance, delays[0]);
   }, [scrollToStep, parseSteps.length]);
 
+  // Handle play-one-phase: animate only the active phase, then stay on it.
+  // Each click advances at most one phase; skips any phase already played.
+  const handlePlayOnePhase = useCallback(() => {
+    if (autoplayTimer.current) {
+      clearTimeout(autoplayTimer.current);
+      autoplayTimer.current = null;
+    }
+
+    let step = currentStep;
+    while (step < 3 && completedSteps.has(step)) step++;
+    if (completedSteps.has(step)) return;
+
+    setCurrentStep(step as 0 | 1 | 2 | 3);
+    setPlayState('playing');
+    scrollToStep(step);
+
+    const parseDelay = parseSteps.length * PARSE_MS_PER_STEP + 2000;
+    const delays: number[] = [STEP_DELAYS[0], STEP_DELAYS[1], parseDelay, STEP_DELAYS[3]];
+    autoplayTimer.current = setTimeout(() => {
+      setCompletedSteps(prev => new Set(prev).add(step));
+      setPlayState('idle');
+      autoplayTimer.current = null;
+    }, delays[step]);
+  }, [currentStep, completedSteps, scrollToStep, parseSteps.length]);
+
   const handlePause = useCallback(() => {
     setPlayState('paused');
     if (autoplayTimer.current) {
@@ -256,6 +281,8 @@ const SyntaxAnalysisPanel: React.FC = () => {
             onPrev={handlePrev}
             onNext={handleNext}
             onRestart={handleRestart}
+            onPlayOnePhase={handlePlayOnePhase}
+            playOneDisabled={[0, 1, 2, 3].every(s => completedSteps.has(s))}
           />
         </>
       ) : (

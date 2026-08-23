@@ -25,6 +25,14 @@ read  @CLAUDE.md
 - All compiler concepts follow a single textbook internally (`wiki/`), but the UI must be textbook-agnostic: **never render** `Fig.`, `Figure`, `§`, `Ch.`, `Chapter`, `Engineering a Compiler`, or `wiki/` paths to the end user. Use neutral phrasing like “Example walkthrough” or “How it works”.
 - Explain like the developer profile in `CLAUDE.md` (J2SE/MySQL → React/Spring): start from what they know (components ≈ Java classes, state ≈ instance vars), then introduce compiler jargon (RE, NFA, DFA, PDA, CFG).
 - Every pipeline phase (`/visualize/{lexical,syntax,semantic,cfg,codegen,bytecode}`) exposes an **Examples** walkthrough in the same top-level-tab pattern as the lexical `Build` tab: small concrete Java program → editable code chip + step 1…N animation (circles/arrows, trees, or tables) → result. The `Build` NFA walkthrough (`a(b|c)*`) is the reference pattern.
+- **Algorithm labels:** Every visualization/result must show the algorithm that built it, directly in the UI (title or badge) via i18n. Use these canonical names:
+  - Lexical: `NFA — Thompson Construction`, `DFA — Subset Construction`, `Min-DFA — Hopcroft's Algorithm`, `Scanner — Maximal-Munch / DFA Simulation`
+  - Syntax: `PDA — Pushdown Automaton`, `Shift-Reduce Parsing`, `AST Construction`
+  - Semantic: `Scope Tree`, `Symbol Table`, `Type Resolution`, `Type Checking`
+  - Optimizer/CFG: `Basic Blocks`, `Dominator Tree`, `SSA Form`, `Liveness / Data-Flow Analysis`, `List Scheduling`
+  - Codegen: `TAC Decomposition`, `Basic Blocks`, `Flow Graph`, `Instruction Scheduling`, `Register Allocation (Graph Coloring)`
+  - Bytecode: `Bytecode Listing (javap)`, `Stack Machine Simulation`, `Execution Flow`
+  Never add a visualization without its algorithm label.
 - Internal audit agents (`.opencode/agents/*`) may reference chapters for verification, but their findings must be rewritten into neutral user-facing copy before shipping.
 - `wiki/` is internal only — never link to it from the UI.
 

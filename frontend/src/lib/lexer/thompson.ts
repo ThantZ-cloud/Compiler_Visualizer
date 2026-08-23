@@ -1,25 +1,21 @@
 import type { NFA, NFAState, NFATransition } from './types';
 
-// ── Thompson Construction (ch.2 §2.4.2, Figure 2.4) ──
+// ── Thompson Construction — RE → NFA ──
 // Every token group is expressed as a regular expression over symbols
 // (literal chars or character classes), then compiled to an NFA by applying
-// the canonical templates of Figure 2.4:
+// the standard templates:
 //   (a) symbol  sN ──a──> sF
 //   (c) concat  accept(r) ──ε──> start(s)
 //   (d) alt     new start ──ε──> each start; each accept ──ε──> new accept
 //   (e) star    new start ──ε──> {r.start, new accept}; r.accept ──ε──> {r.start, new accept}
 //
-// Per §2.4.2 the fragments satisfy the book's properties: one start state and
-// one accepting state per fragment, no transition other than the initial edge
-// enters a start state, and no transition ever leaves an accepting state.
+// Each fragment has one start and one accept; no extra edge enters the
+// start and no edge leaves the accept. Each builder also records the
+// transformation as a node of the RE tree so the viewer can draw the
+// machine exactly as it was composed (postorder) instead of inferring
+// structure from the flat graph.
 //
-// Per the "Representing the Precedence of Operators" sidebar (p.48), each
-// builder also records the transformation it applied as a node of the RE
-// TREE. The tree is emitted alongside the flat state/transition lists so the
-// NFA viewer can draw the machine exactly the way the construction composed
-// it (postorder), instead of re-inferring structure from the graph.
-//
-// r+ and r? are drawn as the standard shorthand expansions (r r* and the
+// r+ and r? are drawn as shorthand expansions (r r* and the
 // star-without-back-edge), each wrapped in fresh start/accept states so the
 // one-start/one-accept invariant still holds at every composition point.
 
@@ -104,7 +100,7 @@ interface Built {
   node: ReNode;
 }
 
-// ── The templates of Figure 2.4 ──
+// ── The core templates ──
 
 /** (a) NFA for a single symbol (literal char or character-class label). */
 function fragSymbol(symbol: string): Built {
@@ -339,8 +335,8 @@ export interface GroupConstruction {
 const SEPARATOR_LITERALS = ['(', ')', '{', '}', ';', ',', '.', '[', ']', '@'] as const;
 
 function separatorRE(): Built {
-  // Per wiki p.224: punctuation marks as literal alternations — faithful to Figure 2.4(d) fan
-  // ':' was moved to OPERATOR (ternary ?:, labels) — single owner avoids duplicate ':' in Flat
+  // Punctuation marks as literal alternations — fan shape
+  // ':' belongs to OPERATOR (ternary ?:, labels) — single owner avoids duplicate ':' in Flat
   return fragAlt(SEPARATOR_LITERALS.map(ch => fragSymbol(ch)));
 }
 
@@ -401,8 +397,8 @@ export function constructGroups(filteredKeywords?: string[]): GroupConstruction[
 }
 
 /**
- * Build a textbook Figure 2.5 example NFA: a(b|c)*
- * Used as a regression anchor — asserts Thompson templates match the book.
+ * Build an example NFA: a(b|c)*
+ * Used as a walkthrough anchor — shows how the templates compose.
  */
 export function buildFigure25Example(): { nfa: NFA; root: ReNode } {
   counter = 0;

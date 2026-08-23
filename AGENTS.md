@@ -20,6 +20,14 @@ read  @CLAUDE.md
 - All user-facing copy goes through i18n in `frontend/src/i18n/locales/{en,my}.json`
 - Three DB profiles: dev (SQLite, default), test (H2, auto-loaded under `src/test`), prod (MySQL, activate with `-Dspring-boot.run.profiles=mysql`)
 
+## Teaching Style & Provenance (persist every session)
+
+- All compiler concepts follow a single textbook internally (`wiki/`), but the UI must be textbook-agnostic: **never render** `Fig.`, `Figure`, `§`, `Ch.`, `Chapter`, `Engineering a Compiler`, or `wiki/` paths to the end user. Use neutral phrasing like “Example walkthrough” or “How it works”.
+- Explain like the developer profile in `CLAUDE.md` (J2SE/MySQL → React/Spring): start from what they know (components ≈ Java classes, state ≈ instance vars), then introduce compiler jargon (RE, NFA, DFA, PDA, CFG).
+- Every pipeline phase (`/visualize/{lexical,syntax,semantic,cfg,codegen,bytecode}`) exposes an **Examples** walkthrough in the same top-level-tab pattern as the lexical `Build` tab: small concrete Java program → editable code chip + step 1…N animation (circles/arrows, trees, or tables) → result. The `Build` NFA walkthrough (`a(b|c)*`) is the reference pattern.
+- Internal audit agents (`.opencode/agents/*`) may reference chapters for verification, but their findings must be rewritten into neutral user-facing copy before shipping.
+- `wiki/` is internal only — never link to it from the UI.
+
 ## Key Flows (recent features)
 
 - **Visualizer empty state**: with no compile results, `/visualize/*` offers **LOAD SAMPLE CODE** — `compileSample()` in `CompileContext` compiles `SAMPLE_JAVA_CODE` (`frontend/src/data/sampleCode.ts`, a factorial loop) in place; users never need the editor to explore visualizations

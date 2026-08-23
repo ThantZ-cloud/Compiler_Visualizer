@@ -357,6 +357,15 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
       if (st.isAccept && st.acceptType) g.append('text').attr('text-anchor', 'middle').attr('dy', R + 12).attr('fill', 'var(--color-neon)').style('font-size', '6px').style('font-family', 'JetBrains Mono, monospace').text(st.acceptType.slice(0, 4));
       fadeIn(g as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, (depthOf.get(id) ?? 0) * 180 + 120);
     }
+    // Scroll the card so q0 sits at the vertical center of the visible area (like d0/m0)
+    const q0Pos = positions.get(nfa.startState);
+    const card = svgEl.parentElement as HTMLElement | null;
+    if (q0Pos && card) {
+      requestAnimationFrame(() => {
+        const target = Math.max(0, q0Pos.y - card.clientHeight / 2);
+        card.scrollTop = Math.min(target, card.scrollHeight - card.clientHeight);
+      });
+    }
     return () => { svg.selectAll('*').remove(); };
   }, [active, nfa, t, groupCounts, ordered, isPlaying]);
 

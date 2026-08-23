@@ -233,7 +233,7 @@ const LexicalAnalysisPanel: React.FC = () => {
             <PipelineConnector active={completedSteps.has(0) || currentStep >= 1} />
 
             {/* Step 2: NFA */}
-            <div ref={(el) => { stepRefs.current[1] = el; }}>
+            <div ref={(el) => { stepRefs.current[1] = el; }} className="flex items-center min-h-[70vh]">
               <ErrorBoundary name="NfaGraph">
                 <NfaGraph
                   nfa={nfa}
@@ -248,7 +248,7 @@ const LexicalAnalysisPanel: React.FC = () => {
             <PipelineConnector active={completedSteps.has(1) || currentStep >= 2} />
 
             {/* Step 3: DFA */}
-            <div ref={(el) => { stepRefs.current[2] = el; }}>
+            <div ref={(el) => { stepRefs.current[2] = el; }} className="flex items-center min-h-[70vh]">
               <ErrorBoundary name="DfaGraph">
                 <DfaGraph
                   dfa={dfa}
@@ -264,7 +264,7 @@ const LexicalAnalysisPanel: React.FC = () => {
             <PipelineConnector active={completedSteps.has(2) || currentStep >= 3} />
 
             {/* Step 4: DFA Minimization (Hopcroft) — second fixed point */}
-            <div ref={(el) => { stepRefs.current[3] = el; }}>
+            <div ref={(el) => { stepRefs.current[3] = el; }} className="flex items-center min-h-[70vh]">
               <ErrorBoundary name="MinimizedDfaGraph">
                 <MinimizedDfaGraph
                   dfa={dfa}

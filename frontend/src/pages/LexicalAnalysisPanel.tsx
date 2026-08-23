@@ -40,6 +40,16 @@ const LexicalAnalysisPanel: React.FC = () => {
 
   const nfa = useMemo(() => buildNFA(), []);
 
+  const foundKeywords = useMemo(() => {
+    if (!result?.tokens) return [] as string[];
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const tok of result.tokens) {
+      if (tok.type === 'KEYWORD' && !seen.has(tok.value)) { seen.add(tok.value); out.push(tok.value); }
+    }
+    return out;
+  }, [result]);
+
   const { dfa, steps: subsetSteps } = useMemo(() => subsetConstruction(nfa), [nfa]);
   const { minDfa, steps: hopcroftSteps } = useMemo(() => hopcroftMinimization(dfa), [dfa]);
 
@@ -220,6 +230,7 @@ const LexicalAnalysisPanel: React.FC = () => {
               <ErrorBoundary name="NfaGraph">
                 <NfaGraph
                   nfa={nfa}
+                  keywords={foundKeywords}
                   isPlaying={playState === 'playing' && currentStep === 1}
                   isCompleted={completedSteps.has(1) || playState === 'completed'}
                 />

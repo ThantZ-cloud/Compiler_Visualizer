@@ -1,33 +1,27 @@
 import type { NFA, NFAState, NFATransition } from './types';
 
-// ── Thompson Construction ──
-// Converts simplified regex patterns into an NFA.
-// Uses a state counter to generate unique state IDs.
-
-let stateCounter = 0;
-
-function resetCounter(): void {
-  stateCounter = 0;
-}
-
-function newState(isStart = false, isAccept = false, acceptType?: string): NFAState {
-  return {
-    id: stateCounter++,
-    label: `q${stateCounter - 1}`,
-    isStart,
-    isAccept,
-    acceptType,
-  };
-}
-
-// ── Symbol classes for simplified patterns ──
-// Instead of full regex parsing, we define character classes
-// that represent the groups used in token recognition.
-
-export interface SymbolClass {
-  name: string; // display name, e.g. 'a-z'
-  test: (char: string) => boolean;
-}
+// ── Thompson Construction (ch.2 §2.4.2, Figure 2.4) ──
+// Every token group is expressed as a regular expression over symbols
+// (literal chars or character classes), then compiled to an NFA by applying
+// the canonical templates of Figure 2.4:
+//   (a) symbol  sN ──a──> sF
+//   (c) concat  accept(r) ──ε──> start(s)
+//   (d) alt     new start ──ε──> each start; each accept ──ε──> new accept
+//   (e) star    new start ──ε──> {r.start, new accept}; r.accept ──ε──> {r.start, new accept}
+//
+// Per §2.4.2 the fragments satisfy the book's properties: one start state and
+// one accepting state per fragment, no transition other than the initial edge
+// enters a start state, and no transition ever leaves an accepting state.
+//
+// Per the "Representing the Precedence of Operators" sidebar (p.48), each
+// builder also records the transformation it applied as a node of the RE
+// TREE. The tree is emitted alongside the flat state/transition lists so the
+// NFA viewer can draw the machine exactly the way the construction composed
+// it (postorder), instead of re-inferring structure from the graph.
+//
+// r+ and r? are drawn as the standard shorthand expansions (r r* and the
+// star-without-back-edge), each wrapped in fresh start/accept states so the
+// one-start/one-accept invariant still holds at every composition point.
 
 export const JAVA_KEYWORDS = [
   'abstract','assert','boolean','break','byte','case','catch','char','class','const','continue',
@@ -37,309 +31,380 @@ export const JAVA_KEYWORDS = [
   'throw','throws','transient','try','void','volatile','while','true','false','null','var','record','sealed','permits','yield',
 ] as const;
 
+// ── Symbol classes: named character classes used as edge labels ──
+// subsetConstruction.ts resolves these semantically via `test`, so the DFA
+// step stays correct regardless of how many labels share characters.
+
+export interface SymbolClass {
+  name: string; // display name, e.g. 'a-z'
+  test: (char: string) => boolean;
+}
+
 export const SYMBOL_CLASSES: Record<string, SymbolClass> = {
   'a-z': { name: 'a-z', test: (c) => /[a-zA-Z]/.test(c) },
-  'a-f': { name: 'a-f', test: (c) => /[a-fA-F]/.test(c) }, // hex digits only
   '0-9': { name: '0-9', test: (c) => /[0-9]/.test(c) },
+  'a-f': { name: 'a-f', test: (c) => /[a-fA-F]/.test(c) }, // hex digits
   '_': { name: '_', test: (c) => c === '_' || c === '$' },
   '"': { name: '"', test: (c) => c === '"' },
-  'any-str': { name: 'char', test: (c) => c !== '"' && c !== '\n' && c !== '\r' && c !== '\\' },
-  'str-esc': { name: '\\.', test: (c) => c === '\\' },
-  'not-nl': { name: 'not-nl', test: (c) => c !== '\n' && c !== '\r' },
+  'any-str': { name: 'any', test: (c) => c !== '"' && c !== '\n' && c !== '\r' && c !== '\\' },
+  'esc-ch': { name: 'char', test: (c) => c !== '\n' && c !== '\r' },
   '.': { name: '.', test: (c) => c === '.' },
+  'eE': { name: 'e|E', test: (c) => c === 'e' || c === 'E' },
+  '+-': { name: '+|-', test: (c) => c === '+' || c === '-' },
+  'xX': { name: 'x|X', test: (c) => c === 'x' || c === 'X' },
   'ws': { name: 'ws', test: (c) => /\s/.test(c) },
   'op': { name: 'op', test: (c) => /[+\-*/=<>&|!^%~?:]/.test(c) },
   'sep': { name: 'sep', test: (c) => /[(){};,.[\]@]/.test(c) },
   '/': { name: '/', test: (c) => c === '/' },
   '*': { name: '*', test: (c) => c === '*' },
   '\\': { name: '\\', test: (c) => c === '\\' },
+  // line-comment body: everything up to (not including) the newline
+  'not-nl': { name: '[^\\n\\r]', test: (c) => c !== '\n' && c !== '\r' },
+  // block-comment body: any character except the closing star (newlines allowed)
+  'blk-body': { name: '[^*]', test: (c) => c !== '*' },
+  // after a run of stars inside a block comment: anything but star or slash
+  'blk-tail': { name: '[^*/]', test: (c) => c !== '*' && c !== '/' },
 };
 
-// ── Build NFA for a single token group ──
-// Each group gets a simple chain of states representing its pattern.
-// This is a simplified Thompson construction for educational purposes.
+// ── RE tree nodes (ch.2 p.48 sidebar) ──
+// Every builder returns a Fragment PLUS the tree node describing the
+// transformation, with the concrete state ids it allocated stamped in.
 
-interface NFABuilderResult {
+export type ReNode =
+  | { kind: 'sym'; label: string; startId: number; acceptId: number }
+  | { kind: 'concat'; children: ReNode[]; startId: number; acceptId: number }
+  | { kind: 'alt'; children: ReNode[]; startId: number; acceptId: number }
+  | { kind: 'star'; child: ReNode; startId: number; acceptId: number }
+  | { kind: 'opt'; child: ReNode; startId: number; acceptId: number };
+
+// ── NFA assembly state (module-level, reset per build) ──
+
+let states: NFAState[] = [];
+let transitions: NFATransition[] = [];
+let counter = 0;
+
+function mkState(): number {
+  const s: NFAState = { id: counter++, label: `q${counter - 1}`, isStart: false, isAccept: false };
+  states.push(s);
+  return s.id;
+}
+
+function eps(from: number, to: number): void {
+  transitions.push({ from, to, symbol: '' });
+}
+
+function sym(from: number, to: number, symbol: string): void {
+  transitions.push({ from, to, symbol });
+}
+
+/** A Thompson fragment: exactly one start and one accept state, plus its RE tree node. */
+interface Built {
+  startId: number;
+  acceptId: number;
+  node: ReNode;
+}
+
+// ── The templates of Figure 2.4 ──
+
+/** (a) NFA for a single symbol (literal char or character-class label). */
+function fragSymbol(symbol: string): Built {
+  const s = mkState();
+  const f = mkState();
+  sym(s, f, symbol);
+  return { startId: s, acceptId: f, node: { kind: 'sym', label: symbol, startId: s, acceptId: f } };
+}
+
+/** (c) NFA for r s … — glue accepts to starts with ε-transitions. */
+function fragConcat(parts: Built[]): Built {
+  if (parts.length === 0) {
+    const s = mkState(); // ε fragment: start === accept (degenerate, unused)
+    return { startId: s, acceptId: s, node: { kind: 'concat', children: [], startId: s, acceptId: s } };
+  }
+  for (let i = 0; i < parts.length - 1; i++) {
+    eps(parts[i].acceptId, parts[i + 1].startId);
+  }
+  return {
+    startId: parts[0].startId,
+    acceptId: parts[parts.length - 1].acceptId,
+    node: {
+      kind: 'concat',
+      children: parts.map(p => p.node),
+      startId: parts[0].startId,
+      acceptId: parts[parts.length - 1].acceptId,
+    },
+  };
+}
+
+/** (d) NFA for r | s | … — fresh start/accept, one ε edge pair per branch. */
+function fragAlt(parts: Built[]): Built {
+  if (parts.length === 1) return parts[0];
+  const s = mkState();
+  const f = mkState();
+  for (const p of parts) {
+    eps(s, p.startId);
+    eps(p.acceptId, f);
+  }
+  return {
+    startId: s,
+    acceptId: f,
+    node: { kind: 'alt', children: parts.map(p => p.node), startId: s, acceptId: f },
+  };
+}
+
+/** (e) NFA for r* — fresh start/accept plus the loop-back ε edge. */
+function fragStar(inner: Built): Built {
+  const s = mkState();
+  const f = mkState();
+  eps(s, inner.startId);
+  eps(s, f); // zero occurrences
+  eps(inner.acceptId, inner.startId); // repeat
+  eps(inner.acceptId, f);
+  return {
+    startId: s,
+    acceptId: f,
+    node: { kind: 'star', child: inner.node, startId: s, acceptId: f },
+  };
+}
+
+/**
+ * Shorthand r+ = r r*. Takes a FACTORY so the two copies are independent
+ * fragments — reusing one fragment twice would wire ε edges back into its
+ * internal states, violating the §2.4.2 invariants the drawing relies on.
+ */
+function fragPlus(makeInner: () => Built): Built {
+  return fragConcat([makeInner(), fragStar(makeInner())]);
+}
+
+/** NFA for r? — the star template minus the back-edge. */
+function fragOpt(inner: Built): Built {
+  const s = mkState();
+  const f = mkState();
+  eps(s, inner.startId);
+  eps(s, f); // skip
+  eps(inner.acceptId, f);
+  return {
+    startId: s,
+    acceptId: f,
+    node: { kind: 'opt', child: inner.node, startId: s, acceptId: f },
+  };
+}
+
+/** Shorthand: alternation over single-symbol branches (a character class union). */
+function fragClassUnion(labels: string[]): Built {
+  return fragAlt(labels.map(l => fragSymbol(l)));
+}
+
+/** Literal word spelled char-by-char: "for" → f o r concatenated. */
+function fragWord(word: string): Built {
+  return fragConcat(word.split('').map(ch => fragSymbol(ch)));
+}
+
+// ── Token-group regular expressions, built from the templates above ──
+
+function markAccept(frag: Built, acceptType: string): void {
+  const st = states[frag.acceptId];
+  st.isAccept = true;
+  st.acceptType = acceptType;
+}
+
+// IDENTIFIER: [a-zA-Z_$] [a-zA-Z0-9_$]*
+function identifierRE(): Built {
+  return fragConcat([
+    fragClassUnion(['a-z', '_']),
+    fragStar(fragClassUnion(['a-z', '0-9', '_'])),
+  ]);
+}
+
+// STRING: " ([^"\n\r\\] | \ . )* "
+function stringRE(): Built {
+  return fragConcat([
+    fragSymbol('"'),
+    fragStar(fragAlt([
+      fragSymbol('any-str'),
+      fragConcat([fragSymbol('\\'), fragSymbol('esc-ch')]),
+    ])),
+    fragSymbol('"'),
+  ]);
+}
+
+// NUMBER: 0[xX][0-9a-fA-F]+ | [0-9]+ (. [0-9]+ )? ( [eE] (+|-)? [0-9]+ )?
+function numberRE(): Built {
+  const digits = () => fragPlus(() => fragSymbol('0-9'));
+  const hexDigits = () => fragPlus(() => fragAlt([fragSymbol('0-9'), fragSymbol('a-f')]));
+  const exponent = fragOpt(
+    fragConcat([
+      fragSymbol('eE'),
+      fragOpt(fragAlt([fragSymbol('+'), fragSymbol('-')])),
+      digits(),
+    ]),
+  );
+  return fragAlt([
+    // hex literal — must begin with the digit zero
+    fragConcat([fragSymbol('0'), fragSymbol('xX'), hexDigits()]),
+    fragConcat([digits(), fragOpt(fragConcat([fragSymbol('.'), digits()])), exponent]),
+  ]);
+}
+
+// OPERATOR: multi-char operators | single-char operator class
+function operatorRE(): Built {
+  const multiOps = ['==','!=','<=','>=','&&','||','<<','>>','>>>','+=','-=','*=','/=','%=','&=','|=','^=','->','::'];
+  return fragAlt([...multiOps.map(op => fragWord(op)), fragSymbol('op')]);
+}
+
+// WHITESPACE: [ws]+ (spelled ws ws*)
+function whitespaceRE(): Built {
+  return fragPlus(() => fragSymbol('ws'));
+}
+
+// COMMENT: // [^\n\r]*  |  /\* ( [^*] | \*+ [^*/] )* \*+ /
+// The block-comment body mirrors the classic DFA-safe shape: ordinary
+// characters (stars included, newlines included) OR a run of one-or-more
+// stars followed by something that neither continues nor closes the comment;
+// the comment then closes on a run of stars plus the final slash.
+function commentRE(): Built {
+  return fragAlt([lineComment(), blockComment()]);
+}
+
+function lineComment(): Built {
+  return fragConcat([fragSymbol('/'), fragSymbol('/'), fragStar(fragSymbol('not-nl'))]);
+}
+
+function blockComment(): Built {
+  return fragConcat([
+    fragSymbol('/'),
+    fragSymbol('*'),
+    fragStar(fragAlt([
+      fragSymbol('blk-body'),
+      fragConcat([fragPlus(() => fragSymbol('*')), fragSymbol('blk-tail')]),
+    ])),
+    fragPlus(() => fragSymbol('*')),
+    fragSymbol('/'),
+  ]);
+}
+
+// KEYWORD: alternation of literal words (each branch its own linear chain)
+function keywordRE(): Built {
+  return fragAlt(JAVA_KEYWORDS.map(kw => fragWord(kw)));
+}
+
+// ── Per-group constructions (single source of truth for NFA and viewer) ──
+
+/** Convert a ReNode tree into a human-readable regex string (single source of truth). */
+export function reNodeToString(node: ReNode): string {
+  switch (node.kind) {
+    case 'sym': return node.label;
+    case 'concat': return node.children.map(reNodeToString).join(' ');
+    case 'alt': return `(${node.children.map(reNodeToString).join(' | ')})`;
+    case 'star': return `(${reNodeToString(node.child)})*`;
+    case 'opt': return `(${reNodeToString(node.child)})?`;
+  }
+}
+
+/** Display regex for each group — derived from the construction tree when possible, with a hand-written fallback. */
+const GROUP_RES: Record<string, string> = {
+  KEYWORD: `${JAVA_KEYWORDS.slice(0, 4).join(' | ')} | … (${JAVA_KEYWORDS.length} keywords)`,
+  IDENTIFIER: '[a-zA-Z_$] [a-zA-Z0-9_$]*',
+  STRING: '" ([^"\\n\\r\\\\] | \\\\ . )* "',
+  NUMBER: '0[xX][0-9a-fA-F]+ | [0-9]+ (. [0-9]+ )? ([eE] (+|-)? [0-9]+ )?',
+  OPERATOR: '== != <= >= && || << >> >>> … | [op]',
+  SEPARATOR: '( ( | ) | { | } | ; | , | . | [ | ] | @ | : )',
+  WHITESPACE: '[ws] [ws]*',
+  COMMENT: '//[^\\n\\r]* | /\\* ( [^*] | \\*+ [^*/] )* \\*+ /',
+};
+
+export interface GroupConstruction {
+  name: string;
+  /** Human-readable RE summary for the viewer header */
+  re: string;
+  /** RE tree describing how the fragment was composed (draw order) */
+  root: ReNode;
   states: NFAState[];
   transitions: NFATransition[];
   startId: number;
   acceptId: number;
 }
 
-function buildKeywordNFA(): NFABuilderResult {
-  // Keywords: explicit alternation of keyword literals via Thompson's construction
-  // (Fig 2.4(d)): unified start --ε--> branch_i for each keyword --ε--> accept.
-  // Each branch spells the exact keyword character-by-character so that
-  // `intx` does NOT match KEYWORD — only IDENTIFIER does (reserved-word
-  // table alternative, ch.2 §2.5.4). This fixes the priority inversion where
-  // a generic a-z+ loop would accept any identifier as a keyword.
-  const start = newState(true, false);
-  const accept = newState(false, true, 'KEYWORD');
-  const states: NFAState[] = [start, accept];
-  const transitions: NFATransition[] = [];
+const SEPARATOR_LITERALS = ['(', ')', '{', '}', ';', ',', '.', '[', ']', '@', ':'] as const;
 
-  for (const kw of JAVA_KEYWORDS) {
-    const branchStart = newState(false, false);
-    states.push(branchStart);
-    transitions.push({ from: start.id, to: branchStart.id, symbol: '' });
-    let prev = branchStart;
-    for (let i = 0; i < kw.length; i++) {
-      const ch = kw[i];
-      const isLast = i === kw.length - 1;
-      const next = isLast ? accept : newState(false, false);
-      if (!isLast) states.push(next);
-      transitions.push({ from: prev.id, to: next.id, symbol: ch });
-      prev = next;
-    }
+function separatorRE(): Built {
+  // Per wiki p.224: punctuation marks as literal alternations — faithful to Figure 2.4(d) fan
+  return fragAlt(SEPARATOR_LITERALS.map(ch => fragSymbol(ch)));
+}
+
+const GROUP_DEFS: Array<{ build: () => Built; type: string }> = [
+  { build: keywordRE, type: 'KEYWORD' },
+  { build: identifierRE, type: 'IDENTIFIER' },
+  { build: stringRE, type: 'STRING' },
+  { build: numberRE, type: 'NUMBER' },
+  { build: operatorRE, type: 'OPERATOR' },
+  { build: separatorRE, type: 'SEPARATOR' },
+  { build: whitespaceRE, type: 'WHITESPACE' },
+  { build: commentRE, type: 'COMMENT' },
+];
+
+/**
+ * Build every token-group fragment in order, snapshotting each group's states
+ * and transitions. State ids are deterministic (the counter restarts at 0),
+ * so the snapshots match what buildNFA assembles — the viewer can draw a
+ * group in isolation while the pipeline consumes the combined NFA.
+ * Display RE is derived from the construction tree (single source of truth)
+ * with a hand-written fallback from GROUP_RES for compactness.
+ */
+export function constructGroups(): GroupConstruction[] {
+  counter = 0;
+  states = [];
+  transitions = [];
+
+  const out: GroupConstruction[] = [];
+  for (const g of GROUP_DEFS) {
+    const beforeStates = states.length;
+    const beforeTrans = transitions.length;
+    const frag = g.build();
+    markAccept(frag, g.type);
+    const derived = reNodeToString(frag.node);
+    // Use derived string but keep compact GROUP_RES for large alts (keyword/operator)
+    const compact = g.type === 'KEYWORD' || g.type === 'OPERATOR' ? GROUP_RES[g.type] : derived;
+    out.push({
+      name: g.type,
+      re: compact,
+      root: frag.node,
+      states: states.slice(beforeStates),
+      transitions: transitions.slice(beforeTrans),
+      startId: frag.startId,
+      acceptId: frag.acceptId,
+    });
   }
-
-  return { states, transitions, startId: start.id, acceptId: accept.id };
+  return out;
 }
 
-function buildIdentifierNFA(): NFABuilderResult {
-  // Identifier: [a-zA-Z_$][a-zA-Z0-9_$]*
-  // start -> letter/_ -> loop(letter/_/digit) -> accept
-  const start = newState(true, false);
-  const mid = newState(false, false);
-  const accept = newState(false, true, 'IDENTIFIER');
-
-  return {
-    states: [start, mid, accept],
-    transitions: [
-      { from: start.id, to: mid.id, symbol: 'a-z' },
-      { from: start.id, to: mid.id, symbol: '_' }, // can start with _
-      { from: mid.id, to: mid.id, symbol: 'a-z' }, // letter loop
-      { from: mid.id, to: mid.id, symbol: '0-9' }, // digit loop
-      { from: mid.id, to: mid.id, symbol: '_' }, // underscore loop
-      { from: mid.id, to: accept.id, symbol: '' }, // epsilon to accept
-    ],
-    startId: start.id,
-    acceptId: accept.id,
-  };
+/**
+ * Build a textbook Figure 2.5 example NFA: a(b|c)*
+ * Used as a regression anchor — asserts Thompson templates match the book.
+ */
+export function buildFigure25Example(): { nfa: NFA; root: ReNode } {
+  counter = 0;
+  states = [];
+  transitions = [];
+  const fragA = fragSymbol('a');
+  const fragB = fragSymbol('b');
+  const fragC = fragSymbol('c');
+  const bOrC = fragAlt([fragB, fragC]);
+  const star = fragStar(bOrC);
+  const full = fragConcat([fragA, star]);
+  markAccept(full, 'EXAMPLE');
+  return { nfa: { states: [...states], transitions: [...transitions], startState: full.startId }, root: full.node };
 }
 
-function buildStringNFA(): NFABuilderResult {
-  // String: " ( [^"\\\n] | \\. )* "  — handles escapes \" \\ \n etc.
-  // Matches book §2.3(4) complements plus escape branch.
-  // start -> " -> mid --(any-str/escape)--> mid -> " -> accept
-  const start = newState(true, false);
-  const open = newState(false, false);
-  const mid = newState(false, false);
-  const esc = newState(false, false);
-  const escChar = newState(false, false);
-  const close = newState(false, false);
-  const accept = newState(false, true, 'STRING');
-
-  return {
-    states: [start, open, mid, esc, escChar, close, accept],
-    transitions: [
-      { from: start.id, to: open.id, symbol: '"' },
-      { from: open.id, to: mid.id, symbol: '' }, // epsilon into body
-      { from: mid.id, to: mid.id, symbol: 'any-str' }, // loop for plain chars (not " \ \n)
-      { from: mid.id, to: esc.id, symbol: '\\' }, // escape start
-      { from: esc.id, to: escChar.id, symbol: 'not-nl' }, // escaped char: any except newline (allows \" and \\)
-      { from: escChar.id, to: mid.id, symbol: '' }, // epsilon back to mid
-      { from: mid.id, to: close.id, symbol: '"' },
-      { from: close.id, to: accept.id, symbol: '' }, // epsilon to accept
-    ],
-    startId: start.id,
-    acceptId: accept.id,
-  };
-}
-
-function buildNumberNFA(): NFABuilderResult {
-  // Number: [0-9]+ (.[0-9]+)? ([eE][+-]?[0-9]+)?  + hex alternative 0[xX][0-9a-fA-F]+
-  // Covers book §2.3(2)(3) integer/real with exponent, plus Java hex.
-  const start = newState(true, false);
-  const intPart = newState(false, false);
-  const dot = newState(false, false);
-  const decPart = newState(false, false);
-  const exp = newState(false, false);
-  const expSign = newState(false, false);
-  const expDigits = newState(false, false);
-  const hex0 = newState(false, false);
-  const hexX = newState(false, false);
-  const hexDigits = newState(false, false);
-  const accept = newState(false, true, 'NUMBER');
-
-  return {
-    states: [start, intPart, dot, decPart, exp, expSign, expDigits, hex0, hexX, hexDigits, accept],
-    transitions: [
-      { from: start.id, to: intPart.id, symbol: '0-9' },
-      { from: start.id, to: hex0.id, symbol: '0-9' }, // 0 branch for hex (nondeterministic)
-      { from: hex0.id, to: hexX.id, symbol: 'x' }, // 'x'
-      { from: hex0.id, to: hexX.id, symbol: 'X' }, // 'X'
-      { from: hexX.id, to: hexDigits.id, symbol: '0-9' },
-      { from: hexX.id, to: hexDigits.id, symbol: 'a-f' }, // hex letters a-f/A-F only
-      { from: hexDigits.id, to: hexDigits.id, symbol: '0-9' },
-      { from: hexDigits.id, to: hexDigits.id, symbol: 'a-f' },
-      { from: hexDigits.id, to: accept.id, symbol: '' },
-      { from: intPart.id, to: intPart.id, symbol: '0-9' }, // digit loop
-      { from: intPart.id, to: accept.id, symbol: '' }, // epsilon (integer accept)
-      { from: intPart.id, to: dot.id, symbol: '.' },
-      { from: dot.id, to: decPart.id, symbol: '0-9' },
-      { from: decPart.id, to: decPart.id, symbol: '0-9' }, // decimal loop
-      { from: decPart.id, to: accept.id, symbol: '' }, // epsilon (decimal accept)
-      // Exponent branches from intPart and decPart — 'e'/'E' literals
-      { from: intPart.id, to: exp.id, symbol: 'e' },
-      { from: intPart.id, to: exp.id, symbol: 'E' },
-      { from: decPart.id, to: exp.id, symbol: 'e' },
-      { from: decPart.id, to: exp.id, symbol: 'E' },
-      { from: exp.id, to: expSign.id, symbol: '+' },
-      { from: exp.id, to: expSign.id, symbol: '-' },
-      { from: exp.id, to: expDigits.id, symbol: '0-9' },
-      { from: expSign.id, to: expDigits.id, symbol: '0-9' },
-      { from: expDigits.id, to: expDigits.id, symbol: '0-9' },
-      { from: expDigits.id, to: accept.id, symbol: '' },
-    ],
-    startId: start.id,
-    acceptId: accept.id,
-  };
-}
-
-function buildOperatorNFA(): NFABuilderResult {
-  // Operator: covers single-char plus common multi-char operators via explicit branches
-  // so the DFA can recognize == != <= >= && || << >> >>> += etc. without scanner bypass.
-  const multiOps = ['==','!=','<=','>=','&&','||','<<','>>','>>>','+=','-=','*=','/=','%=','&=','|=','^=','->','::'];
-  const start = newState(true, false);
-  const accept = newState(false, true, 'OPERATOR');
-  const states: NFAState[] = [start, accept];
-  const transitions: NFATransition[] = [
-    { from: start.id, to: accept.id, symbol: 'op' }, // single-char fallback
-  ];
-
-  for (const op of multiOps) {
-    let prev = start;
-    for (let i = 0; i < op.length; i++) {
-      const ch = op[i];
-      const isLast = i === op.length - 1;
-      const next = isLast ? accept : newState(false, false);
-      if (!isLast) states.push(next);
-      // Use literal char or op class? Use literal for determinism
-      transitions.push({ from: prev.id, to: next.id, symbol: ch });
-      prev = next;
-    }
-  }
-
-  return { states, transitions, startId: start.id, acceptId: accept.id };
-}
-
-function buildSeparatorNFA(): NFABuilderResult {
-  // Separator: single char
-  // start -> sep -> accept
-  const start = newState(true, false);
-  const accept = newState(false, true, 'SEPARATOR');
-
-  return {
-    states: [start, accept],
-    transitions: [
-      { from: start.id, to: accept.id, symbol: 'sep' },
-    ],
-    startId: start.id,
-    acceptId: accept.id,
-  };
-}
-
-function buildWhitespaceNFA(): NFABuilderResult {
-  // Whitespace: \s+
-  // start -> ws loop -> accept
-  const start = newState(true, false);
-  const mid = newState(false, false);
-  const accept = newState(false, true, 'WHITESPACE');
-
-  return {
-    states: [start, mid, accept],
-    transitions: [
-      { from: start.id, to: mid.id, symbol: 'ws' },
-      { from: mid.id, to: mid.id, symbol: 'ws' }, // loop
-      { from: mid.id, to: accept.id, symbol: '' }, // epsilon to accept
-    ],
-    startId: start.id,
-    acceptId: accept.id,
-  };
-}
-
-function buildCommentNFA(): NFABuilderResult {
-  // Comment: // [^\n]* | /* ( [^*] | *[^/] )* */
-  // Covers both line and block comments per book §2.3(5).
-  const start = newState(true, false);
-  const slash1 = newState(false, false);
-  // Line branch
-  const lineSlash = newState(false, false);
-  const lineBody = newState(false, false);
-  const lineAccept = newState(false, true, 'COMMENT');
-  // Block branch
-  const blockStar = newState(false, false);
-  const blockBody = newState(false, false);
-  const blockStar2 = newState(false, false);
-  const blockAccept = newState(false, true, 'COMMENT');
-
-  return {
-    states: [start, slash1, lineSlash, lineBody, lineAccept, blockStar, blockBody, blockStar2, blockAccept],
-    transitions: [
-      { from: start.id, to: slash1.id, symbol: '/' },
-      // Line: // -> not-nl loop -> accept (via epsilon)
-      { from: slash1.id, to: lineSlash.id, symbol: '/' },
-      { from: lineSlash.id, to: lineBody.id, symbol: '' },
-      { from: lineBody.id, to: lineBody.id, symbol: 'not-nl' },
-      { from: lineBody.id, to: lineAccept.id, symbol: '' },
-      // Block: /* -> body with * handling -> */
-      { from: slash1.id, to: blockStar.id, symbol: '*' },
-      { from: blockStar.id, to: blockBody.id, symbol: '' },
-      { from: blockBody.id, to: blockBody.id, symbol: 'not-nl' }, // simplified: any except newline-star-slash nuance; star handled via transitions
-      { from: blockBody.id, to: blockStar2.id, symbol: '*' },
-      { from: blockStar2.id, to: blockBody.id, symbol: 'not-nl' }, // * not followed by /
-      { from: blockStar2.id, to: blockAccept.id, symbol: '/' },
-      { from: blockBody.id, to: blockAccept.id, symbol: '' }, // empty block body edge (/**/)
-    ],
-    startId: start.id,
-    acceptId: lineAccept.id, // unified via epsilon is not needed; use lineAccept as main, blockAccept also flagged COMMENT but subset will merge
-  };
-}
-
-// ── Main builder: combine all group NFAs into one NFA ──
-// Uses a new start state with epsilon transitions to each group's start.
+// ── Combined scanner NFA: unified start with ε edges into every group ──
 
 export function buildNFA(): NFA {
-  resetCounter();
+  const groups = constructGroups();
 
-  const builders = [
-    buildKeywordNFA,
-    buildIdentifierNFA,
-    buildStringNFA,
-    buildNumberNFA,
-    buildOperatorNFA,
-    buildSeparatorNFA,
-    buildWhitespaceNFA,
-    buildCommentNFA,
-  ];
-
-  const allStates: NFAState[] = [];
-  const allTransitions: NFATransition[] = [];
-  const groupStartIds: number[] = [];
-
-  for (const builder of builders) {
-    const result = builder();
-    // Mark the start state as non-start (will be connected via epsilon)
-    const startState = result.states.find(s => s.id === result.startId);
-    if (startState) startState.isStart = false;
-    allStates.push(...result.states);
-    allTransitions.push(...result.transitions);
-    groupStartIds.push(result.startId);
+  const unifiedStart = mkState();
+  states[unifiedStart].isStart = true;
+  for (const g of groups) {
+    eps(unifiedStart, g.startId);
   }
 
-  // Create unified start state
-  const unifiedStart = newState(true, false);
-  allStates.push(unifiedStart);
-
-  // Epsilon transitions from unified start to each group's start
-  for (const groupId of groupStartIds) {
-    allTransitions.push({ from: unifiedStart.id, to: groupId, symbol: '' });
-  }
-
-  return {
-    states: allStates,
-    transitions: allTransitions,
-    startState: unifiedStart.id,
-  };
+  return { states, transitions, startState: unifiedStart };
 }

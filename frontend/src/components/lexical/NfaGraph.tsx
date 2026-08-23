@@ -259,7 +259,7 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
   }, [figureExample]);
 
   const [active, setActive] = useState<string>('OVERVIEW');
-  const [buildStep, setBuildStep] = useState<number>(3); // default show final
+  const [buildStep, setBuildStep] = useState<number>(0); // start at step 1 (no.1)
 
   const machine = useMemo(() => ordered.find(m => m.name === active) ?? null, [ordered, active]);
   const pruned = useMemo(() => {

@@ -545,7 +545,6 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
     const trim = (a: Pt, b: Pt) => { const dx = b.x - a.x, dy = b.y - a.y; const d = Math.hypot(dx, dy) || 1; const ux = dx / d, uy = dy / d; return { x1: a.x + ux * (R + 2), y1: a.y + uy * (R + 2), x2: b.x - ux * (R + 4), y2: b.y - uy * (R + 4) }; };
     const transG = svg.append('g');
     const stateG = svg.append('g');
-    let ti = 0;
     for (const e of frag.edges) {
       const a = pt(e.fromId), b = pt(e.toId);
       if (!a || !b) continue;
@@ -567,7 +566,7 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
       const p = transG.append('path').attr('d', pathD).attr('fill', 'none').attr('stroke', stroke).attr('stroke-width', 1.4).attr('marker-end', 'url(#arrow-custom)');
       if (dash) p.attr('stroke-dasharray', dash);
       const txt = transG.append('text').attr('x', lx).attr('y', ly).attr('text-anchor', 'middle').attr('fill', isEps ? 'var(--color-text-muted)' : 'var(--color-neon)').style('font-size', '9px').style('font-family', 'JetBrains Mono, monospace').style('paint-order', 'stroke').attr('stroke', 'var(--color-card)').attr('stroke-width', 3).text(isEps ? t('lexical.step2.epsilon') : e.label);
-      void txt; ti++;
+      void txt;
     }
     frag.nodes.forEach((pos, id) => {
       const st = stateById.get(id);

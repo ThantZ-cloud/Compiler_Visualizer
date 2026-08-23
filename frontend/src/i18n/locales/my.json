@@ -391,8 +391,10 @@
       "hiddenHint": "ဝှက်ထား / epsilon တံတား"
     },
     "step3": {
-      "title": "Subset Construction (NFA → DFA)",
+      "title": "DFA — Subset Construction (NFA → DFA)",
       "description": "Subset construction သည် NFA ကို DFA အဖြစ်သို့ ပြောင်းလဲသည် — ပထမ fixed point။",
+      "overviewHint": "အနှစ်ချုပ် — token NFA မှ DFA states ဘယ်လောက်ရလား၊ ε-closure table နှင့် ပထမ subset steps။",
+      "examplesHint": "RE တိုတစ်ခု (24 စာအကျယ်) ရိုက်ပြီး Subset Construction ဖြင့် DFA တည်ဆောက်ပုံကို ကြည့်ပါ။",
       "epsilonClosure": "\u03B5-closure",
       "newState": "state အသစ်",
       "existingState": "ရှိပြီးသား",

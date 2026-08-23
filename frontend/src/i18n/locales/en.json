@@ -391,8 +391,10 @@
       "hiddenHint": "collapsed / epsilon bridge"
     },
     "step3": {
-      "title": "Subset Construction (NFA \u2192 DFA)",
+      "title": "DFA — Subset Construction (NFA \u2192 DFA)",
       "description": "Subset construction converts the NFA into a deterministic FA. This is the first fixed point — the algorithm iterates until no new DFA states are discovered.",
+      "overviewHint": "Summary: how many DFA states the token NFA collapses to, with ε-closure table and first subset steps.",
+      "examplesHint": "Type a tiny RE (max 24 chars) and watch Subset Construction build its DFA live.",
       "epsilonClosure": "\u03B5-closure",
       "newState": "NEW STATE",
       "existingState": "existing",

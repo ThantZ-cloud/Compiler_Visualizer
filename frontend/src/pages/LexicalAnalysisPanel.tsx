@@ -253,6 +253,8 @@ const LexicalAnalysisPanel: React.FC = () => {
                 <DfaGraph
                   dfa={dfa}
                   steps={subsetSteps}
+                  nfaStatesCount={nfa.states.length}
+                  groupCounts={groupCounts}
                   isPlaying={playState === 'playing' && currentStep === 2}
                   isCompleted={completedSteps.has(2) || playState === 'completed'}
                 />

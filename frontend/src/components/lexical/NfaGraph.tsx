@@ -535,7 +535,6 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
       </div>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {VIEW_TABS.map(v => tabBtn(t(v.labelKey), v.key))}
-        {ordered.map(m => tabBtn(m.name, m.name))}
       </div>
       {active === 'BUILD' && (
         <div className="flex gap-1.5 mb-2">

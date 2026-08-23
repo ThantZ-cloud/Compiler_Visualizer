@@ -139,6 +139,7 @@ function wrapWithLoop(child: ReNode, startId: number, acceptId: number, loop: bo
     edges: [...inner.edges, { fromId: startId, toId: inner.startId, label: '', kind: 'eps' }, { fromId: inner.acceptId, toId: acceptId, label: '', kind: 'eps' }, { fromId: startId, toId: acceptId, label: '', kind: 'skip' }],
     startId, acceptId,
   };
+  for (const [id, p] of inner.nodes) frag.nodes.set(id, p);
   if (loop) frag.edges.push({ fromId: inner.acceptId, toId: inner.startId, label: '', kind: 'loop' });
   return frag;
 }
@@ -251,10 +252,10 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
       acceptId: sC.acceptId,
     };
     return [
-      { label: '1 — symbols a, b, c  [Fig 2.5a]', re: 'a   b   c', frag: step1Frag },
+      { label: '1 — symbols a, b, c', re: 'a   b   c', frag: step1Frag },
       { label: '2 — b | c', re: '(b | c)', frag: layoutNode(altNode) },
       { label: '3 — (b | c)*', re: '(b | c)*', frag: layoutNode(starNode) },
-      { label: '4 — a (b | c)*  [Fig 2.5d]', re: 'a (b | c)*', frag: layoutNode(ex.root) },
+      { label: '4 — a (b | c)*', re: 'a (b | c)*', frag: layoutNode(ex.root) },
     ];
   }, [figureExample]);
 

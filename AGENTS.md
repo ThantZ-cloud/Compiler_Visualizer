@@ -19,6 +19,7 @@ read  @CLAUDE.md
 - No emoji anywhere in the UI — use Lucide icons
 - All user-facing copy goes through i18n in `frontend/src/i18n/locales/{en,my}.json`
 - Three DB profiles: dev (SQLite, default), test (H2, auto-loaded under `src/test`), prod (MySQL, activate with `-Dspring-boot.run.profiles=mysql`)
+- **Production frontend**: hosted on Vercel (`compiler-visualizer-thant-zin.vercel.app`), git-linked to GitHub for auto-deploy on `git push main`. Vite build config: root dir `frontend/`, output dir `dist`
 
 ## Teaching Style & Provenance (persist every session)
 

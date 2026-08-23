@@ -245,7 +245,8 @@ function numberRE(): Built {
   ]);
 }
 
-// OPERATOR: multi-char operators | single-char operator class
+// OPERATOR: multi-char operators | single-char operator class (now owns ':' for "?:" / labels)
+// Textbook simplified: single-char ops collapsed into 'op' class = [+\-*/=<>&|!^%~?:] (includes ':'), multi-char fan handles '==','::' etc.
 function operatorRE(): Built {
   const multiOps = ['==','!=','<=','>=','&&','||','<<','>>','>>>','+=','-=','*=','/=','%=','&=','|=','^=','->','::'];
   return fragAlt([...multiOps.map(op => fragWord(op)), fragSymbol('op')]);
@@ -256,11 +257,10 @@ function whitespaceRE(): Built {
   return fragPlus(() => fragSymbol('ws'));
 }
 
-// COMMENT: // [^\n\r]*  |  /\* ( [^*] | \*+ [^*/] )* \*+ /
-// The block-comment body mirrors the classic DFA-safe shape: ordinary
-// characters (stars included, newlines included) OR a run of one-or-more
-// stars followed by something that neither continues nor closes the comment;
-// the comment then closes on a run of stars plus the final slash.
+// COMMENT: two forms like HTML/CSS comments:
+//   Line:   // hello  -> starts "//", then any chars except newline (star(not-nl))
+//   Block:  /* hello */ -> starts "/*", then inside: either normal char [^*] OR a run of '*' not followed by '/' ([^*/]), repeat (*), then at least one '*' and final '/'.
+// So: // [^\n\r]*  |  /* ( [^*] | *+ [^*/] )* *+ /  — the *+ [^*/] handles "***" inside without closing early.
 function commentRE(): Built {
   return fragAlt([lineComment(), blockComment()]);
 }
@@ -317,11 +317,11 @@ const GROUP_RES: Record<string, string> = {
   KEYWORD: `${JAVA_KEYWORDS.slice(0, 4).join(' | ')} | … (${JAVA_KEYWORDS.length} keywords)`,
   IDENTIFIER: '[a-zA-Z_$] [a-zA-Z0-9_$]*',
   STRING: '" ([^"\\n\\r\\\\] | \\\\ . )* "',
-  NUMBER: '0[xX][0-9a-fA-F]+ | [0-9]+ (. [0-9]+ )? ([eE] (+|-)? [0-9]+ )?',
-  OPERATOR: '== != <= >= && || << >> >>> … | [op]',
-  SEPARATOR: '( ( | ) | { | } | ; | , | . | [ | ] | @ | : )',
+  NUMBER: '0[xX][0-9a-fA-F]+ | [0-9]+ (. [0-9]+ )? ([eE] (+|-)? [0-9]+ )?', // textbook simplified: no 0b, no _, no L/F/D suffix
+  OPERATOR: '== != <= >= && || << >> >>> … | [op]  (op includes :)',
+  SEPARATOR: '( ( | ) | { | } | ; | , | . | [ | ] | @ )  —  : moved to OPERATOR',
   WHITESPACE: '[ws] [ws]*',
-  COMMENT: '//[^\\n\\r]* | /\\* ( [^*] | \\*+ [^*/] )* \\*+ /',
+  COMMENT: '//[^\\n\\r]* | /\\* ( [^*] | \\*+ [^*/] )* \\*+ /  —  line vs block (see code comment)',
 };
 
 export interface GroupConstruction {
@@ -336,10 +336,11 @@ export interface GroupConstruction {
   acceptId: number;
 }
 
-const SEPARATOR_LITERALS = ['(', ')', '{', '}', ';', ',', '.', '[', ']', '@', ':'] as const;
+const SEPARATOR_LITERALS = ['(', ')', '{', '}', ';', ',', '.', '[', ']', '@'] as const;
 
 function separatorRE(): Built {
   // Per wiki p.224: punctuation marks as literal alternations — faithful to Figure 2.4(d) fan
+  // ':' was moved to OPERATOR (ternary ?:, labels) — single owner avoids duplicate ':' in Flat
   return fragAlt(SEPARATOR_LITERALS.map(ch => fragSymbol(ch)));
 }
 

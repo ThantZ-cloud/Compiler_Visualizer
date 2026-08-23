@@ -19,9 +19,9 @@
         "Authorization": "Bearer ctx7sk-4142dfc6-1eff-40bd-893f-377e737ee6d1"
       }
     },
-    "canva": {
+    "vercel": {
       "type": "local",
-      "command": ["npx", "-y", "mcp-remote@latest", "https://mcp.canva.com/mcp"],
+      "command": ["npx", "-y", "mcp-remote@latest", "https://mcp.vercel.com"],
       "enabled": true
     }
   }

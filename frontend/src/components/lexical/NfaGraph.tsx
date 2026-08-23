@@ -13,9 +13,9 @@ import { constructGroups, buildFigure25Example, type GroupConstruction, type ReN
 // figures: symbol pairs glued by ε, alternations fanning from a fresh start
 // to a fresh accept, and star closures looping back over the top.
 //
-// Three presentation modes:
-//  • OVERVIEW — classic pill summary (unified start → 8 groups)
-//  • FLAT — raw combined NFA as a layered DAG (Figure 2.7a style, ε mesh faithful)
+// Three presentation modes (all circles-and-arrows, per Thompson Fig 2.4):
+//  • OVERVIEW — unified start circle fans ε to one circle per token group (collapsed but still graph)
+//  • FLAT — raw combined NFA as a layered DAG (Figure 2.7a style, full ε mesh)
 //  • BUILD — stepwise Figure 2.5 animation for a(b|c)*
 //  • Per-group Thompson — tree layout per token group
 // The drawing is derived from the construction alone — user code only ever
@@ -344,29 +344,41 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], isPlaying, isCo
     const stateGroup = svg.append('g');
 
     if (active === 'OVERVIEW' || !machine) {
+      // Pure circles-and-arrows overview (textbook style): unified start circle fans ε to one circle per token group
       const startLabel = nfa.states.find(s => s.isStart)?.label ?? 'q0';
-      const pillW = 360, pillH = 42, pillGap = 16, pillsX = 170;
-      const width = PAD * 2 + pillsX + pillW + 40;
-      const height = PAD * 2 + 40 + ordered.length * (pillH + pillGap);
+      const OVER_R = 22;
+      const GAP_Y = 58;
+      const groupsX = 220;
+      const startX = 60;
+      const width = PAD * 2 + groupsX + 120;
+      const height = PAD * 2 + 30 + ordered.length * GAP_Y;
       svg.attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height);
-      const sx = 56, sy = height / 2;
-      const sg = stateGroup.append('g').attr('transform', `translate(${sx},${sy})`);
+      const sy = height / 2;
+      // start state — circle + incoming arrow + label (Thompson start)
+      const sg = stateGroup.append('g').attr('transform', `translate(${startX},${sy})`);
       sg.append('circle').attr('r', R).attr('fill', 'var(--color-neon-dim)').attr('stroke', 'var(--color-neon)').attr('stroke-width', 2);
       sg.append('line').attr('x1', -R - 14).attr('y1', 0).attr('x2', -R - 4).attr('y2', 0).attr('stroke', 'var(--color-neon)').attr('stroke-width', 2).attr('marker-end', 'url(#arrow-nfa)');
       sg.append('text').attr('text-anchor', 'middle').attr('dy', 4).attr('fill', 'var(--color-text)').style('font-size', '9px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(startLabel);
       sg.append('text').attr('text-anchor', 'middle').attr('dy', R + 14).attr('fill', 'var(--color-neon)').style('font-size', '7px').style('font-family', 'JetBrains Mono, monospace').text('START');
+      // one circle per token group — collapsed Thompson machine (circle = entry, double = accept hint)
       ordered.forEach((m, i) => {
-        const py = PAD + 40 + i * (pillH + pillGap) + pillH / 2;
-        const g = stateGroup.append('g').attr('transform', `translate(${pillsX},${py})`);
-        g.append('rect').attr('x', 0).attr('y', -pillH / 2).attr('width', pillW).attr('height', pillH).attr('rx', 8).attr('fill', 'var(--color-card)').attr('stroke', 'var(--color-border-bright)').attr('stroke-width', 1.5);
-        g.append('text').attr('x', 10).attr('y', -2).attr('fill', 'var(--color-neon)').style('font-size', '10px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(m.name);
-        g.append('text').attr('x', 10).attr('y', 11).attr('fill', 'var(--color-text-muted)').style('font-size', '7.5px').style('font-family', 'JetBrains Mono, monospace').text(`${m.re}  ·  ${m.states.length}q`);
-        const dx = pillsX - sx, dy = py - sy, dist = Math.hypot(dx, dy) || 1;
+        const py = PAD + 18 + i * GAP_Y + OVER_R;
+        const isAcceptGroup = m.states.some(s => s.isAccept);
+        const g = stateGroup.append('g').attr('transform', `translate(${groupsX},${py})`);
+        if (isAcceptGroup) g.append('circle').attr('r', OVER_R + 4).attr('fill', 'none').attr('stroke', 'var(--color-neon)').attr('stroke-width', 1.2).attr('opacity', 0.6);
+        g.append('circle').attr('r', OVER_R).attr('fill', 'var(--color-surface-3)').attr('stroke', 'var(--color-border-bright)').attr('stroke-width', 1.6);
+        g.append('text').attr('text-anchor', 'middle').attr('dy', -2).attr('fill', 'var(--color-neon)').style('font-size', '8px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(m.name.slice(0, 4));
+        g.append('text').attr('text-anchor', 'middle').attr('dy', 9).attr('fill', 'var(--color-text-muted)').style('font-size', '6.5px').style('font-family', 'JetBrains Mono, monospace').text(`${m.states.length}○`);
+        // epsilon arrow from unified start to this group circle (circle→circle, trimmed at perimeters)
+        const dx = groupsX - startX, dy = py - sy, dist = Math.hypot(dx, dy) || 1;
         const ux = dx / dist, uy = dy / dist;
-        const line = transGroup.append('line').attr('x1', sx + ux * (R + 2)).attr('y1', sy + uy * (R + 2)).attr('x2', pillsX - 4).attr('y2', py).attr('stroke', 'var(--color-text-dim)').attr('stroke-width', 1).attr('stroke-dasharray', '4,3').attr('marker-end', 'url(#arrow-nfa)');
-        fadeIn(line as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 70);
-        const lbl = transGroup.append('text').attr('x', sx + ux * (dist * 0.55) - 6).attr('y', sy + uy * (dist * 0.55) - 4).attr('text-anchor', 'middle').attr('fill', 'var(--color-text-muted)').style('font-size', '8px').style('font-family', 'JetBrains Mono, monospace').text(t('lexical.step2.epsilon'));
-        fadeIn(lbl as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 70 + 120);
+        const x1 = startX + ux * (R + 2), y1 = sy + uy * (R + 2);
+        const x2 = groupsX - ux * (OVER_R + 4), y2 = py - uy * (OVER_R + 4);
+        const line = transGroup.append('line').attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2).attr('stroke', 'var(--color-text-dim)').attr('stroke-width', 1).attr('stroke-dasharray', '4,3').attr('marker-end', 'url(#arrow-nfa)');
+        fadeIn(line as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 50);
+        const mx = (x1 + x2) / 2 - 6, my = (y1 + y2) / 2 - 4;
+        const lbl = transGroup.append('text').attr('x', mx).attr('y', my).attr('text-anchor', 'middle').attr('fill', 'var(--color-text-muted)').style('font-size', '8px').style('font-family', 'JetBrains Mono, monospace').text(t('lexical.step2.epsilon'));
+        fadeIn(lbl as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 50 + 90);
       });
       return () => { svg.selectAll('*').remove(); };
     }

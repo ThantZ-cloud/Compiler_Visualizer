@@ -369,8 +369,9 @@
       "notFoundInCode": "မရှိပါ"
     },
     "step2": {
-      "title": "Finite Automaton (NFA)",
-      "description": "regex တစ်ခုစီကို NFA အဖြစ်ပြောင်းသည် — စက်ဝိုင်း (states) နှင့် မြှား (transitions) များဖြင့် ဖွဲ့စည်းထားသော စက်။ ε သည် empty-string transition ကိုပြသည်။",
+      "title": "Finite Automaton (NFA) — Thompson တည်ဆောက်မှု",
+      "description": "regex တစ်ခုစီကို Thompson တည်ဆောက်မှုဖြင့် NFA အဖြစ်ပြောင်းသည် — စက်ဝိုင်း (states) နှင့် မြှား (transitions) များဖြင့် ဖွဲ့စည်းထားသော စက်။ ε သည် empty-string transition ကိုပြသည်။",
+      "algorithm": "Thompson Construction",
       "startState": "Start",
       "acceptState": "Accept",
       "epsilon": "\u03B5",

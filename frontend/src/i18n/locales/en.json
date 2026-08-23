@@ -369,8 +369,9 @@
       "notFoundInCode": "Not present"
     },
     "step2": {
-      "title": "Finite Automaton (NFA)",
-      "description": "Each regex pattern is turned into a Non-deterministic Finite Automaton — a graph of circles (states) and arrows (transitions). ε marks empty-string transitions.",
+      "title": "Finite Automaton (NFA) — Thompson Construction",
+      "description": "Each regex pattern is turned into a Non-deterministic Finite Automaton — a graph of circles (states) and arrows (transitions). Built with Thompson's construction (RE → NFA). ε marks empty-string transitions.",
+      "algorithm": "Thompson Construction",
       "startState": "Start",
       "acceptState": "Accept",
       "epsilon": "\u03B5",

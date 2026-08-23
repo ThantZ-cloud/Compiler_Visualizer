@@ -293,18 +293,36 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
     svg.append('defs').append('marker').attr('id', 'arrow-flat').attr('viewBox', '0 -5 10 10').attr('refX', 9).attr('refY', 0).attr('markerWidth', 5).attr('markerHeight', 5).attr('orient', 'auto').append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', 'var(--color-text-dim)');
     const transG = svg.append('g');
     const stateG = svg.append('g');
+
+    // Wave animation from the start state (like the DFA): BFS depth drives delays
+    const animate = isPlaying;
+    const depthOf = new Map<number, number>();
+    {
+      const q: number[] = [nfa.startState];
+      depthOf.set(nfa.startState, 0);
+      while (q.length) {
+        const cur = q.shift()!;
+        for (const t of nfa.transitions) {
+          if (t.from === cur && !depthOf.has(t.to)) {
+            depthOf.set(t.to, depthOf.get(cur)! + 1);
+            q.push(t.to);
+          }
+        }
+      }
+    }
+    const fadeIn = (sel: d3.Selection<d3.BaseType, unknown, null, undefined>, delay: number) =>
+      sel.style('opacity', animate ? 0 : 1).transition().duration(animate ? 250 : 0).delay(animate ? delay : 0).style('opacity', 1);
+
     // edges
     for (const tr of nfa.transitions) {
       const a = positions.get(tr.from), b = positions.get(tr.to);
       if (!a || !b) continue;
       const isEps = tr.symbol === '';
       const dx = b.x - a.x, dy = b.y - a.y;
-      // For flat, we draw straight lines with slight curve for self-loops / multi-edges
       const d = Math.hypot(dx, dy) || 1;
       const ux = dx / d, uy = dy / d;
       const x1 = a.x + ux * (R + 2), y1 = a.y + uy * (R + 2);
       const x2 = b.x - ux * (R + 4), y2 = b.y - uy * (R + 4);
-      // If there are parallel edges, offset a bit; simple heuristic: use offset on dy
       const isLoop = tr.from === tr.to;
       let pathD: string;
       if (isLoop) {
@@ -316,14 +334,17 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
       }
       const p = transG.append('path').attr('d', pathD).attr('fill', 'none').attr('stroke', isEps ? 'var(--color-text-dim)' : 'var(--color-border-bright)').attr('stroke-width', 1.2).attr('marker-end', 'url(#arrow-flat)');
       if (isEps) p.attr('stroke-dasharray', '4,3');
+      fadeIn(p as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, (depthOf.get(tr.from) ?? 0) * 180);
       const mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - 6;
       if (tr.symbol !== '') {
-        transG.append('text').attr('x', mx).attr('y', my).attr('text-anchor', 'middle').attr('fill', 'var(--color-text-dim)').style('font-size', '7px').style('font-family', 'JetBrains Mono, monospace').style('paint-order', 'stroke').attr('stroke', 'var(--color-card)').attr('stroke-width', 2).text(tr.symbol);
+        const txt = transG.append('text').attr('x', mx).attr('y', my).attr('text-anchor', 'middle').attr('fill', 'var(--color-text-dim)').style('font-size', '7px').style('font-family', 'JetBrains Mono, monospace').style('paint-order', 'stroke').attr('stroke', 'var(--color-card)').attr('stroke-width', 2).text(tr.symbol);
+        fadeIn(txt as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, (depthOf.get(tr.from) ?? 0) * 180 + 60);
       } else {
-        transG.append('text').attr('x', mx).attr('y', my).attr('text-anchor', 'middle').attr('fill', 'var(--color-text-muted)').style('font-size', '7px').style('font-family', 'JetBrains Mono, monospace').text(t('lexical.step2.epsilon'));
+        const txt = transG.append('text').attr('x', mx).attr('y', my).attr('text-anchor', 'middle').attr('fill', 'var(--color-text-muted)').style('font-size', '7px').style('font-family', 'JetBrains Mono, monospace').text(t('lexical.step2.epsilon'));
+        fadeIn(txt as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, (depthOf.get(tr.from) ?? 0) * 180 + 60);
       }
     }
-    // states
+    // states — appear after their incoming edges
     const byId = new Map<number, NFAState>(nfa.states.map(s => [s.id, s]));
     for (const [id, pos] of positions) {
       const st = byId.get(id);
@@ -334,9 +355,10 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
       if (st.isStart) g.append('line').attr('x1', -R - 12).attr('y1', 0).attr('x2', -R - 3).attr('y2', 0).attr('stroke', 'var(--color-neon)').attr('stroke-width', 1.8).attr('marker-end', 'url(#arrow-flat)');
       g.append('text').attr('text-anchor', 'middle').attr('dy', 3.5).attr('fill', 'var(--color-text)').style('font-size', '7px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(st.label);
       if (st.isAccept && st.acceptType) g.append('text').attr('text-anchor', 'middle').attr('dy', R + 12).attr('fill', 'var(--color-neon)').style('font-size', '6px').style('font-family', 'JetBrains Mono, monospace').text(st.acceptType.slice(0, 4));
+      fadeIn(g as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, (depthOf.get(id) ?? 0) * 180 + 120);
     }
     return () => { svg.selectAll('*').remove(); };
-  }, [active, nfa, t, groupCounts, ordered]);
+  }, [active, nfa, t, groupCounts, ordered, isPlaying]);
 
   useEffect(() => {
     const svgEl = svgRef.current;

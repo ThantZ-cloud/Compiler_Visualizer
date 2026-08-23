@@ -271,7 +271,7 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
     ];
   }, [figureExample]);
 
-  const [active, setActive] = useState<string>('OVERVIEW');
+  const [active, setActive] = useState<string>('FLAT'); // default Full — show combined NFA construction first
   const [buildStep, setBuildStep] = useState<number>(0); // start at step 1 (no.1)
 
   const machine = useMemo(() => ordered.find(m => m.name === active) ?? null, [ordered, active]);

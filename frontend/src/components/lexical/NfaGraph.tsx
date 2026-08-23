@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
 import type { NFA, NFAState } from '../../lib/lexer/types';
 import { constructGroups, buildFigure25Example, type GroupConstruction, type ReNode } from '../../lib/lexer/thompson';
+import { buildNFAFromRE, PRESET_RES } from '../../lib/lexer/reParser';
 
 // ── Tree-driven Thompson machine viewer ──
 // thompson.ts records, for every token group, the RE TREE that drove its
@@ -222,10 +223,21 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const flatSvgRef = useRef<SVGSVGElement>(null);
+  const customSvgRef = useRef<SVGSVGElement>(null);
   // Machines are dynamic per program: keyword branches = foundKeywords in this file (token counts not static)
   const machines = useMemo(() => constructGroups(keywords.length > 0 ? keywords : []), [keywords]);
   const ordered = useMemo(() => TAB_ORDER.map(name => machines.find(m => m.name === name)).filter(Boolean) as GroupConstruction[], [machines]);
   const figureExample = useMemo(() => buildFigure25Example(), []);
+  const [customInput, setCustomInput] = useState('(a|b)*');
+  const customResult = useMemo(() => {
+    const v = customInput.trim();
+    if (!v) return null;
+    return buildNFAFromRE(v);
+  }, [customInput]);
+  const customFrag = useMemo(() => {
+    if (!customResult?.root) return null;
+    try { return layoutNode(customResult.root); } catch { return null; }
+  }, [customResult]);
   // stepwise fragments for BUILD tab
   const buildFrags = useMemo(() => {
     const ex = figureExample;
@@ -515,6 +527,61 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
     return () => { svg.selectAll('*').remove(); };
   }, [active, buildStep, buildFrags, figureExample, isPlaying, t]);
 
+  // Custom RE NFA (editable) — reuse Thompson layout
+  useEffect(() => {
+    if (active !== 'BUILD' || !customFrag || !customResult?.nfa || customResult.error) return;
+    const svgEl = customSvgRef.current;
+    if (!svgEl) return;
+    const svg = d3.select(svgEl);
+    svg.selectAll('*').remove();
+    svg.append('defs').append('marker').attr('id', 'arrow-custom').attr('viewBox', '0 -5 10 10').attr('refX', 9).attr('refY', 0).attr('markerWidth', 5).attr('markerHeight', 5).attr('orient', 'auto').append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', 'var(--color-text-dim)');
+    const frag = customFrag;
+    const width = frag.w + PAD * 2;
+    const height = frag.h + PAD * 2 + 12;
+    svg.attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height);
+    for (const p of frag.nodes.values()) { p.x += PAD; p.y += PAD + 8; }
+    const stateById = new Map<number, NFAState>(customResult.nfa.states.map(s => [s.id, s] as const));
+    const pt = (id: number) => frag.nodes.get(id);
+    const trim = (a: Pt, b: Pt) => { const dx = b.x - a.x, dy = b.y - a.y; const d = Math.hypot(dx, dy) || 1; const ux = dx / d, uy = dy / d; return { x1: a.x + ux * (R + 2), y1: a.y + uy * (R + 2), x2: b.x - ux * (R + 4), y2: b.y - uy * (R + 4) }; };
+    const transG = svg.append('g');
+    const stateG = svg.append('g');
+    let ti = 0;
+    for (const e of frag.edges) {
+      const a = pt(e.fromId), b = pt(e.toId);
+      if (!a || !b) continue;
+      const isEps = e.kind !== 'sym';
+      const stroke = isEps ? 'var(--color-text-dim)' : 'var(--color-neon)';
+      const dash = isEps ? '4,3' : null;
+      let pathD: string; let lx: number, ly: number;
+      if (e.kind === 'skip') {
+        const dip = Math.max(b.y, a.y) + SKIP_CLEAR * 0.65;
+        const c1x = a.x + (b.x - a.x) * 0.3, c2x = a.x + (b.x - a.x) * 0.7;
+        pathD = `M ${a.x} ${a.y} C ${c1x} ${dip}, ${c2x} ${dip}, ${b.x - R - 4} ${b.y}`; lx = (a.x + b.x) / 2; ly = dip + 2;
+      } else if (e.kind === 'loop') {
+        const apex = Math.min(a.y, b.y) - LOOP_CLEAR * 0.75;
+        pathD = `M ${a.x} ${a.y} C ${a.x - 14} ${apex}, ${b.x + 14} ${apex}, ${b.x + R + 4} ${b.y}`; lx = (a.x + b.x) / 2; ly = apex - 4;
+      } else if (e.kind === 'eps' && Math.abs(a.y - b.y) > 2) {
+        const t0 = trim(a, b); const c1x = a.x + (b.x - a.x) * 0.5, c2x = b.x - (b.x - a.x) * 0.5;
+        pathD = `M ${t0.x1} ${t0.y1} C ${c1x} ${a.y}, ${c2x} ${b.y}, ${t0.x2} ${t0.y2}`; lx = (a.x + b.x) / 2; ly = (a.y + b.y) / 2 - 5;
+      } else { const t0 = trim(a, b); pathD = `M ${t0.x1} ${t0.y1} L ${t0.x2} ${t0.y2}`; lx = (t0.x1 + t0.x2) / 2; ly = (t0.y1 + t0.y2) / 2 - 7; }
+      const p = transG.append('path').attr('d', pathD).attr('fill', 'none').attr('stroke', stroke).attr('stroke-width', 1.4).attr('marker-end', 'url(#arrow-custom)');
+      if (dash) p.attr('stroke-dasharray', dash);
+      const txt = transG.append('text').attr('x', lx).attr('y', ly).attr('text-anchor', 'middle').attr('fill', isEps ? 'var(--color-text-muted)' : 'var(--color-neon)').style('font-size', '9px').style('font-family', 'JetBrains Mono, monospace').style('paint-order', 'stroke').attr('stroke', 'var(--color-card)').attr('stroke-width', 3).text(isEps ? t('lexical.step2.epsilon') : e.label);
+      void txt; ti++;
+    }
+    frag.nodes.forEach((pos, id) => {
+      const st = stateById.get(id);
+      const g = stateG.append('g').attr('transform', `translate(${pos.x},${pos.y})`);
+      if (st) {
+        if (st.isAccept) g.append('circle').attr('r', R + 4).attr('fill', 'none').attr('stroke', 'var(--color-neon)').attr('stroke-width', 1.2);
+        g.append('circle').attr('r', R).attr('fill', st.isStart || st.isAccept ? 'var(--color-neon-dim)' : 'var(--color-surface-3)').attr('stroke', st.isStart || st.isAccept ? 'var(--color-neon)' : 'var(--color-border-bright)').attr('stroke-width', 1.8);
+        if (st.isStart) g.append('line').attr('x1', -R - 14).attr('y1', 0).attr('x2', -R - 4).attr('y2', 0).attr('stroke', 'var(--color-neon)').attr('stroke-width', 2).attr('marker-end', 'url(#arrow-custom)');
+        g.append('text').attr('text-anchor', 'middle').attr('dy', 3.5).attr('fill', 'var(--color-text)').style('font-size', '8px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(st.label);
+      }
+    });
+    return () => { svg.selectAll('*').remove(); };
+  }, [active, customFrag, customResult, t]);
+
   const tabBtn = (label: string, key: string) => {
     const isActive = active === key;
     return (
@@ -537,11 +604,33 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
         {VIEW_TABS.map(v => tabBtn(t(v.labelKey), v.key))}
       </div>
       {active === 'BUILD' && (
-        <div className="flex gap-1.5 mb-2">
-          {buildFrags.map((_, i) => (
-            <button key={i} onClick={() => setBuildStep(i)} className={`px-2 py-0.5 rounded text-[10px] font-mono border ${buildStep === i ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>{i + 1}</button>
-          ))}
-          <span className="text-[10px] font-mono text-[var(--color-text-muted)] self-center ml-2">{buildFrags[buildStep]?.re}</span>
+        <div className="flex flex-col gap-2 mb-3">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold tracking-wide text-[var(--color-text-muted)] font-mono">Try your own RE:</span>
+              <input value={customInput} onChange={e => setCustomInput(e.target.value)} placeholder="(a|b)*  or  (a(b|c))*  — use | for or, * + ? quantifiers" className="flex-1 px-2 py-1 rounded border border-[var(--color-border-bright)] bg-[var(--color-card)] text-xs font-mono text-[var(--color-text)] focus:outline-none focus:border-[var(--color-neon)]" maxLength={64} />
+              <span className="text-[10px] font-mono text-[var(--color-text-muted)]">{customResult?.statesCount ?? 0} states</span>
+            </div>
+            {customResult?.error && <div className="text-[10px] font-mono text-[var(--color-error)] bg-[var(--color-error-dim)]/20 border border-[var(--color-error-dim)] rounded px-2 py-1">{customResult.error} {customInput.includes('/') && !customInput.includes('|') ? '— did you mean | for alternation? / is literal.' : ''}</div>}
+            <div className="flex flex-wrap gap-1">
+              {PRESET_RES.map(p => (
+                <button key={p} onClick={() => setCustomInput(p)} className={`px-2 py-0.5 rounded text-[10px] font-mono border ${customInput === p ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)] hover:text-[var(--color-text)]'}`}>{p}</button>
+              ))}
+            </div>
+            {customResult?.nfa && customFrag && !customResult.error && (
+              <div className="border border-[var(--color-neon)]/30 rounded-lg overflow-auto bg-[var(--color-card)] p-2">
+                <div className="text-[10px] font-mono text-[var(--color-neon)] mb-1">Your RE: {customInput} — Thompson NFA (q0 start)</div>
+                <svg ref={customSvgRef} className="block" role="img" aria-label="Custom RE NFA" />
+              </div>
+            )}
+          </div>
+          <div className="flex gap-1.5">
+            <span className="text-[10px] font-mono text-[var(--color-text-muted)] self-center">Walkthrough a(b|c)*:</span>
+            {buildFrags.map((_, i) => (
+              <button key={i} onClick={() => setBuildStep(i)} className={`px-2 py-0.5 rounded text-[10px] font-mono border ${buildStep === i ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>{i + 1}</button>
+            ))}
+            <span className="text-[10px] font-mono text-[var(--color-text-muted)] self-center ml-2">{buildFrags[buildStep]?.re}</span>
+          </div>
         </div>
       )}
       {machine && active !== 'OVERVIEW' && active !== 'FLAT' && active !== 'BUILD' && (

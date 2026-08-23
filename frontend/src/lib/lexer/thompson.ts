@@ -79,22 +79,32 @@ let states: NFAState[] = [];
 let transitions: NFATransition[] = [];
 let counter = 0;
 
-function mkState(): number {
+export function resetThompson(): void {
+  counter = 0;
+  states = [];
+  transitions = [];
+}
+
+export function getThompsonState(): { states: NFAState[]; transitions: NFATransition[]; counter: number } {
+  return { states, transitions, counter };
+}
+
+export function mkState(): number {
   const s: NFAState = { id: counter++, label: `q${counter - 1}`, isStart: false, isAccept: false };
   states.push(s);
   return s.id;
 }
 
-function eps(from: number, to: number): void {
+export function eps(from: number, to: number): void {
   transitions.push({ from, to, symbol: '' });
 }
 
-function sym(from: number, to: number, symbol: string): void {
+export function sym(from: number, to: number, symbol: string): void {
   transitions.push({ from, to, symbol });
 }
 
 /** A Thompson fragment: exactly one start and one accept state, plus its RE tree node. */
-interface Built {
+export interface Built {
   startId: number;
   acceptId: number;
   node: ReNode;
@@ -103,7 +113,7 @@ interface Built {
 // ── The core templates ──
 
 /** (a) NFA for a single symbol (literal char or character-class label). */
-function fragSymbol(symbol: string): Built {
+export function fragSymbol(symbol: string): Built {
   const s = mkState();
   const f = mkState();
   sym(s, f, symbol);
@@ -111,7 +121,7 @@ function fragSymbol(symbol: string): Built {
 }
 
 /** (c) NFA for r s … — glue accepts to starts with ε-transitions. */
-function fragConcat(parts: Built[]): Built {
+export function fragConcat(parts: Built[]): Built {
   if (parts.length === 0) {
     const s = mkState(); // ε fragment: start === accept (degenerate, unused)
     return { startId: s, acceptId: s, node: { kind: 'concat', children: [], startId: s, acceptId: s } };
@@ -132,7 +142,7 @@ function fragConcat(parts: Built[]): Built {
 }
 
 /** (d) NFA for r | s | … — fresh start/accept, one ε edge pair per branch. */
-function fragAlt(parts: Built[]): Built {
+export function fragAlt(parts: Built[]): Built {
   if (parts.length === 1) return parts[0];
   const s = mkState();
   const f = mkState();
@@ -148,7 +158,7 @@ function fragAlt(parts: Built[]): Built {
 }
 
 /** (e) NFA for r* — fresh start/accept plus the loop-back ε edge. */
-function fragStar(inner: Built): Built {
+export function fragStar(inner: Built): Built {
   const s = mkState();
   const f = mkState();
   eps(s, inner.startId);
@@ -167,12 +177,12 @@ function fragStar(inner: Built): Built {
  * fragments — reusing one fragment twice would wire ε edges back into its
  * internal states, violating the §2.4.2 invariants the drawing relies on.
  */
-function fragPlus(makeInner: () => Built): Built {
+export function fragPlus(makeInner: () => Built): Built {
   return fragConcat([makeInner(), fragStar(makeInner())]);
 }
 
 /** NFA for r? — the star template minus the back-edge. */
-function fragOpt(inner: Built): Built {
+export function fragOpt(inner: Built): Built {
   const s = mkState();
   const f = mkState();
   eps(s, inner.startId);
@@ -197,7 +207,7 @@ function fragWord(word: string): Built {
 
 // ── Token-group regular expressions, built from the templates above ──
 
-function markAccept(frag: Built, acceptType: string): void {
+export function markAccept(frag: Built, acceptType: string): void {
   const st = states[frag.acceptId];
   st.isAccept = true;
   st.acceptType = acceptType;

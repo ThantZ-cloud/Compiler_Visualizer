@@ -38,8 +38,6 @@ const LexicalAnalysisPanel: React.FC = () => {
     return analyzeTokenGroups(result.tokens);
   }, [result]);
 
-  const nfa = useMemo(() => buildNFA(), []);
-
   const foundKeywords = useMemo(() => {
     if (!result?.tokens) return [] as string[];
     const seen = new Set<string>();
@@ -49,6 +47,15 @@ const LexicalAnalysisPanel: React.FC = () => {
     }
     return out;
   }, [result]);
+
+  // NFA is now dynamic per program: keyword branches = foundKeywords in this file (token counts not static)
+  const nfa = useMemo(() => buildNFA(foundKeywords.length > 0 ? foundKeywords : []), [foundKeywords]);
+
+  const groupCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const g of groups) m[g.name] = g.count;
+    return m;
+  }, [groups]);
 
   const { dfa, steps: subsetSteps } = useMemo(() => subsetConstruction(nfa), [nfa]);
   const { minDfa, steps: hopcroftSteps } = useMemo(() => hopcroftMinimization(dfa), [dfa]);
@@ -231,6 +238,7 @@ const LexicalAnalysisPanel: React.FC = () => {
                 <NfaGraph
                   nfa={nfa}
                   keywords={foundKeywords}
+                  groupCounts={groupCounts}
                   isPlaying={playState === 'playing' && currentStep === 1}
                   isCompleted={completedSteps.has(1) || playState === 'completed'}
                 />

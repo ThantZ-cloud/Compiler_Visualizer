@@ -25,6 +25,7 @@ import { constructGroups, buildFigure25Example, type GroupConstruction, type ReN
 interface NfaGraphProps {
   nfa: NFA;
   keywords?: string[];
+  groupCounts?: Record<string, number>;
   isPlaying: boolean;
   isCompleted: boolean;
 }
@@ -217,11 +218,12 @@ const VIEW_TABS: Array<{ key: string; labelKey: string; fallback: string }> = [
   { key: 'BUILD', labelKey: 'lexical.step2.buildView', fallback: 'BUILD STEPS' },
 ];
 
-const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], isPlaying, isCompleted }) => {
+const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {}, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const flatSvgRef = useRef<SVGSVGElement>(null);
-  const machines = useMemo(() => constructGroups(), []);
+  // Machines are dynamic per program: keyword branches = foundKeywords in this file (token counts not static)
+  const machines = useMemo(() => constructGroups(keywords.length > 0 ? keywords : []), [keywords]);
   const ordered = useMemo(() => TAB_ORDER.map(name => machines.find(m => m.name === name)).filter(Boolean) as GroupConstruction[], [machines]);
   const figureExample = useMemo(() => buildFigure25Example(), []);
   // stepwise fragments for BUILD tab
@@ -322,7 +324,7 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], isPlaying, isCo
       if (st.isAccept && st.acceptType) g.append('text').attr('text-anchor', 'middle').attr('dy', R + 12).attr('fill', 'var(--color-neon)').style('font-size', '6px').style('font-family', 'JetBrains Mono, monospace').text(st.acceptType.slice(0, 4));
     }
     return () => { svg.selectAll('*').remove(); };
-  }, [active, nfa, t]);
+  }, [active, nfa, t, groupCounts, ordered]);
 
   useEffect(() => {
     const svgEl = svgRef.current;
@@ -360,15 +362,17 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], isPlaying, isCo
       sg.append('line').attr('x1', -R - 14).attr('y1', 0).attr('x2', -R - 4).attr('y2', 0).attr('stroke', 'var(--color-neon)').attr('stroke-width', 2).attr('marker-end', 'url(#arrow-nfa)');
       sg.append('text').attr('text-anchor', 'middle').attr('dy', 4).attr('fill', 'var(--color-text)').style('font-size', '9px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(startLabel);
       sg.append('text').attr('text-anchor', 'middle').attr('dy', R + 14).attr('fill', 'var(--color-neon)').style('font-size', '7px').style('font-family', 'JetBrains Mono, monospace').text('START');
-      // one circle per token group — collapsed Thompson machine (circle = entry, double = accept hint)
+      // one circle per token group — collapsed Thompson machine; badge shows TOKEN COUNTS per Java program (dynamic)
       ordered.forEach((m, i) => {
         const py = PAD + 18 + i * GAP_Y + OVER_R;
         const isAcceptGroup = m.states.some(s => s.isAccept);
-        const g = stateGroup.append('g').attr('transform', `translate(${groupsX},${py})`);
-        if (isAcceptGroup) g.append('circle').attr('r', OVER_R + 4).attr('fill', 'none').attr('stroke', 'var(--color-neon)').attr('stroke-width', 1.2).attr('opacity', 0.6);
-        g.append('circle').attr('r', OVER_R).attr('fill', 'var(--color-surface-3)').attr('stroke', 'var(--color-border-bright)').attr('stroke-width', 1.6);
-        g.append('text').attr('text-anchor', 'middle').attr('dy', -2).attr('fill', 'var(--color-neon)').style('font-size', '8px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(m.name.slice(0, 4));
-        g.append('text').attr('text-anchor', 'middle').attr('dy', 9).attr('fill', 'var(--color-text-muted)').style('font-size', '6.5px').style('font-family', 'JetBrains Mono, monospace').text(`${m.states.length}○`);
+        const tokCount = groupCounts[m.name] ?? 0;
+        const hasTokens = tokCount > 0;
+        const g = stateGroup.append('g').attr('transform', `translate(${groupsX},${py})`).attr('opacity', hasTokens ? 1 : 0.45);
+        if (isAcceptGroup) g.append('circle').attr('r', OVER_R + 4).attr('fill', 'none').attr('stroke', hasTokens ? 'var(--color-neon)' : 'var(--color-border-bright)').attr('stroke-width', 1.2).attr('opacity', hasTokens ? 0.8 : 0.3);
+        g.append('circle').attr('r', OVER_R).attr('fill', hasTokens ? 'var(--color-neon-dim)' : 'var(--color-surface-3)').attr('stroke', hasTokens ? 'var(--color-neon)' : 'var(--color-border-bright)').attr('stroke-width', hasTokens ? 2 : 1.2);
+        g.append('text').attr('text-anchor', 'middle').attr('dy', -2).attr('fill', hasTokens ? 'var(--color-neon)' : 'var(--color-text-muted)').style('font-size', '8px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(m.name.slice(0, 4));
+        g.append('text').attr('text-anchor', 'middle').attr('dy', 9).attr('fill', hasTokens ? 'var(--color-neon)' : 'var(--color-text-muted)').style('font-size', '7px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(`${tokCount} tok`);
         // epsilon arrow from unified start to this group circle (circle→circle, trimmed at perimeters)
         const dx = groupsX - startX, dy = py - sy, dist = Math.hypot(dx, dy) || 1;
         const ux = dx / dist, uy = dy / dist;
@@ -444,7 +448,7 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], isPlaying, isCo
       g.transition().duration(animate ? 300 : 0).delay(animate ? ti * 40 + 200 : 0).style('opacity', 1);
     });
     return () => { svg.selectAll('*').remove(); };
-  }, [nfa, machines, ordered, active, machine, pruned, hiddenCount, isPlaying, isCompleted, t]);
+  }, [nfa, machines, ordered, active, machine, pruned, hiddenCount, groupCounts, isPlaying, isCompleted, t]);
 
   // BUILD tab SVG
   const buildSvgRef = useRef<SVGSVGElement>(null);
@@ -545,6 +549,7 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], isPlaying, isCo
         <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] font-mono text-[var(--color-text-muted)]">
           <span className="text-[var(--color-neon)] font-bold">{machine.name}</span>
           <span>· {machine.re}</span>
+          <span className={ (groupCounts[machine.name] ?? 0) > 0 ? 'text-[var(--color-neon)] font-bold' : ''}>· {groupCounts[machine.name] ?? 0} tokens in this file</span>
           <span>· {t('lexical.step2.statesCount', { count: machine.states.length })}</span>
           <span>· {t('lexical.step2.transitionsCount', { count: machine.transitions.length })}</span>
           {hiddenCount > 0 && <span className="text-[var(--color-text-dim)]">· {t('lexical.step2.showingNote', { shown: KEYWORDS_SHOWN, total: machine.states.length })}</span>}

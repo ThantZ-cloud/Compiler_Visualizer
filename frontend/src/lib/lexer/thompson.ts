@@ -287,6 +287,18 @@ function keywordRE(): Built {
   return fragAlt(JAVA_KEYWORDS.map(kw => fragWord(kw)));
 }
 
+export function keywordREFrom(words: string[]): Built {
+  const uniq = Array.from(new Set(words)).filter(w => JAVA_KEYWORDS.includes(w as never));
+  // Empty -> single non-accepting dead fragment (isolated states, never marked accept externally)
+  if (uniq.length === 0) {
+    const s = mkState();
+    const f = mkState();
+    // no symbol edge → unreachable accept; caller will not mark this acceptType as observable
+    return { startId: s, acceptId: f, node: { kind: 'alt', children: [], startId: s, acceptId: f } };
+  }
+  return fragAlt(uniq.map(kw => fragWord(kw)));
+}
+
 // ── Per-group constructions (single source of truth for NFA and viewer) ──
 
 /** Convert a ReNode tree into a human-readable regex string (single source of truth). */
@@ -350,23 +362,33 @@ const GROUP_DEFS: Array<{ build: () => Built; type: string }> = [
  * Display RE is derived from the construction tree (single source of truth)
  * with a hand-written fallback from GROUP_RES for compactness.
  */
-export function constructGroups(): GroupConstruction[] {
+export function constructGroups(filteredKeywords?: string[]): GroupConstruction[] {
   counter = 0;
   states = [];
   transitions = [];
 
+  // If filteredKeywords provided (even empty), keyword RE becomes dynamic per program
+  const defs = filteredKeywords !== undefined
+    ? GROUP_DEFS.map(d => d.type === 'KEYWORD' ? { build: () => keywordREFrom(filteredKeywords), type: 'KEYWORD' as const } : d)
+    : GROUP_DEFS;
+
   const out: GroupConstruction[] = [];
-  for (const g of GROUP_DEFS) {
+  for (const g of defs) {
     const beforeStates = states.length;
     const beforeTrans = transitions.length;
     const frag = g.build();
-    markAccept(frag, g.type);
+    // Don't mark empty-keyword dead fragment as accept (no keyword in this program → 0 tokens)
+    const isEmptyKeyword = g.type === 'KEYWORD' && filteredKeywords !== undefined && filteredKeywords.length === 0;
+    if (!isEmptyKeyword) markAccept(frag, g.type);
     const derived = reNodeToString(frag.node);
-    // Use derived string but keep compact GROUP_RES for large alts (keyword/operator)
     const compact = g.type === 'KEYWORD' || g.type === 'OPERATOR' ? GROUP_RES[g.type] : derived;
+    // For dynamic KEYWORD, overwrite compact with actual list when filtered
+    const re = g.type === 'KEYWORD' && filteredKeywords !== undefined
+      ? (filteredKeywords.length === 0 ? '(no keywords in this file)' : filteredKeywords.join(' | '))
+      : compact;
     out.push({
       name: g.type,
-      re: compact,
+      re,
       root: frag.node,
       states: states.slice(beforeStates),
       transitions: transitions.slice(beforeTrans),
@@ -397,13 +419,15 @@ export function buildFigure25Example(): { nfa: NFA; root: ReNode } {
 
 // ── Combined scanner NFA: unified start with ε edges into every group ──
 
-export function buildNFA(): NFA {
-  const groups = constructGroups();
+export function buildNFA(filteredKeywords?: string[]): NFA {
+  const groups = constructGroups(filteredKeywords);
 
   const unifiedStart = mkState();
   states[unifiedStart].isStart = true;
   for (const g of groups) {
-    eps(unifiedStart, g.startId);
+    // Skip epsilon fan for empty-keyword dead fragment (no tokens in file)
+    const isEmptyKeyword = g.name === 'KEYWORD' && filteredKeywords !== undefined && filteredKeywords.length === 0;
+    if (!isEmptyKeyword) eps(unifiedStart, g.startId);
   }
 
   return { states, transitions, startState: unifiedStart };

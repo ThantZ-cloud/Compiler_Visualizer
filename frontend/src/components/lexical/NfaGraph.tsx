@@ -13,11 +13,10 @@ import { constructGroups, buildFigure25Example, type GroupConstruction, type ReN
 // figures: symbol pairs glued by ε, alternations fanning from a fresh start
 // to a fresh accept, and star closures looping back over the top.
 //
-// Three presentation modes (all circles-and-arrows, per Thompson Fig 2.4):
+// Three presentation modes (all circles-and-arrows):
 //  • OVERVIEW — unified start circle fans ε to one circle per token group (collapsed but still graph)
-//  • FLAT — raw combined NFA as a layered DAG (Figure 2.7a style, full ε mesh)
-//  • BUILD — stepwise Figure 2.5 animation for a(b|c)*
-//  • Per-group Thompson — tree layout per token group
+//  • FULL — raw combined NFA as a layered DAG (full ε mesh)
+//  • EXAMPLES — step-by-step walkthrough for a(b|c)* (how the templates compose)
 // The drawing is derived from the construction alone — user code only ever
 // influences presentation (which keyword branches float to the front), never
 // the machine's structure.
@@ -176,7 +175,7 @@ function prunedKeywordItems(root: ReNode, keywords: string[]): { items: AltItem[
   return { items, hidden };
 }
 
-// ── Flat NFA layered layout (Figure 2.7a style) ──
+// ── Full NFA layered layout — left→right BFS layers ──
 function nfaLayeredPositions(nfa: NFA) {
   const ids = nfa.states.map(s => s.id);
   const idSet = new Set(ids);
@@ -214,8 +213,8 @@ function nfaLayeredPositions(nfa: NFA) {
 
 const VIEW_TABS: Array<{ key: string; labelKey: string; fallback: string }> = [
   { key: 'OVERVIEW', labelKey: 'lexical.step2.overview', fallback: 'OVERVIEW' },
-  { key: 'FLAT', labelKey: 'lexical.step2.flatView', fallback: 'FLAT NFA' },
-  { key: 'BUILD', labelKey: 'lexical.step2.buildView', fallback: 'BUILD STEPS' },
+  { key: 'FLAT', labelKey: 'lexical.step2.flatView', fallback: 'FULL' },
+  { key: 'BUILD', labelKey: 'lexical.step2.buildView', fallback: 'EXAMPLES' },
 ];
 
 const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {}, isPlaying, isCompleted }) => {

@@ -415,16 +415,26 @@ export function buildFigure25Example(): { nfa: NFA; root: ReNode } {
 }
 
 // ── Combined scanner NFA: unified start with ε edges into every group ──
+// Must start from q0: unified start is allocated first (q0) before any group fragment.
 
 export function buildNFA(filteredKeywords?: string[]): NFA {
-  const groups = constructGroups(filteredKeywords);
-
-  const unifiedStart = mkState();
+  counter = 0;
+  states = [];
+  transitions = [];
+  const unifiedStart = mkState(); // q0
   states[unifiedStart].isStart = true;
-  for (const g of groups) {
-    // Skip epsilon fan for empty-keyword dead fragment (no tokens in file)
-    const isEmptyKeyword = g.name === 'KEYWORD' && filteredKeywords !== undefined && filteredKeywords.length === 0;
-    if (!isEmptyKeyword) eps(unifiedStart, g.startId);
+
+  const defs = filteredKeywords !== undefined
+    ? GROUP_DEFS.map(d => d.type === 'KEYWORD' ? { build: () => keywordREFrom(filteredKeywords), type: 'KEYWORD' as const } : d)
+    : GROUP_DEFS;
+
+  for (const g of defs) {
+    const frag = g.build();
+    const isEmptyKeyword = g.type === 'KEYWORD' && filteredKeywords !== undefined && filteredKeywords.length === 0;
+    if (!isEmptyKeyword) {
+      markAccept(frag, g.type);
+      eps(unifiedStart, frag.startId);
+    }
   }
 
   return { states, transitions, startState: unifiedStart };

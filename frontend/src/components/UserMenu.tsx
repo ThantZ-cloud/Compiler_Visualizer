@@ -34,7 +34,7 @@ const UserMenu: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-1 min-w-[180px] bg-[var(--color-card)] border border-[var(--color-border)] shadow-[0_0_15px_rgba(0,0,0,0.5)] z-[100] overflow-hidden">
+        <div className="fixed inset-x-0 top-14 mx-auto mt-1 w-[200px] min-w-[180px] md:absolute md:inset-auto md:right-0 md:top-full md:mx-0 md:w-auto bg-[var(--color-card)] border border-[var(--color-border)] shadow-[0_0_15px_rgba(0,0,0,0.5)] z-[100] overflow-hidden">
           <div className="p-3 flex flex-col gap-0.5 border-b border-[var(--color-border)]">
             <span className="text-[11px] font-bold text-[var(--color-neon)] font-display tracking-[0.1em] uppercase">
               {user.username}

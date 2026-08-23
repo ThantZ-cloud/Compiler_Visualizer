@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sun, Moon, Monitor, Eye, Workflow, Code, Terminal, Menu, X } from 'lucide-react';
+import { Sun, Moon, Eye, Workflow, Code, Terminal, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -28,12 +28,12 @@ const Layout: React.FC = () => {
   }, [location.pathname]);
 
   const cycleTheme = () => {
-    const order: Array<'dark' | 'light' | 'system'> = ['dark', 'light', 'system'];
+    const order: Array<'dark' | 'light'> = ['dark', 'light'];
     const next = order[(order.indexOf(theme) + 1) % order.length];
     setTheme(next);
   };
 
-  const ThemeIcon = theme === 'dark' ? Moon : theme === 'light' ? Sun : Monitor;
+  const ThemeIcon = theme === 'dark' ? Moon : Sun;
 
   const isCompiler = location.pathname === '/compiler';
   const isVisualizing = location.pathname.startsWith('/visualize');
@@ -107,7 +107,7 @@ const Layout: React.FC = () => {
             </button>
 
             {mobileMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 bg-[var(--color-card)] border border-[var(--color-border-bright)] shadow-[0_16px_48px_rgba(0,0,0,0.5)] flex flex-col p-2 gap-1 z-50">
+              <div className="fixed inset-x-0 top-14 mx-auto mt-2 w-52 bg-[var(--color-card)] border border-[var(--color-border-bright)] shadow-[0_16px_48px_rgba(0,0,0,0.5)] flex flex-col p-2 gap-1 z-[60]">
                 {navItems.map((item) => (
                   <button
                     key={item.path}

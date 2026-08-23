@@ -177,7 +177,7 @@ function prunedKeywordItems(root: ReNode, keywords: string[]): { items: AltItem[
   return { items, hidden };
 }
 
-// ── Full NFA layered layout — left→right BFS layers (centered) ──
+// ── Full NFA layered layout — left→right BFS layers (q0 at left center) ──
   function nfaLayeredPositions(nfa: NFA) {
     const ids = nfa.states.map(s => s.id);
     const idSet = new Set(ids);
@@ -210,12 +210,6 @@ function prunedKeywordItems(root: ReNode, keywords: string[]): { items: AltItem[
       const startY = (height - gap * (layer.length - 1)) / 2;
       layer.forEach((id, i) => pos.set(id, { x: 50 + li * colStep, y: layer.length === 1 ? height / 2 : startY + i * gap }));
     });
-    // Center the graph horizontally by shifting all positions
-    const minX = Math.min(...Array.from(pos.values()).map(p => p.x));
-    const maxX = Math.max(...Array.from(pos.values()).map(p => p.x));
-    const contentWidth = maxX - minX;
-    const shiftX = (width - contentWidth) / 2 - minX;
-    pos.forEach((p, id) => pos.set(id, { x: p.x + shiftX, y: p.y }));
     return { positions: pos, width, height };
   }
 
@@ -374,15 +368,8 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
       const height = PAD * 2 + 30 + ordered.length * GAP_Y;
       svg.attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height);
       const sy = height / 2;
-      // Center the overview horizontally
-      const contentLeft = startX - R;
-      const contentRight = groupsX + OVER_R;
-      const contentWidth = contentRight - contentLeft;
-      const shiftX = (width - contentWidth) / 2 - contentLeft;
-      const shiftStartX = startX + shiftX;
-      const shiftGroupsX = groupsX + shiftX;
-      // start state — circle + incoming arrow + label (Thompson start)
-      const sg = stateGroup.append('g').attr('transform', `translate(${shiftStartX},${sy})`);
+      // start state — circle + incoming arrow + label (Thompson start) at left center
+      const sg = stateGroup.append('g').attr('transform', `translate(${startX},${sy})`);
       sg.append('circle').attr('r', R).attr('fill', 'var(--color-neon-dim)').attr('stroke', 'var(--color-neon)').attr('stroke-width', 2);
       sg.append('line').attr('x1', -R - 14).attr('y1', 0).attr('x2', -R - 4).attr('y2', 0).attr('stroke', 'var(--color-neon)').attr('stroke-width', 2).attr('marker-end', 'url(#arrow-nfa)');
       sg.append('text').attr('text-anchor', 'middle').attr('dy', 4).attr('fill', 'var(--color-text)').style('font-size', '9px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(startLabel);
@@ -393,16 +380,16 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
         const isAcceptGroup = m.states.some(s => s.isAccept);
         const tokCount = groupCounts[m.name] ?? 0;
         const hasTokens = tokCount > 0;
-        const g = stateGroup.append('g').attr('transform', `translate(${shiftGroupsX},${py})`).attr('opacity', hasTokens ? 1 : 0.45);
+        const g = stateGroup.append('g').attr('transform', `translate(${groupsX},${py})`).attr('opacity', hasTokens ? 1 : 0.45);
         if (isAcceptGroup) g.append('circle').attr('r', OVER_R + 4).attr('fill', 'none').attr('stroke', hasTokens ? 'var(--color-neon)' : 'var(--color-border-bright)').attr('stroke-width', 1.2).attr('opacity', hasTokens ? 0.8 : 0.3);
         g.append('circle').attr('r', OVER_R).attr('fill', hasTokens ? 'var(--color-neon-dim)' : 'var(--color-surface-3)').attr('stroke', hasTokens ? 'var(--color-neon)' : 'var(--color-border-bright)').attr('stroke-width', hasTokens ? 2 : 1.2);
         g.append('text').attr('text-anchor', 'middle').attr('dy', -2).attr('fill', hasTokens ? 'var(--color-neon)' : 'var(--color-text-muted)').style('font-size', '8px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(m.name.slice(0, 4));
         g.append('text').attr('text-anchor', 'middle').attr('dy', 9).attr('fill', hasTokens ? 'var(--color-neon)' : 'var(--color-text-muted)').style('font-size', '7px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(`${tokCount} tok`);
         // epsilon arrow from unified start to this group circle (circle→circle, trimmed at perimeters)
-        const dx = shiftGroupsX - shiftStartX, dy = py - sy, dist = Math.hypot(dx, dy) || 1;
+        const dx = groupsX - startX, dy = py - sy, dist = Math.hypot(dx, dy) || 1;
         const ux = dx / dist, uy = dy / dist;
-        const x1 = shiftStartX + ux * (R + 2), y1 = sy + uy * (R + 2);
-        const x2 = shiftGroupsX - ux * (OVER_R + 4), y2 = py - uy * (OVER_R + 4);
+        const x1 = startX + ux * (R + 2), y1 = sy + uy * (R + 2);
+        const x2 = groupsX - ux * (OVER_R + 4), y2 = py - uy * (OVER_R + 4);
         const line = transGroup.append('line').attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2).attr('stroke', 'var(--color-text-dim)').attr('stroke-width', 1).attr('stroke-dasharray', '4,3').attr('marker-end', 'url(#arrow-nfa)');
         fadeIn(line as unknown as d3.Selection<d3.BaseType, unknown, null, undefined>, i * 50);
         const mx = (x1 + x2) / 2 - 6, my = (y1 + y2) / 2 - 4;
@@ -491,13 +478,8 @@ const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {
     const width = frag.w + PAD * 2;
     const height = frag.h + PAD * 2 + 24;
     svg.attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height);
-    // Center the frag horizontally
-    const minX = Math.min(...Array.from(frag.nodes.values()).map(p => p.x));
-    const maxX = Math.max(...Array.from(frag.nodes.values()).map(p => p.x));
-    const contentWidth = maxX - minX;
-    const shiftX = (width - contentWidth) / 2 - minX;
-    for (const p of frag.nodes.values()) { p.x += PAD + shiftX; p.y += PAD + 18; }
-    svg.append('text').attr('x', PAD + shiftX).attr('y', 13).attr('fill', 'var(--color-neon)').style('font-size', '9px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(`${entry.label}   RE: ${entry.re}`);
+    for (const p of frag.nodes.values()) { p.x += PAD; p.y += PAD + 18; }
+    svg.append('text').attr('x', PAD).attr('y', 13).attr('fill', 'var(--color-neon)').style('font-size', '9px').style('font-family', 'JetBrains Mono, monospace').style('font-weight', 'bold').text(`${entry.label}   RE: ${entry.re}`);
     const stateById = new Map<number, NFAState>([...figureExample.nfa.states.map(s => [s.id, s] as const)]);
     const pt = (id: number) => frag.nodes.get(id);
     const trim = (a: Pt, b: Pt) => { const dx = b.x - a.x, dy = b.y - a.y; const d = Math.hypot(dx, dy) || 1; const ux = dx / d, uy = dy / d; return { x1: a.x + ux * (R + 2), y1: a.y + uy * (R + 2), x2: b.x - ux * (R + 4), y2: b.y - uy * (R + 4) }; };

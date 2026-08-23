@@ -29,12 +29,8 @@ export function drawDfaGraph(
   const layout = layeredLayout(dfa, { nodeRadius: R });
   const positions = layout.positions;
   
-  // Center the graph horizontally
-  const minX = Math.min(...Array.from(positions.values()).map(p => p.x));
-  const maxX = Math.max(...Array.from(positions.values()).map(p => p.x));
-  const contentWidth = maxX - minX;
-  const shiftX = (layout.width - contentWidth) / 2 - minX;
-  positions.forEach((p, id) => positions.set(id, { x: p.x + shiftX, y: p.y }));
+  // Keep d0 at left center (no horizontal centering shift)
+  // The layeredLayout already positions d0 at left
 
   svg.attr('viewBox', `0 0 ${layout.width} ${layout.height}`);
   // Render at natural size (1:1 px) so the card scrolls instead of shrinking

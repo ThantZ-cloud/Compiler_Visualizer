@@ -37,6 +37,16 @@ export function drawDfaGraph(
   // the diagram into an unreadable hairball.
   svg.attr('width', layout.width).attr('height', layout.height);
 
+  // Center d0/m0 vertically in the scroll container (mirrors NFA q0 centering)
+  const startPos = positions.get(dfa.startState);
+  const card = svgRef.parentElement as HTMLElement | null;
+  if (startPos && card) {
+    requestAnimationFrame(() => {
+      const target = Math.max(0, startPos.y - card.clientHeight / 2);
+      card.scrollTop = Math.min(target, card.scrollHeight - card.clientHeight);
+    });
+  }
+
   const fadeIn = (sel: d3.Selection<d3.BaseType, unknown, null, undefined>, delay: number) =>
     sel.style('opacity', animate ? 0 : 1).transition().duration(animate ? 300 : 0).delay(animate ? delay : 0).style('opacity', 1);
 

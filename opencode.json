@@ -16,13 +16,21 @@
       "url": "https://mcp.context7.com/mcp",
       "enabled": true,
       "headers": {
-        "Authorization": "Bearer ctx7sk-4142dfc6-1eff-40bd-893f-377e737ee6d1"
+        "Authorization": "Bearer {env:CONTEXT7_API_KEY}"
       }
     },
     "vercel": {
       "type": "local",
       "command": ["npx", "-y", "mcp-remote@latest", "https://mcp.vercel.com"],
       "enabled": true
+    },
+    "render": {
+      "type": "remote",
+      "url": "https://mcp.render.com/mcp",
+      "enabled": true,
+      "headers": {
+        "Authorization": "Bearer {env:RENDER_API_KEY}"
+      }
     }
   }
 }

@@ -24,7 +24,7 @@ interface CustomResult {
 const VIEW_TABS = [
   { key: 'OVERVIEW', fallback: 'OVERVIEW' },
   { key: 'FULL', fallback: 'FULL' },
-  { key: 'EXAMPLES', fallback: 'EXAMPLES' },
+  { key: 'EXAMPLES', fallback: 'TRY IT' },
 ] as const;
 
 const DfaGraph: React.FC<DfaGraphProps> = ({ dfa, steps, nfaStatesCount = 0, groupCounts = {}, isPlaying, isCompleted }) => {
@@ -66,11 +66,11 @@ const DfaGraph: React.FC<DfaGraphProps> = ({ dfa, steps, nfaStatesCount = 0, gro
     return () => clearInterval(interval);
   }, [isPlaying, isCompleted, steps.length]);
 
-  // Draw full token DFA graph
+  // Draw full token DFA graph — always render for inspection (like NFA flat view)
   useEffect(() => {
     if (active !== 'FULL') return;
     const svgEl = svgRef.current;
-    if (!svgEl || (!isPlaying && !isCompleted)) return;
+    if (!svgEl) return;
     drawDfaGraph(svgEl, dfa, {
       accent: 'var(--color-cyan)',
       accentDim: 'var(--color-cyan-dim)',

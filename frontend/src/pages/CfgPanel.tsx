@@ -18,6 +18,8 @@ import { computeDominators } from '../lib/cfg/dominators';
 import { buildSsa } from '../lib/cfg/ssa';
 import { runLivenessAnalysis } from '../lib/cfg/dataflow';
 import { computeSchedule } from '../lib/cfg/scheduling';
+import { buildCfgTryItData, CFG_TRYIT_PRESETS } from '../lib/cfg/cfgTryIt';
+import { buildCodegenTryItData } from '../lib/codegen/codegenTryIt';
 
 const STEP_DELAYS = [3000, 4000, 4000, 4000, 4000];
 const OPTIMIZER_STEP_NAMES = ['CFG', 'Dominators', 'SSA', 'Data Flow', 'Scheduling'];
@@ -38,14 +40,25 @@ const CfgPanel: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [playState, setPlayState] = useState<PlayState>('idle');
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [tryItCode, setTryItCode] = useState('int s=0; for(int i=0;i<n;i++) s+=a[i];');
+  const [stepTryIt, setStepTryIt] = useState<boolean[]>([false,false,false,false,false]);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
   const autoplayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const toggleStepTryIt = (idx: number, on: boolean) => setStepTryIt(prev => { const n=[...prev]; n[idx]=on; return n; });
+
+  const tryItCfg = useMemo(() => buildCfgTryItData(tryItCode), [tryItCode]);
+  const tryItMethod = tryItCfg.methods[0] ?? null;
+  const tryItCodegen = useMemo(() => buildCodegenTryItData(tryItCode), [tryItCode]);
+  const tryItDominators = useMemo(() => tryItMethod ? computeDominators(tryItMethod) : null, [tryItMethod]);
+  const tryItSsa = useMemo(() => tryItMethod ? buildSsa(tryItMethod, tryItCodegen.instructions, tryItCodegen.basicBlocks) : null, [tryItMethod, tryItCodegen]);
+  const tryItDataFlow = useMemo(() => tryItMethod ? runLivenessAnalysis(tryItMethod) : null, [tryItMethod]);
+  const tryItScheduling = useMemo(() => computeSchedule(tryItCodegen.instructions), [tryItCodegen]);
 
   useEffect(() => {
     return () => { if (autoplayTimer.current) clearTimeout(autoplayTimer.current); };
   }, []);
 
-  // Parse CFG data
   const methods = useMemo(() => {
     if (!result?.cfgJson) return null;
     return parseCfg(result.cfgJson);
@@ -53,7 +66,6 @@ const CfgPanel: React.FC = () => {
 
   const currentMethod = methods && methods.length > 0 ? methods[0] : null;
 
-  // Compute dominators, SSA, and data-flow
   const dominators = useMemo(() => {
     if (!currentMethod) return null;
     return computeDominators(currentMethod);
@@ -100,8 +112,6 @@ const CfgPanel: React.FC = () => {
     autoplayTimer.current = setTimeout(advance, STEP_DELAYS[0]);
   }, [scrollToStep]);
 
-  // Handle play-one-phase: animate only the active phase, then stay on it.
-  // Each click advances at most one phase; skips any phase already played.
   const handlePlayOnePhase = useCallback(() => {
     if (autoplayTimer.current) { clearTimeout(autoplayTimer.current); autoplayTimer.current = null; }
 
@@ -142,7 +152,7 @@ const CfgPanel: React.FC = () => {
   }, [currentStep, scrollToStep]);
 
   const handleRestart = useCallback(() => {
-    if (autoplayTimer.current) { clearTimeout(autoplayTimer.current); autoplayTimer.current = null; }
+    if (autoplayTimer.current) clearTimeout(autoplayTimer.current); autoplayTimer.current = null;
     setPlayState('idle');
     setCurrentStep(0);
     setCompletedSteps(new Set());
@@ -167,6 +177,16 @@ const CfgPanel: React.FC = () => {
     }
   }, [playState]);
 
+  const StepTabs: React.FC<{ idx: number }> = ({ idx }) => {
+    const isTry = stepTryIt[idx];
+    return (
+      <div className="flex gap-1.5 mb-2">
+        <button onClick={() => toggleStepTryIt(idx, false)} className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold tracking-wide border ${!isTry ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>Your Program</button>
+        <button onClick={() => toggleStepTryIt(idx, true)} className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold tracking-wide border ${isTry ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>Try It</button>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -177,7 +197,8 @@ const CfgPanel: React.FC = () => {
     );
   }
 
-  if (!result?.cfgJson || !currentMethod) {
+  const hasBackend = !!result?.cfgJson && !!currentMethod && !!dominators && !!ssa && !!dataFlow && !!scheduling;
+  if (!hasBackend && !tryItMethod) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-center gap-3">
         <GitFork size={48} className="text-[var(--color-neon)] opacity-30" />
@@ -186,89 +207,78 @@ const CfgPanel: React.FC = () => {
     );
   }
 
-  if (!dominators || !ssa || !dataFlow || !scheduling) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-center gap-3">
-        <GitFork size={48} className="text-[var(--color-neon)] opacity-30" />
-        <div className="font-mono text-sm">Computing...</div>
-      </div>
-    );
-  }
+  const displayMethod = (idx: number) => stepTryIt[idx] ? tryItMethod : currentMethod;
+  const displayDominators = (idx: number) => stepTryIt[idx] ? tryItDominators : dominators;
+  const displaySsa = (idx: number) => stepTryIt[idx] ? tryItSsa : ssa;
+  const displayDataFlow = (idx: number) => stepTryIt[idx] ? tryItDataFlow : dataFlow;
+  const displayScheduling = (idx: number) => stepTryIt[idx] ? tryItScheduling : scheduling;
+  const displayInstructions = (idx: number) => stepTryIt[idx] ? tryItCodegen.instructions : (result?.codeGenerationData?.instructions || []);
 
   return (
     <div className="flex flex-col h-full min-h-0">
       {activeTab === 'pipeline' ? (
         <>
+          <div className="shrink-0 px-1 mb-2">
+            <div className="border border-[var(--color-border-bright)] rounded-lg bg-[var(--color-card)] p-2 flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-text-muted)] font-display">Try It — editable tiny snippet</span>
+                <span className="text-[9px] font-mono text-[var(--color-text-muted)]">instant</span>
+              </div>
+              <textarea value={tryItCode} onChange={e => setTryItCode(e.target.value)} rows={2} className="w-full p-2 rounded border border-[var(--color-border-bright)] bg-[var(--color-void)] text-xs font-mono text-[var(--color-text)] focus:outline-none focus:border-[var(--color-neon)]" spellCheck={false} />
+              <div className="flex flex-wrap gap-1">
+                {CFG_TRYIT_PRESETS.map(p => (
+                  <button key={p} onClick={() => setTryItCode(p)} className={`px-2 py-0.5 rounded text-[9px] font-mono border ${tryItCode === p ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>{p.slice(0,24)}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div
             className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-2"
             onScroll={handleScroll}
           >
-            {/* Step 1: Basic Blocks */}
+            <div className="rounded border border-[var(--color-amber-dim)] bg-[var(--color-amber-dim)]/30 px-3 py-2 text-[10px] font-mono leading-relaxed text-[var(--color-amber)]">Each step has <span className="font-bold">Your Program</span> vs <span className="font-bold">Try It</span>. Try It uses the snippet above.</div>
+
             <div ref={(el) => { stepRefs.current[0] = el; }}>
+              <StepTabs idx={0} />
               <ErrorBoundary name="CfgBasicBlocks">
-                <CfgBasicBlocks
-                  method={currentMethod}
-                  isPlaying={playState === 'playing' && currentStep === 0}
-                  isCompleted={completedSteps.has(0) || playState === 'completed'}
-                />
+                {displayMethod(0) ? <CfgBasicBlocks method={displayMethod(0)!} isPlaying={playState === 'playing' && currentStep === 0} isCompleted={completedSteps.has(0) || playState === 'completed'} /> : <div className="text-[10px] font-mono text-[var(--color-text-muted)] p-3 border border-[var(--color-border)] rounded">No CFG</div>}
               </ErrorBoundary>
             </div>
 
             <PipelineConnector active={completedSteps.has(0) || currentStep >= 1} />
 
-            {/* Step 2: Dominator Tree */}
             <div ref={(el) => { stepRefs.current[1] = el; }}>
+              <StepTabs idx={1} />
               <ErrorBoundary name="DominatorTree">
-                <DominatorTree
-                  method={currentMethod}
-                  dominators={dominators}
-                  isPlaying={playState === 'playing' && currentStep === 1}
-                  isCompleted={completedSteps.has(1) || playState === 'completed'}
-                />
+                {displayMethod(1) && displayDominators(1) ? <DominatorTree method={displayMethod(1)!} dominators={displayDominators(1)!} isPlaying={playState === 'playing' && currentStep === 1} isCompleted={completedSteps.has(1) || playState === 'completed'} /> : <div className="text-[10px] font-mono text-[var(--color-text-muted)] p-3 border border-[var(--color-border)] rounded">No dominators</div>}
               </ErrorBoundary>
             </div>
 
             <PipelineConnector active={completedSteps.has(1) || currentStep >= 2} />
 
-            {/* Step 3: SSA Form */}
             <div ref={(el) => { stepRefs.current[2] = el; }}>
+              <StepTabs idx={2} />
               <ErrorBoundary name="SsaForm">
-                <SsaForm
-                  method={currentMethod}
-                  ssa={ssa}
-                  instructions={result.codeGenerationData?.instructions || []}
-                  isPlaying={playState === 'playing' && currentStep === 2}
-                  isCompleted={completedSteps.has(2) || playState === 'completed'}
-                />
+                {displayMethod(2) && displaySsa(2) ? <SsaForm method={displayMethod(2)!} ssa={displaySsa(2)!} instructions={displayInstructions(2)} isPlaying={playState === 'playing' && currentStep === 2} isCompleted={completedSteps.has(2) || playState === 'completed'} /> : <div className="text-[10px] font-mono text-[var(--color-text-muted)] p-3 border border-[var(--color-border)] rounded">No SSA</div>}
               </ErrorBoundary>
             </div>
 
             <PipelineConnector active={completedSteps.has(2) || currentStep >= 3} />
 
-            {/* Step 4: Data-Flow Analysis */}
             <div ref={(el) => { stepRefs.current[3] = el; }}>
+              <StepTabs idx={3} />
               <ErrorBoundary name="DataFlowAnalysis">
-                <DataFlowAnalysis
-                  method={currentMethod}
-                  result={dataFlow}
-                  isPlaying={playState === 'playing' && currentStep === 3}
-                  isCompleted={completedSteps.has(3) || playState === 'completed'}
-                />
+                {displayMethod(3) && displayDataFlow(3) ? <DataFlowAnalysis method={displayMethod(3)!} result={displayDataFlow(3)!} isPlaying={playState === 'playing' && currentStep === 3} isCompleted={completedSteps.has(3) || playState === 'completed'} /> : <div className="text-[10px] font-mono text-[var(--color-text-muted)] p-3 border border-[var(--color-border)] rounded">No data-flow</div>}
               </ErrorBoundary>
             </div>
 
             <PipelineConnector active={completedSteps.has(3) || currentStep >= 4} />
 
-            {/* Step 5: Instruction Scheduling */}
             <div ref={(el) => { stepRefs.current[4] = el; }}>
+              <StepTabs idx={4} />
               <ErrorBoundary name="InstructionScheduling">
-                <InstructionScheduling
-                  method={currentMethod}
-                  instructions={result.codeGenerationData?.instructions || []}
-                  scheduling={scheduling}
-                  isPlaying={playState === 'playing' && currentStep === 4}
-                  isCompleted={completedSteps.has(4) || playState === 'completed'}
-                />
+                {displayMethod(4) && displayScheduling(4) ? <InstructionScheduling method={displayMethod(4)!} instructions={displayInstructions(4)} scheduling={displayScheduling(4)!} isPlaying={playState === 'playing' && currentStep === 4} isCompleted={completedSteps.has(4) || playState === 'completed'} /> : <div className="text-[10px] font-mono text-[var(--color-text-muted)] p-3 border border-[var(--color-border)] rounded">No schedule</div>}
               </ErrorBoundary>
             </div>
           </div>
@@ -290,7 +300,7 @@ const CfgPanel: React.FC = () => {
       ) : (
         <div className="flex-1 min-h-0 overflow-auto p-4">
           <ErrorBoundary name="CfgGraph">
-            <CfgGraph cfgJson={result.cfgJson} />
+            <CfgGraph cfgJson={stepTryIt[0] ? JSON.stringify({ methods: [tryItMethod] }) : (result?.cfgJson ?? '')} />
           </ErrorBoundary>
         </div>
       )}

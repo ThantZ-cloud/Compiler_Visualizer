@@ -48,6 +48,10 @@
 ၆။ အကောင့်စနစ်ဖြင့် မိမိ၏ ကုဒ်များကို သိမ်းဆည်းနိုင်ပြီး မြန်မာ၊ အင်္ဂလိပ် နှစ်ဘာသာဖြင့် အသုံးပြုနိုင်ပါသည်။
 ၇။ အကျဉ်းချုပ်အားဖြင့် ဤစနစ်သည် Compiler ပညာရပ်ကို လွယ်ကူစွာ လေ့လာနိုင်သော Learning Platform တစ်ခု ဖြစ်ပါသည်။
 
+description
+
+Ever wondered what happens between javac and your output? Compiler Visualizer breaks the Java compilation pipeline into interactive steps: lexical analysis, parsing into an AST, semantic analysis with symbol tables, CFG-based optimization, bytecode generation, and execution. Write code in the browser editor, hit Compile, and explore each phase as an animated D3.js visualization — perfect for students learning how compilers really work.
+
 ---
 
 ## ၅။ အကျိုးကျေးဇူးများ

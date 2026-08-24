@@ -28,7 +28,7 @@ const MinimizedDfaGraph: React.FC<MinimizedDfaGraphProps> = ({ minDfa, hopcroftS
 
   useEffect(() => {
     const svgEl = svgRef.current;
-    if (!svgEl || (!isPlaying && !isCompleted)) return;
+    if (!svgEl) return;
     drawDfaGraph(svgEl, minDfa, {
       accent: 'var(--color-neon)',
       accentDim: 'var(--color-neon-dim)',

@@ -13,7 +13,7 @@ import TypeCheckingMatrix from '../components/semantic/TypeCheckingMatrix';
 import ErrorReportPanel from '../components/semantic/ErrorReportPanel';
 import SymbolExplorer from '../components/semantic/SymbolExplorer';
 import ErrorBoundary from '../components/ErrorBoundary';
-import { buildSemanticTryItData, SEMANTIC_TRYIT_PRESETS } from '../lib/semantic/semanticTryIt';
+import { buildSemanticTryItData } from '../lib/semantic/semanticTryIt';
 
 const STEP_DELAYS = [3000, 4000, 5000, 8000, 4000];
 const SEMANTIC_STEP_NAMES = ['Scopes', 'Symbols', 'Resolution', 'Checking', 'Errors'];
@@ -26,7 +26,7 @@ const SemanticAnalysisPanel: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [playState, setPlayState] = useState<PlayState>('idle');
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-  const [tryItCode, setTryItCode] = useState('int x = 1;\n{ int y = x; }');
+  const [tryItCode] = useState('int x = 1;\n{ int y = x; }');
   const [stepTryIt, setStepTryIt] = useState<boolean[]>([false, false, false, false, false]);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
   const autoplayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -86,23 +86,7 @@ const SemanticAnalysisPanel: React.FC = () => {
     <div className="flex flex-col h-full min-h-0">
       {activeTab === 'pipeline' ? (
         <>
-          <div className="shrink-0 px-1 mb-2">
-            <div className="border border-[var(--color-border-bright)] rounded-lg bg-[var(--color-card)] p-2 flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-text-muted)] font-display">Try It — editable tiny snippet</span>
-                <span className="text-[9px] font-mono text-[var(--color-text-muted)]">instant</span>
-              </div>
-              <textarea value={tryItCode} onChange={e => setTryItCode(e.target.value)} rows={3} className="w-full p-2 rounded border border-[var(--color-border-bright)] bg-[var(--color-void)] text-xs font-mono text-[var(--color-text)] focus:outline-none focus:border-[var(--color-neon)]" spellCheck={false} />
-              <div className="flex flex-wrap gap-1">
-                {SEMANTIC_TRYIT_PRESETS.map(p => (
-                  <button key={p} onClick={() => setTryItCode(p)} className={`px-2 py-0.5 rounded text-[9px] font-mono border ${tryItCode === p ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>{p.split('\n')[0].slice(0,24)}</button>
-                ))}
-              </div>
-            </div>
-          </div>
-
           <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-2" onScroll={handleScroll}>
-            <div className="rounded border border-[var(--color-amber-dim)] bg-[var(--color-amber-dim)]/30 px-3 py-2 text-[10px] font-mono leading-relaxed text-[var(--color-amber)]">Each step has <span className="font-bold">Your Program</span> vs <span className="font-bold">Try It</span>. Try It uses the snippet above and updates instantly.</div>
 
             <div ref={(el) => { stepRefs.current[0] = el; }}><StepTabs idx={0} /><ErrorBoundary name="ScopeTree"><ScopeTree symbolTableJson={stepTryIt[0] ? tryItJson : (result?.symbolTableJson ?? '')} isPlaying={playState === 'playing' && currentStep === 0} isCompleted={completedSteps.has(0) || playState === 'completed'} /></ErrorBoundary></div>
             <PipelineConnector active={completedSteps.has(0) || currentStep >= 1} />

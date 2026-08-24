@@ -115,14 +115,27 @@ a {
   text-decoration: none;
 }
 
-/* Scrollbar — hidden */
+/* Scrollbar — themed, always visible */
 ::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  width: 6px;
+  height: 6px;
 }
-
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-bright);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neon);
+}
+::-webkit-scrollbar-corner {
+  background: var(--color-surface);
+}
 * {
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-bright) var(--color-surface);
 }
 
 /* Selection */

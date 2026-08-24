@@ -163,7 +163,6 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
 
     const container = containerRef.current;
     const width = observedWidth || container.clientWidth || 600;
-    const height = container.clientHeight || 400;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
@@ -192,11 +191,11 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
     const root = d3.hierarchy(filteredData);
 
     const depth = root.height || 1; // levels below the root
-    // Natural full-height layout — the wrapper grows to fit, nothing is clipped.
-    const treeHeight = Math.max(height - 80, (depth + 1) * 55);
+    // Vertical layout: root at top, children below. Height from depth only.
+    const treeHeight = (depth + 1) * 70;
     const treeWidth = Math.max(width - 250, 400);
 
-    const treeLayout = d3.tree<AstNode>().size([treeHeight, treeWidth]);
+    const treeLayout = d3.tree<AstNode>().size([treeWidth, treeHeight]);
     treeLayout(root);
 
     const nodesWithPos = root.descendants() as unknown as d3.HierarchyPointNode<AstNode>[];
@@ -207,9 +206,9 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       .data(linksWithPos)
       .join('path')
       .attr('class', 'link')
-      .attr('d', d3.linkHorizontal<d3.HierarchyPointLink<AstNode>, d3.HierarchyPointNode<AstNode>>()
-        .x(d => d.y)
-        .y(d => d.x)
+      .attr('d', d3.linkVertical<d3.HierarchyPointLink<AstNode>, d3.HierarchyPointNode<AstNode>>()
+        .x(d => d.x)
+        .y(d => d.y)
       );
 
     // Draw nodes
@@ -217,7 +216,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       .data(nodesWithPos)
       .join('g')
       .attr('class', 'node')
-      .attr('transform', d => `translate(${d.y},${d.x})`)
+      .attr('transform', d => `translate(${d.x},${d.y})`)
       .on('click', (event, d) => {
         event.stopPropagation();
         setSelectedNode(d.data);
@@ -233,9 +232,9 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       .attr('stroke-width', 1.5);
 
     nodes.append('text')
-      .attr('dy', '0.31em')
-      .attr('x', d => d.children ? -12 : 12)
-      .attr('text-anchor', d => d.children ? 'end' : 'start')
+      .attr('x', 0)
+      .attr('dy', d => d.children ? '-0.9em' : '1.9em')
+      .attr('text-anchor', 'middle')
       .text(d => {
         const label = getNodeLabel(d.data.type, d.data.name);
         const display = d.data.value ? `${label} = ${d.data.value}` : label;
@@ -253,7 +252,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
     // Show collapsed count badge
     nodes.filter(d => collapsedNodes.has(getNodeId(d)) && !!d.data.children)
       .append('text')
-      .attr('dy', '0.31em')
+      .attr('dy', '1.9em')
       .attr('x', 0)
       .attr('text-anchor', 'middle')
       .text(d => `[${d.data.children?.length}]`)

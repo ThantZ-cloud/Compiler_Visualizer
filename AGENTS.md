@@ -36,6 +36,7 @@ read  @CLAUDE.md
   Never add a visualization without its algorithm label.
 - Internal audit agents (`.opencode/agents/*`) may reference chapters for verification, but their findings must be rewritten into neutral user-facing copy before shipping.
 - `wiki/` is internal only — never link to it from the UI.
+- **Try It / Examples pattern:** Every `Try It` / `Examples` walkthrough is textbook-grounded: its concrete code snippet, grammar, and step sequence must be drawn from the `wiki/` examples (e.g., lexical `a(b|c)*`, syntax `a + b × c` / `(a + b) × c`, semantic scope/type examples, optimizer LICM loop). Treat each `Try It` as an **example** visualization, not a full pipeline feature. This pattern will be reused for other phases (`semantic`, `optimizer`/`cfg`, `codegen`, `bytecode`) — keep the same tab + editable-chip + step 1…N animation structure so future phases can copy it.
 
 ## Key Flows (recent features)
 

@@ -12,12 +12,9 @@
       "enabled": true
     },
     "context7": {
-      "type": "remote",
-      "url": "https://mcp.context7.com/mcp",
-      "enabled": true,
-      "headers": {
-        "Authorization": "Bearer {env:CONTEXT7_API_KEY}"
-      }
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true
     },
     "vercel": {
       "type": "local",

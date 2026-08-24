@@ -1,7 +1,7 @@
 {
   "nav": {
     "compiler": "ကိုဒ် ဘာသာပြန်",
-    "pipeline": "လုပ်ငန်းစဉ်",
+    "pipeline": "လေ့လာရန်",
     "visualizer": "မြင်ကွင်းပြရန်",
     "compile": "ဘာသာပြန်ရန်",
     "compiling": "ဘာသာပြန်နေသည်...",
@@ -461,7 +461,15 @@
       "fromLexical": "lexer မှ",
       "grammarRules": "Grammar ထုတ်လုပ်နည်း စည်းမျဉ်းများ",
       "rewrites": "စည်းမျဉ်း",
-      "noRules": "ဤပရိုးဂရမ်တွင် အသုံးပြုသော grammar စည်းမျဉ်း မရှိပါ"
+      "noRules": "ဤပရိုးဂရမ်တွင် အသုံးပြုသော grammar စည်းမျဉ်း မရှိပါ",
+      "tableView": "Your Program",
+      "tryItView": "Try It",
+      "tryItHint": "Try It — type your own expression and watch the rightmost derivation grow, then see its parse tree. Example: a + b × c",
+      "tryOwnExpr": "Try your own expression:",
+      "tryGrammarTitle": "Example grammar — Classic Expression Grammar",
+      "tryGrammarHint": "Start symbol is Goal. Terminals are name, +, -, *, /, (, ).",
+      "tryTreeTitle": "Corresponding Parse Tree",
+      "tryTreeHint": "Each derivation step expands the rightmost nonterminal — the tree shows the same rules as nested boxes."
     },
     "step2": {
       "title": "Pushdown Automaton (PDA)",
@@ -469,11 +477,23 @@
       "stackMemory": "Stack မှတ်ဉာဏ်",
       "empty": "stack ဗလာ",
       "awaitingInput": "တိုကင်များ စောင့်ဆိုင်းနေသည်",
-      "accepted": "INPUT လက်ခံပြီး"
+      "accepted": "INPUT လက်ခံပြီး",
+      "tableView": "Your Program",
+      "tryItView": "Try It",
+      "tryItHint": "Try It — type your own expression and watch the leftmost top-down (LL(1)) parser predict, match, and accept. Example: a + b × c",
+      "tryOwnExpr": "Try your own expression:",
+      "tryGrammarTitle": "Example grammar — Right-recursive (LL(1))",
+      "tryGrammarHint": "Start symbol is Goal. ε is empty. This grammar is naturally LL(1) — no left recursion, perfect for top-down."
     },
     "step3": {
       "title": "Shift-Reduce Parser",
       "description": "တိုကင်များကို input buffer မှ parse stack သို့Shift လုပ်ပြီးတစ်ခုချင်းတင်သည်။ stack ထိပ်တွင် grammar rule တစ်ခု၏ right-hand side နှင့် ကိုက်ညီပါက parser က ထို symbols များကို left-hand side non-terminal အဖြစ် လျှော့ချသည် (reduce)။",
+      "tableView": "သင့် Program",
+      "tryItView": "Try It",
+      "tryItHint": "Try It — ကိုယ်ပိုင် expression ရေးပြီး bottom-up parser က တိုကင်များကို shift လုပ်၊ handle ရှာပြီး Goal အထိ reduce လုပ်ပုံကို ကြည့်ပါ။ ဥပမာ- a + b × c",
+      "tryOwnInput": "ကိုယ်ပိုင် expression စမ်းကြည့်ပါ-",
+      "tryGrammarTitle": "ဥပမာ grammar — Goal′ → Goal ဖြင့် ချဲ့ထားသည်",
+      "tryGrammarHint": "Bottom-up: stack ထိပ်တွင် handle (rule ၏ right side) ရှိလာသည်အထိ shift လုပ်ပြီး left side သို့ reduce လုပ်သည်။ reverse rightmost derivation တည်ဆောက်သည် — ဘယ်မှညာသို့ scan၊ lookahead ၁ ခု။",
       "inputBuffer": "Input Buffer",
       "parseStack": "Parse Stack",
       "actionLog": "လုပ်ဆောင်ချက် မှတ်တမ်း",
@@ -483,6 +503,10 @@
     "step4": {
       "title": "Abstract Syntax Tree (AST) တည်ဆောက်ခြင်း",
       "description": "ထို reduce အသစ်တစ်ခုစီသည် Abstract Syntax Tree ၏ node တစ်ခုကို တည်ဆောက်သည်။ Syntax analysis ၏ နောက်ဆုံး ထွက်ပေါ်ရလဒ်မှာ semantic analysis သို့ ပို့သောအပြည့်အစုံ AST ဖြစ်ကြောင်း ကြည့်ရှုနိုင်သည်။",
+      "tableView": "သင့် Program",
+      "tryItView": "Try It",
+      "tryItHint": "Try It — ကိုယ်ပိုင် expression ရေးပြီး ၎င်း၏ abstract syntax tree ကြီးထွားပုံကို ကြည့်ပါ- operator များသည် internal node၊ နာမည်နှင့် နံပါတ်များသည် leaf ဖြစ်သည်။ ဥပမာ- a + b × c",
+      "tryOwnInput": "ကိုယ်ပိုင် expression စမ်းကြည့်ပါ-",
       "nodes": "nodes"
     }
   },

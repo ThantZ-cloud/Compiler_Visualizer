@@ -219,6 +219,8 @@ const LexicalAnalysisPanel: React.FC = () => {
             className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-2"
             onScroll={handleScroll}
           >
+            <div className="rounded border border-[var(--color-amber-dim)] bg-[var(--color-amber-dim)]/30 px-3 py-2 text-[10px] font-mono leading-relaxed text-[var(--color-amber)]">Each step has <span className="font-bold">Try It</span> tabs. Try It uses your tiny statement above and updates instantly without recompiling.</div>
+
             {/* Step 1: Regular Expressions */}
             <div ref={(el) => { stepRefs.current[0] = el; }}>
               <ErrorBoundary name="RegexTable">

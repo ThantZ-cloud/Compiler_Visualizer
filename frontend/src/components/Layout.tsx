@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sun, Moon, Eye, Workflow, Code, Terminal, Menu, X } from 'lucide-react';
+import { Sun, Moon, Eye, GraduationCap, Code, Terminal, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -41,7 +41,7 @@ const Layout: React.FC = () => {
   const isLanding = location.pathname === '/';
 
   const navItems = [
-    { path: '/pipeline', label: t('nav.pipeline'), icon: Workflow, active: isPipeline },
+    { path: '/pipeline', label: t('nav.pipeline'), icon: GraduationCap, active: isPipeline },
     { path: '/compiler', label: t('nav.compiler'), icon: Code, active: isCompiler },
     { path: '/visualize/lexical', label: t('nav.visualizer'), icon: Eye, active: isVisualizing },
   ];

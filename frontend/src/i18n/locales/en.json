@@ -1,7 +1,7 @@
 {
   "nav": {
     "compiler": "COMPILER",
-    "pipeline": "Pipeline",
+    "pipeline": "Learn",
     "visualizer": "Visualizer",
     "compile": "COMPILE",
     "compiling": "COMPILING...",
@@ -461,7 +461,15 @@
       "fromLexical": "from lexer",
       "grammarRules": "Grammar Production Rules",
       "rewrites": "rules",
-      "noRules": "No grammar rules exercised by this program"
+      "noRules": "No grammar rules exercised by this program",
+      "tableView": "Your Program",
+      "tryItView": "Try It",
+      "tryItHint": "Try It — type your own expression and watch the rightmost derivation grow, then see its parse tree. Example: a + b × c",
+      "tryOwnExpr": "Try your own expression:",
+      "tryGrammarTitle": "Example grammar — Classic Expression Grammar",
+      "tryGrammarHint": "Start symbol is Goal. Terminals are name, +, -, *, /, (, ).",
+      "tryTreeTitle": "Corresponding Parse Tree",
+      "tryTreeHint": "Each derivation step expands the rightmost nonterminal — the tree shows the same rules as nested boxes."
     },
     "step2": {
       "title": "Pushdown Automaton (PDA)",
@@ -469,11 +477,23 @@
       "stackMemory": "Stack Memory",
       "empty": "stack empty",
       "awaitingInput": "waiting for tokens",
-      "accepted": "INPUT ACCEPTED"
+      "accepted": "INPUT ACCEPTED",
+      "tableView": "Your Program",
+      "tryItView": "Try It",
+      "tryItHint": "Try It — type your own expression and watch the leftmost top-down (LL(1)) parser predict, match, and accept. Example: a + b × c",
+      "tryOwnExpr": "Try your own expression:",
+      "tryGrammarTitle": "Example grammar — Right-recursive (LL(1))",
+      "tryGrammarHint": "Start symbol is Goal. ε is empty. This grammar is naturally LL(1) — no left recursion, perfect for top-down."
     },
     "step3": {
       "title": "Shift-Reduce Parser",
       "description": "Tokens are shifted from the input buffer onto the parse stack one at a time. Whenever the top of the stack matches the right-hand side of a grammar rule, the parser reduces those symbols into the left-hand side non-terminal.",
+      "tableView": "Your Program",
+      "tryItView": "Try It",
+      "tryItHint": "Try It — type your own expression and watch the bottom-up parser shift tokens, find handles, and reduce to Goal. Example: a + b × c",
+      "tryOwnInput": "Try your own expression:",
+      "tryGrammarTitle": "Example grammar — augmented with Goal′ → Goal",
+      "tryGrammarHint": "Bottom-up: shift tokens until the stack top holds a handle (right side of a rule), then reduce it to the left side. Builds a reverse rightmost derivation — left-to-right scan, one lookahead symbol.",
       "inputBuffer": "Input Buffer",
       "parseStack": "Parse Stack",
       "actionLog": "Action Log",
@@ -483,6 +503,10 @@
     "step4": {
       "title": "Abstract Syntax Tree Construction",
       "description": "Each reduction builds a node of the Abstract Syntax Tree. Watch the tree grow from the leaves up — the final output of syntax analysis is the complete AST handed to semantic analysis.",
+      "tableView": "Your Program",
+      "tryItView": "Try It",
+      "tryItHint": "Try It — type your own expression and watch its abstract syntax tree grow: operators become internal nodes, names and numbers become leaves. Example: a + b × c",
+      "tryOwnInput": "Try your own expression:",
       "nodes": "nodes"
     }
   },

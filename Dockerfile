@@ -5,7 +5,8 @@ RUN mvn dependency:go-offline -q
 COPY backend/src ./src
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17-jre
+# JDK (not JRE) - the app shells out to javac/java/javap to compile user code
+FROM eclipse-temurin:17-jdk
 WORKDIR /app
 COPY --from=build /app/target/compiler-visualizer-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080

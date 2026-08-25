@@ -1,9 +1,6 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { useResizeObserver } from '../../hooks/useResizeObserver';
-import * as d3 from 'd3';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter } from 'lucide-react';
-import '../AstTree.css';
 
 interface ScopeNode {
   name: string;
@@ -21,31 +18,34 @@ interface SymbolEntry {
   type: string;
   scope: string;
   modifiers?: string;
+  lexicalLevel?: number;
+  category?: string;
+  returnType?: string;
+  parameters?: string;
 }
 
 interface SymbolExplorerProps {
   symbolTableJson: string;
 }
 
-const SCOPE_COLORS: Record<string, string> = {
-  package: '#4ec9b0',
-  class: '#4ec9b0',
-  interface: '#4ec9b0',
-  enum: '#4ec9b0',
-  annotation: '#4ec9b0',
-  record: '#4ec9b0',
-  method: '#dcdcaa',
-  constructor: '#dcdcaa',
-  field: '#569cd6',
-  fields: '#569cd6',
-  variable: '#9cdcfe',
+const CATEGORY_COLORS: Record<string, string> = {
+  constant: '#c586c0',
+  function: '#dcdcaa',
   parameter: '#9cdcfe',
-  block: '#6a9955',
-  initializer: '#c586c0',
+  variable: '#4ec9b0',
 };
 
-function getScopeColor(kind: string): string {
-  return SCOPE_COLORS[kind] || '#d4d4d4';
+function getCategory(kind: string, modifiers?: string): string {
+  const mod = (modifiers || '').toLowerCase();
+  if (mod.includes('final')) return 'constant';
+  if (kind === 'method' || kind === 'constructor') return 'function';
+  if (kind === 'parameter') return 'parameter';
+  if (kind === 'variable' || kind === 'field') return 'variable';
+  return kind;
+}
+
+function getScopeLocality(depth: number): string {
+  return depth <= 2 ? 'Global' : 'Local';
 }
 
 function parseScopeTree(jsonStr: string): ScopeNode | null {
@@ -58,207 +58,80 @@ function parseScopeTree(jsonStr: string): ScopeNode | null {
   }
 }
 
-function collectSymbolsFromTree(node: ScopeNode | null, parentScope = ''): SymbolEntry[] {
+function collectSymbolsFromTree(node: ScopeNode | null, parentScope = '', depth = 0): SymbolEntry[] {
   if (!node) return [];
   const symbols: SymbolEntry[] = [];
   const scopePath = parentScope ? `${parentScope}.${node.name}` : node.name;
 
-  if (['variable', 'parameter', 'field'].includes(node.kind)) {
+  if (['variable', 'parameter', 'field', 'method', 'constructor'].includes(node.kind)) {
+    const isMethod = node.kind === 'method' || node.kind === 'constructor';
+    const paramChildren = (node.children || []).filter(c => c.kind === 'parameter');
+    const paramStr = paramChildren.length
+      ? paramChildren.map(p => `${p.type || ''} ${p.name || ''}`.trim()).join(', ')
+      : isMethod && node.name && node.name.includes('(')
+        ? (() => {
+            const m = node.name.match(/\(([^)]*)\)/);
+            return m ? m[1].trim() : '';
+          })()
+        : '';
+    const returnType = isMethod ? (node.returnType || node.type || '') : '';
     symbols.push({
       name: node.name,
       kind: node.kind,
-      type: node.type || '',
+      type: node.type || node.returnType || '',
       scope: scopePath,
       modifiers: node.modifiers,
+      lexicalLevel: depth,
+      category: getCategory(node.kind, node.modifiers),
+      returnType,
+      parameters: paramStr,
     });
   }
 
   for (const child of node.children ?? []) {
-    symbols.push(...collectSymbolsFromTree(child, scopePath));
+    symbols.push(...collectSymbolsFromTree(child, scopePath, depth + 1));
   }
 
   return symbols;
 }
 
-function filterSymbols(symbols: SymbolEntry[], query: string, kind: string): SymbolEntry[] {
+function filterSymbols(symbols: SymbolEntry[], query: string, category: string): SymbolEntry[] {
   return symbols.filter(sym => {
+    const q = query.toLowerCase();
     const matchesSearch =
-      sym.name.toLowerCase().includes(query.toLowerCase()) ||
-      sym.type.toLowerCase().includes(query.toLowerCase()) ||
-      sym.scope.toLowerCase().includes(query.toLowerCase());
-    const matchesKind = kind === 'all' || sym.kind === kind;
-    return matchesSearch && matchesKind;
+      !q ||
+      sym.name.toLowerCase().includes(q) ||
+      sym.type.toLowerCase().includes(q) ||
+      sym.scope.toLowerCase().includes(q) ||
+      (sym.category || '').toLowerCase().includes(q);
+    const matchesCategory = category === 'all' || sym.category === category;
+    return matchesSearch && matchesCategory;
   });
 }
 
 const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
   const { t } = useTranslation();
-  const svgRef = useRef<SVGSVGElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { ref: roSetRef, width: observedWidth } = useResizeObserver<HTMLDivElement>();
-  const setContainerRef = useCallback((el: HTMLDivElement | null) => {
-    containerRef.current = el;
-    roSetRef(el);
-  }, [roSetRef]);
-  const [scopeTree, setScopeTree] = useState<ScopeNode | null>(null);
   const [symbols, setSymbols] = useState<SymbolEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [kindFilter, setKindFilter] = useState('all');
-  const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
-  const [selectedNode, setSelectedNode] = useState<ScopeNode | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   useEffect(() => {
     const tree = parseScopeTree(symbolTableJson);
-    setScopeTree(tree);
-    setSymbols(collectSymbolsFromTree(tree));
-    setCollapsedNodes(new Set());
-    setSelectedNode(null);
+    setSymbols(collectSymbolsFromTree(tree, '', 0));
   }, [symbolTableJson]);
 
-  const filteredSymbols = filterSymbols(symbols, searchQuery, kindFilter);
-
-  const getNodeId = useCallback((node: d3.HierarchyPointNode<ScopeNode>): string => {
-    if (node.parent) {
-      const index = node.parent.children!.indexOf(node);
-      return `${getNodeId(node.parent)}-${index}`;
-    }
-    return 'root';
-  }, []);
-
-  const toggleCollapse = useCallback((nodeId: string) => {
-    setCollapsedNodes(prev => {
-      const next = new Set(prev);
-      if (next.has(nodeId)) next.delete(nodeId);
-      else next.add(nodeId);
-      return next;
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!svgRef.current || !containerRef.current || !scopeTree) return;
-
-    const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove();
-
-    const container = containerRef.current;
-    const width = observedWidth || container.clientWidth || 600;
-    const height = Math.max(container.clientHeight || 400, 400);
-    const g = svg.append('g');
-
-    const zoom = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.2, 4])
-      .on('zoom', (event) => g.attr('transform', event.transform));
-    svg.call(zoom);
-
-    function filterCollapsed(node: ScopeNode, path: string = 'root'): ScopeNode {
-      if (collapsedNodes.has(path) && node.children) {
-        return { ...node, children: [] };
-      }
-      return {
-        ...node,
-        children: node.children?.map((c, i) => filterCollapsed(c, `${path}-${i}`)),
-      };
-    }
-
-    const filteredData = filterCollapsed(scopeTree);
-    const root = d3.hierarchy(filteredData);
-    const nodeCount = root.descendants().length;
-
-    d3.tree<ScopeNode>().size([Math.max(height - 80, nodeCount * 30), width - 250])(root);
-
-    // Links
-    g.selectAll('.link')
-      .data(root.links() as unknown as d3.HierarchyPointLink<ScopeNode>[])
-      .join('path')
-      .attr('class', 'link')
-      .attr('d', d3.linkHorizontal<d3.HierarchyPointLink<ScopeNode>, d3.HierarchyPointNode<ScopeNode>>()
-        .x(d => d.y)
-        .y(d => d.x));
-
-    // Nodes
-    const nodes = g.selectAll('.node')
-      .data(root.descendants() as unknown as d3.HierarchyPointNode<ScopeNode>[])
-      .join('g')
-      .attr('class', 'node')
-      .attr('transform', d => `translate(${d.y},${d.x})`)
-      .on('click', (event, d) => {
-        event.stopPropagation();
-        const nodeId = getNodeId(d);
-        if (d.data.children && d.data.children.length > 0) {
-          toggleCollapse(nodeId);
-        }
-        setSelectedNode(d.data);
-      });
-
-    nodes.append('circle')
-      .attr('r', d => (d.data.children?.length && d.data.children.length > 0 ? 8 : 5))
-      .attr('fill', d => getScopeColor(d.data.kind))
-      .attr('stroke', '#1e1e1e')
-      .attr('stroke-width', 1.5);
-
-    if (selectedNode) {
-      nodes.filter((_d, i) => {
-        const el = svg.selectAll('.node').nodes()[i];
-        const nodeData = (el as Element & { __data__?: d3.HierarchyPointNode<ScopeNode> })?.__data__;
-        return nodeData?.data?.scopeId === selectedNode.scopeId;
-      }).select('circle').attr('stroke', 'var(--color-neon)').attr('stroke-width', 2);
-    }
-
-    const isNarrow = width < 420;
-    nodes.append('text')
-      .attr('dy', '0.31em')
-      .attr('x', d => (d.children ? -14 : 14))
-      .attr('text-anchor', d => (d.children ? 'end' : 'start'))
-      .text(d => {
-        let label = d.data.name;
-        if (d.data.returnType) label = `${d.data.returnType} ${label}`;
-        if (d.data.type) label = `${label}: ${d.data.type}`;
-        if (d.data.modifiers) label = `${d.data.modifiers} ${label}`;
-        const maxLen = isNarrow ? 14 : 24;
-        return label.length > maxLen ? label.substring(0, maxLen) + '…' : label;
-      })
-      .attr('fill', '#d4d4d4')
-      .attr('font-size', isNarrow ? '10px' : '11px')
-      .append('title')
-      .text(d => `${d.data.kind}: ${d.data.name}`);
-
-    // Collapsed badge
-    nodes.filter(d => collapsedNodes.has(getNodeId(d)) && !!d.data.children && d.data.children!.length > 0)
-      .append('text')
-      .attr('dy', '0.31em')
-      .attr('x', 0)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#d4d4d4')
-      .attr('font-size', '8px')
-      .attr('font-weight', 'bold')
-      .text(d => `[${d.data.children?.length}]`);
-
-    // Center the tree
-    const bounds = g.node()?.getBBox();
-    if (bounds) {
-      const dx = (width - bounds.width) / 2 - bounds.x + 20;
-      const dy = 40 - bounds.y;
-      svg.call(zoom.transform, d3.zoomIdentity.translate(dx, dy));
-    }
-
-    return () => {
-      svg.selectAll('*').remove();
-      svg.on('.zoom', null);
-    };
-  }, [scopeTree, collapsedNodes, getNodeId, selectedNode, toggleCollapse, observedWidth]);
+  const filteredSymbols = filterSymbols(symbols, searchQuery, categoryFilter);
 
   if (!symbolTableJson) {
     return (
-      <div className="ast-tree-container">
-        <div className="ast-tree-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: 'Monaco, Consolas, monospace' }}>
-          {t('semantic.noSymbolTable')}
-        </div>
+      <div className="flex items-center justify-center h-64 text-[var(--color-text-muted)] text-sm font-mono">
+        {t('semantic.noSymbolTable')}
       </div>
     );
   }
 
   return (
-    <div className="ast-tree-container">
+    <div className="w-full max-w-6xl mx-auto">
       {/* Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-4">
         <div className="relative flex-1">
@@ -268,21 +141,21 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
             placeholder={t('semantic.searchSymbols', 'Search symbols...')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-7 pr-2 py-1 text-[10px] font-mono bg-[var(--color-surface)] border border-[var(--color-border)] rounded focus:outline-none focus:border-[var(--color-neon)]"
+            className="w-full pl-7 pr-2 py-1.5 text-xs font-mono bg-[var(--color-surface)] border border-[var(--color-border)] rounded focus:outline-none focus:border-[var(--color-neon)] text-[var(--color-text)]"
           />
         </div>
         <div className="flex items-center gap-1 text-[10px] font-mono">
           <Filter size={10} className="text-[var(--color-text-muted)]" />
           <select
-            value={kindFilter}
-            onChange={e => setKindFilter(e.target.value)}
-            className="px-1.5 py-0.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded text-[var(--color-text)] font-mono text-[9px]"
+            value={categoryFilter}
+            onChange={e => setCategoryFilter(e.target.value)}
+            className="px-2 py-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded text-[var(--color-text)] font-mono text-xs"
           >
-            <option value="all">{t('semantic.allKinds')}</option>
-            <option value="variable">{t('semantic.variable')}</option>
-            <option value="parameter">{t('semantic.parameter')}</option>
-            <option value="field">{t('semantic.field')}</option>
-            <option value="method">{t('semantic.method')}</option>
+            <option value="all">All categories</option>
+            <option value="variable">variable</option>
+            <option value="constant">constant</option>
+            <option value="function">function</option>
+            <option value="parameter">parameter</option>
           </select>
         </div>
       </div>
@@ -290,57 +163,95 @@ const SymbolExplorer: React.FC<SymbolExplorerProps> = ({ symbolTableJson }) => {
       {/* Symbol count */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-text-muted)] font-display">
-          {t('semantic.scopeTree')}
+          Symbol Table
         </span>
-        <span className="text-[9px] font-mono text-[var(--color-text-dim)]">
-          {filteredSymbols.length} {t('semantic.symbolsMatch', 'symbols match')}
+        <span className="text-[9px] font-mono text-[var(--color-amber)]">
+          {filteredSymbols.length}/{symbols.length} {t('semantic.symbolsMatch', 'symbols match')}
         </span>
       </div>
 
-      {/* Scope tree visualization */}
-      <div className="ast-tree-wrapper" ref={setContainerRef} style={{ minHeight: 350 }}>
-        <svg ref={svgRef} width="100%" height="100%" />
-      </div>
-
-      {/* Selected node detail panel */}
-      {selectedNode && (
-        <div className="mt-4 p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)]">
-          <div className="flex items-center gap-2 mb-2">
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ background: getScopeColor(selectedNode.kind) }}
-            />
-            <span className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] font-display">
-              {selectedNode.kind}
-            </span>
-            <span className="text-sm font-bold text-[var(--color-neon)] font-mono">
-              {selectedNode.name}
-            </span>
-          </div>
-          {selectedNode.type && (
-            <div className="flex gap-2 text-[10px] font-mono mb-1">
-              <span className="text-[var(--color-text-muted)] w-16">Type:</span>
-              <span className="text-[var(--color-cyan)]">{selectedNode.type}</span>
-            </div>
-          )}
-          {selectedNode.modifiers && (
-            <div className="flex gap-2 text-[10px] font-mono mb-1">
-              <span className="text-[var(--color-text-muted)] w-16">Modifiers:</span>
-              <span className="text-[var(--color-text-dim)]">{selectedNode.modifiers}</span>
-            </div>
-          )}
-          {selectedNode.returnType && (
-            <div className="flex gap-2 text-[10px] font-mono mb-1">
-              <span className="text-[var(--color-text-muted)] w-16">Returns:</span>
-              <span className="text-[var(--color-rose)]">{selectedNode.returnType}</span>
-            </div>
-          )}
-          <div className="flex gap-2 text-[10px] font-mono">
-            <span className="text-[var(--color-text-muted)] w-16">Scope ID:</span>
-            <span className="text-[var(--color-text-dim)]">{selectedNode.scopeId}</span>
-          </div>
+      {/* Symbol Table — same 7-column order as Symbol Collection: Name, Type, Category, Scope, Lexical Level, Return Type, Parameter */}
+      <div className="border border-[var(--color-border-bright)] rounded-lg overflow-hidden bg-[var(--color-card)]">
+        <div className="overflow-auto max-h-[560px]">
+          <table className="w-full border-collapse text-xs font-mono">
+            <thead>
+              <tr className="sticky top-0 bg-[var(--color-surface-2)] border-b border-[var(--color-border)]">
+                <th className="text-left px-3 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">
+                  {t('semantic.name')}
+                </th>
+                <th className="text-left px-3 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">
+                  {t('semantic.type')}
+                </th>
+                <th className="text-left px-3 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">
+                  Category
+                </th>
+                <th className="text-left px-3 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]" title="Local = inside method/block (L≥3), Global = package/class level (L≤2)">
+                  Scope
+                </th>
+                <th className="text-left px-3 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]" title="Lexical nesting depth — static coordinate l">
+                  Lexical Level
+                </th>
+                <th className="text-left px-3 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">
+                  Return Type
+                </th>
+                <th className="text-left px-3 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">
+                  Parameter
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSymbols.map((sym, i) => (
+                <tr
+                  key={`${sym.scope}-${sym.name}-${i}`}
+                  className="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors"
+                >
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="text-[var(--color-neon)]">{sym.name}</div>
+                    <div className="text-[9px] text-[var(--color-text-dim)] font-mono leading-none mt-0.5">
+                      Insert(&quot;{sym.name}&quot;, &#123;type: {sym.type || '—'}&#125;)
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 text-[var(--color-cyan)] whitespace-nowrap">{sym.type || '—'}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <span
+                      className="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded"
+                      style={{
+                        color: CATEGORY_COLORS[sym.category || ''] || '#d4d4d4',
+                        background: `${CATEGORY_COLORS[sym.category || ''] || '#d4d4d4'}15`,
+                      }}
+                    >
+                      {sym.category || '—'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap" title={sym.scope}>
+                    <span
+                      className={`inline-block px-1.5 py-0.5 text-[10px] font-bold rounded ${getScopeLocality(sym.lexicalLevel ?? 99) === 'Global' ? 'bg-[var(--color-cyan)]/15 text-[var(--color-cyan)]' : 'bg-[var(--color-neon)]/15 text-[var(--color-neon)]'}`}
+                    >
+                      {getScopeLocality(sym.lexicalLevel ?? 99)}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-center">
+                    <span className="inline-block min-w-[28px] px-1.5 py-0.5 text-[10px] font-bold rounded bg-[var(--color-amber)]/15 text-[var(--color-amber)]">
+                      L{sym.lexicalLevel ?? '—'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-[var(--color-amber)] whitespace-nowrap">{sym.returnType || '—'}</td>
+                  <td className="px-3 py-2 text-[var(--color-text-muted)] whitespace-nowrap max-w-[160px] truncate" title={sym.parameters || ''}>
+                    {sym.parameters || '—'}
+                  </td>
+                </tr>
+              ))}
+              {filteredSymbols.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-[var(--color-text-muted)] text-xs font-mono">
+                    {searchQuery || categoryFilter !== 'all' ? 'No symbols match filter.' : t('semantic.noSymbols')}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
   );
 };

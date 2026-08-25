@@ -564,7 +564,7 @@
     "warnings": "warnings",
     "reported": "reported",
     "noErrors": "No semantic errors found!",
-    "symbolExplorer": "Symbol Explorer",
+    "symbolExplorer": "Symbol Table",
     "allKinds": "All Kinds",
     "variable": "Variable",
     "parameter": "Parameter",
@@ -606,31 +606,54 @@
       "pipeline": "Dynamic",
       "static": "Static"
     },
+    "phase1": {
+      "title": "Phase 1 — Instruction Selection",
+      "chapter": "Chapter 11"
+    },
+    "phase2": {
+      "title": "Phase 2 — Instruction Scheduling",
+      "chapter": "Chapter 12"
+    },
+    "phase3": {
+      "title": "Phase 3 — Register Allocation",
+      "chapter": "Chapter 13"
+    },
+    "step0": {
+      "title": "TAC Generation",
+      "description": "Expressions are decomposed into three-address code (TAC). Each instruction has at most three operands: result = arg1 operator arg2. Color-coded by operation type. The optimizer's CFG is reused here — see Optimizer for basic blocks and flow edges.",
+      "algorithm": "TAC Decomposition",
+      "viewDecomposition": "Decomposition",
+      "viewFullTac": "Full TAC"
+    },
     "step1": {
-      "title": "Expression Decomposition",
-      "description": "Complex Java expressions are broken down into simple three-address code instructions. Each expression becomes one or more three-op operations."
+      "title": "Dependence Graph",
+      "description": "Data (RAW), anti (WAR), and output (WAW) dependencies between instructions are identified. The longest latency-weighted chain is the critical path.",
+      "algorithm": "Dependence Analysis"
     },
     "step2": {
-      "title": "Three-Address Code",
-      "description": "The complete TAC instruction list. Each instruction has at most three operands: result = arg1 operator arg2. Color-coded by operation type."
-    },
-    "step3": {
-      "title": "Basic Block Construction",
-      "description": "TAC instructions are grouped into basic blocks — single-entry, single-exit regions. Each block ends at a branch, goto, or return."
-    },
-    "step4": {
-      "title": "Flow Graph Edges",
-      "description": "Basic blocks are connected by control flow edges: fall-through (straight), conditional branches (true/false), and loop-back (curved)."
-    },
-    "scheduling": {
-      "title": "Instruction Scheduling",
-      "description": "Instructions are reordered to minimize pipeline stalls while preserving data dependencies. A superscalar pipeline issues up to 2 instructions per cycle.",
+      "title": "List Scheduling",
+      "description": "Instructions are reordered into time slots to minimize pipeline stalls while respecting dependencies. A superscalar pipeline issues up to 2 instructions per cycle.",
+      "algorithm": "List Scheduling",
       "noData": "Computing instruction schedule..."
     },
-    "regalloc": {
-      "title": "Register Allocation",
-      "description": "Variables are assigned to physical registers using graph coloring. Variables that interfere (are simultaneously live) cannot share a register. Excess variables are spilled to memory.",
+    "step3": {
+      "title": "Interference Graph",
+      "description": "Variables that are simultaneously live interfere — they cannot share a register. Each edge connects two interfering variables derived from liveness analysis.",
+      "algorithm": "Liveness Analysis"
+    },
+    "step4": {
+      "title": "Graph Coloring",
+      "description": "Variables are assigned to physical registers using graph coloring. Excess variables are spilled to memory. Copies that land in the same register are eliminated.",
+      "algorithm": "Graph Coloring",
       "noData": "Register allocation requires CFG data for liveness analysis."
+    },
+    "legacy": {
+      "step1": "Expression Decomposition",
+      "step2": "Three-Address Code",
+      "step3": "Basic Block Construction",
+      "step4": "Flow Graph Edges",
+      "scheduling": "Instruction Scheduling",
+      "regalloc": "Register Allocation"
     },
     "interactions": {
       "title": "Interactions",
@@ -651,23 +674,23 @@
   "optimizer": {
     "step1": {
       "title": "Basic Blocks",
-      "description": "The control flow graph is decomposed into basic blocks — sequences of instructions with no branches except at the end."
+      "description": "The program is decomposed into basic blocks — maximal straight-line sequences with no branches except at the end. Leaders mark block entry points.",
+      "algorithm": "Leader Identification"
     },
     "step2": {
-      "title": "Dominator Tree",
-      "description": "Block A dominates block B if every path from the entry to B must go through A. The dominator tree shows these immediate domination relationships."
+      "title": "Value Numbering",
+      "description": "Local Value Numbering assigns a number to each distinct value. When the same expression reappears with the same operand numbers, it is redundant and can be replaced by a copy.",
+      "algorithm": "Local Value Numbering"
     },
     "step3": {
-      "title": "SSA Form",
-      "description": "In Static Single Assignment form, every variable is assigned exactly once. φ-functions merge values at control-flow join points, and each definition gets a unique subscript."
+      "title": "Dominator Tree",
+      "description": "Block A dominates block B if every path from the entry to B must go through A. The dominator tree shows these immediate domination relationships.",
+      "algorithm": "Iterative Dominance (Cooper, Harvey, Kennedy)"
     },
     "step4": {
-      "title": "Data-Flow Analysis",
-      "description": "Liveness analysis propagates variable usage information backward through the CFG. A variable is \"live\" at a point if its value may be read before being redefined."
-    },
-    "step5": {
-      "title": "Instruction Scheduling",
-      "description": "List scheduling reorders instructions to minimize pipeline stalls while preserving data dependencies. Each node is one instruction; edges are the dependencies that constrain the order."
+      "title": "SSA Form",
+      "description": "In Static Single Assignment form, every variable is assigned exactly once. φ-functions merge values at control-flow join points, and each definition gets a unique subscript.",
+      "algorithm": "SSA Construction — φ-insertion + Renaming"
     }
   },
   "pipeline": {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
+import { ArrowRight } from 'lucide-react';
 import { analyzeTokenGroups } from '../lib/lexer/tokenGroups';
 import { buildNFA } from '../lib/lexer/thompson';
 import { subsetConstruction } from '../lib/lexer/subsetConstruction';
@@ -23,6 +24,7 @@ const SCAN_MS_PER_CHAR = 25; // must match ScannerAnimation interval
 
 const LexicalAnalysisPanel: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { result, code, loading } = useCompile();
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('view') === 'static' ? 'browser' : 'pipeline';
@@ -291,6 +293,15 @@ const LexicalAnalysisPanel: React.FC = () => {
                   isCompleted={completedSteps.has(4) || playState === 'completed'}
                 />
               </ErrorBoundary>
+            </div>
+
+            <div className="flex justify-end pt-6 pb-4">
+              <button
+                onClick={() => navigate('/visualize/syntax')}
+                className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-[0.1em] uppercase font-display border bg-[rgba(0,255,136,0.08)] border-[var(--color-neon)] text-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all"
+              >
+                Next: Syntax Analysis <ArrowRight size={14} />
+              </button>
             </div>
           </div>
 

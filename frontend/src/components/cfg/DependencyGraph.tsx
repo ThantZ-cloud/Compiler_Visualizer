@@ -32,6 +32,13 @@ const NODE_H = 38;
 
 function formatInstr(instr?: TacInstruction | null): string {
   if (!instr) return '';
+  if (instr.op === 'return') return `return${instr.arg1 ? ' ' + instr.arg1 : ''}`;
+  if (instr.op === 'label') return `${instr.result}:`;
+  if (instr.op === 'iffalse' || instr.op === 'if') return `${instr.op} ${instr.arg1} goto ${instr.target}`;
+  if (instr.op === 'goto') return `goto ${instr.target}`;
+  if (instr.op === 'getstatic') return `${instr.result} = getstatic ${instr.arg1}`;
+  if (instr.op === 'invokevirtual') return `${instr.result ? instr.result + ' = ' : ''}${instr.arg1}(${instr.arg2})`;
+  if (instr.op === 'ldc') return `${instr.result} = ldc ${instr.arg1}`;
   const parts: string[] = [];
   if (instr.result) parts.push(`${instr.result} =`);
   if (instr.arg1) parts.push(instr.arg1);

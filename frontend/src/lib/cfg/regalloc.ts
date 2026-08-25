@@ -3,7 +3,7 @@
  * From "Engineering a Compiler" Ch 8 — Register Allocation.
  */
 
-import type { CfgMethod, TacInstruction } from '../../types';
+import type { CfgMethod, TacInstruction, BasicBlockInfo } from '../../types';
 import type { DataFlowResult } from './dataflow';
 
 export interface InterferenceEdge {
@@ -111,6 +111,67 @@ function buildInterferenceGraph(
     }
   }
 
+  return { edges, adjMap };
+}
+
+/**
+ * Build interference graph at the instruction level — textbook Fig 13.5.
+ * Walks each basic block backward maintaining LiveNow. At each operation
+ * `op LRa, LRb -> LRc`, LRc interferes with every value live after it.
+ * This is more precise than block-level IN/OUT sets and correctly finds
+ * interferences within a single basic block.
+ */
+function buildInterferenceGraphFromTac(
+  instructions: TacInstruction[],
+  basicBlocks: BasicBlockInfo[],
+  dataflow: DataFlowResult,
+  variables: Set<string>,
+): { edges: InterferenceEdge[]; adjMap: Map<string, Set<string>> } {
+  const adjMap = new Map<string, Set<string>>();
+  for (const v of variables) adjMap.set(v, new Set());
+
+  const addEdge = (a: string, b: string) => {
+    if (a === b) return;
+    if (!adjMap.has(a) || !adjMap.has(b)) return;
+    adjMap.get(a)!.add(b);
+    adjMap.get(b)!.add(a);
+  };
+
+  for (const block of basicBlocks) {
+    const liveNow = new Set<string>();
+    const out = dataflow.states.get(block.id)?.out;
+    if (out) for (const v of out) if (variables.has(v)) liveNow.add(v);
+
+    // Walk the block's instructions in reverse (last use → first def)
+    for (let bi = block.instructions.length - 1; bi >= 0; bi--) {
+      const idx = block.instructions[bi];
+      const instr = instructions[idx];
+      if (!instr) continue;
+
+      const def = instr.result;
+      const uses = [instr.arg1, instr.arg2]
+        .filter((u): u is string => !!u && !/^\d+$/.test(u) && u !== 'true' && u !== 'false');
+
+      // def interferes with every value live after this operation
+      if (def) {
+        for (const v of liveNow) addEdge(def, v);
+        liveNow.delete(def);
+      }
+      for (const u of uses) liveNow.add(u);
+    }
+  }
+
+  const edges: InterferenceEdge[] = [];
+  const seen = new Set<string>();
+  for (const [v, neighbors] of adjMap) {
+    for (const n of neighbors) {
+      const key = [v, n].sort().join('-');
+      if (!seen.has(key)) {
+        seen.add(key);
+        edges.push({ from: v, to: n });
+      }
+    }
+  }
   return { edges, adjMap };
 }
 
@@ -321,11 +382,14 @@ function computeSpillCosts(
 
 /**
  * Main entry: compute register allocation for a method.
+ * When basicBlocks are provided, instruction-level interference (Fig 13.5)
+ * is used; otherwise falls back to block-level IN/OUT interference.
  */
 export function computeRegAllocation(
   _method: CfgMethod,
   instructions: TacInstruction[],
   dataflow: DataFlowResult,
+  basicBlocks?: BasicBlockInfo[],
   numRegisters: number = 4,
 ): RegAllocationResult {
   const variables = collectVariables(instructions);
@@ -342,7 +406,9 @@ export function computeRegAllocation(
   // If no live variables found from dataflow, use all extracted variables
   const varsToAllocate = liveVars.size > 0 ? [...liveVars] : [...variables];
 
-  const { edges, adjMap } = buildInterferenceGraph(dataflow, variables);
+  const { edges, adjMap } = basicBlocks && basicBlocks.length > 0
+    ? buildInterferenceGraphFromTac(instructions, basicBlocks, dataflow, variables)
+    : buildInterferenceGraph(dataflow, variables);
   const { assignments, spills, steps } = graphColor(varsToAllocate, adjMap, numRegisters);
 
   return {

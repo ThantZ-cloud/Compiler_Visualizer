@@ -11,9 +11,10 @@ interface InstructionSchedulingProps {
   scheduling: SchedulingResult;
   isPlaying: boolean;
   isCompleted: boolean;
+  showDependencyGraph?: boolean;
 }
 
-const InstructionScheduling: React.FC<InstructionSchedulingProps> = ({ data, scheduling, isPlaying, isCompleted }) => {
+const InstructionScheduling: React.FC<InstructionSchedulingProps> = ({ data, scheduling, isPlaying, isCompleted, showDependencyGraph = true }) => {
   const { t } = useTranslation();
   const [visibleEntries, setVisibleEntries] = useState<Set<number>>(new Set());
   const [activeCycle, setActiveCycle] = useState<number>(-1);
@@ -70,41 +71,48 @@ const InstructionScheduling: React.FC<InstructionSchedulingProps> = ({ data, sch
         <div className="flex items-center gap-2 min-w-0">
           <Timer size={14} className="text-[#FFB000] shrink-0" />
           <h4 className="text-[11px] font-bold text-[var(--color-text)] font-display tracking-[0.1em] uppercase m-0">
-            {t('codegen.scheduling.title', 'Instruction Scheduling')}
+            {t(showDependencyGraph ? 'codegen.scheduling.title' : 'codegen.step2.title', 'Instruction Scheduling')}
           </h4>
+          {!showDependencyGraph && (
+            <span className="text-[8px] font-bold font-mono px-1.5 py-0.5 tracking-wider border border-[rgba(255,176,0,0.3)] text-[#FFB000] bg-[rgba(255,176,0,0.06)]">
+              {t('codegen.step2.algorithm')}
+            </span>
+          )}
           <span className="text-[9px] text-[var(--color-text-muted)] font-mono whitespace-nowrap">
             ({scheduling.schedule.length} instructions, {scheduling.scheduledCycles} cycles)
           </span>
         </div>
-        <div className="flex gap-0.5 bg-[var(--color-card)] border border-[var(--color-border)] p-0.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => setDepView('graph')}
-            className={`flex items-center gap-1 px-2 py-1 text-[9px] font-mono transition-colors ${
-              depView === 'graph'
-                ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)]'
-                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-            }`}
-          >
-            <Network size={11} />
-            Graph
-          </button>
-          <button
-            type="button"
-            onClick={() => setDepView('table')}
-            className={`flex items-center gap-1 px-2 py-1 text-[9px] font-mono transition-colors ${
-              depView === 'table'
-                ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)]'
-                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-            }`}
-          >
-            <Table size={11} />
-            Table
-          </button>
-        </div>
+        {showDependencyGraph && (
+          <div className="flex gap-0.5 bg-[var(--color-card)] border border-[var(--color-border)] p-0.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setDepView('graph')}
+              className={`flex items-center gap-1 px-2 py-1 text-[9px] font-mono transition-colors ${
+                depView === 'graph'
+                  ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)]'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              <Network size={11} />
+              Graph
+            </button>
+            <button
+              type="button"
+              onClick={() => setDepView('table')}
+              className={`flex items-center gap-1 px-2 py-1 text-[9px] font-mono transition-colors ${
+                depView === 'table'
+                  ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)]'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              <Table size={11} />
+              Table
+            </button>
+          </div>
+        )}
       </div>
       <p className="text-[10px] text-[var(--color-text-dim)] font-mono px-1 -mt-1">
-        {t('codegen.scheduling.description', 'Instructions are reordered to minimize pipeline stalls while preserving data dependencies. A superscalar pipeline issues up to 2 instructions per cycle.')}
+        {t(showDependencyGraph ? 'codegen.scheduling.description' : 'codegen.step2.description', 'Instructions are reordered to minimize pipeline stalls while preserving data dependencies. A superscalar pipeline issues up to 2 instructions per cycle.')}
       </p>
 
       {/* Scheduler comparison */}
@@ -142,7 +150,7 @@ const InstructionScheduling: React.FC<InstructionSchedulingProps> = ({ data, sch
       </div>
 
       {/* Dependency graph / reservation table */}
-      {depView === 'graph' && (
+      {showDependencyGraph && depView === 'graph' && (
         <div className="bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
           <div className="flex items-center justify-between px-3 pt-2.5 gap-2">
             <div className="text-[9px] text-[#FFB000] font-bold font-display tracking-[0.1em] uppercase">
@@ -177,7 +185,7 @@ const InstructionScheduling: React.FC<InstructionSchedulingProps> = ({ data, sch
           )}
         </div>
       )}
-      {depView === 'table' && (
+      {showDependencyGraph && depView === 'table' && (
         <div className="bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
           <div className="px-3 pt-2.5">
             <div className="text-[9px] text-[#FFB000] font-bold font-display tracking-[0.1em] uppercase">

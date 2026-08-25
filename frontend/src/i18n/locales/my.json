@@ -564,7 +564,7 @@
     "warnings": "သတိပါကောင့်",
     "reported": "မီးလက်ဆွဲပြီး",
     "noErrors": "သင်္ကေတ် အမှားများ မတွေ့ရှိ!",
-    "symbolExplorer": "သင်္ကေတ် စူးရှိ",
+    "symbolExplorer": "သင်္ကေတဇယား",
     "allKinds": "အမျိုးအစားအားလုံး",
     "variable": "ဗားရီးယား",
     "parameter": "သတ်မှတ်များ",
@@ -606,31 +606,54 @@
       "pipeline": "Dynamic",
       "static": "Static"
     },
+    "phase1": {
+      "title": "Phase 1 — Instruction Selection",
+      "chapter": "Chapter 11"
+    },
+    "phase2": {
+      "title": "Phase 2 — Instruction Scheduling",
+      "chapter": "Chapter 12"
+    },
+    "phase3": {
+      "title": "Phase 3 — Register Allocation",
+      "chapter": "Chapter 13"
+    },
+    "step0": {
+      "title": "TAC Generation",
+      "description": "Expressions များကို three-address code (TAC) အဖြစ် ခွဲခြမ်းသည်။ instruction တစ်ခုစီတွင် operand သုံးခုထက်မက ပါဝင်သည်။ CFG ကို Optimizer တွင် ကြည့်ပါ။",
+      "algorithm": "TAC Decomposition",
+      "viewDecomposition": "Decomposition",
+      "viewFullTac": "Full TAC"
+    },
     "step1": {
-      "title": "Expression Decomposition",
-      "description": "ရှုပ်ထွေးသော Java expressions များကို ရိုးရှင်းသော three-address code instructions များအဖြစ် ခွဲခြမ်းသည်။"
+      "title": "Dependence Graph",
+      "description": "Data (RAW), anti (WAR), output (WAW) dependencies များကို ရှာဖွေသည်။ critical path သည် အနိမ့်ဆုံး execution time ကို သတ်မှတ်သည်။",
+      "algorithm": "Dependence Analysis"
     },
     "step2": {
-      "title": "Three-Address Code",
-      "description": "TAC instruction စာရင်းအပြည့်အစုံ။ တစ်ခုချင်းစီတွင် operand သုံးခုထက်မက ပါဝင်သည်။"
-    },
-    "step3": {
-      "title": "Basic Block Construction",
-      "description": "TAC instructions များကို basic blocks များအဖြစ် စုစည်းသည် — ဝင်ပေါက်တစ်ခု၊ ထွက်ပေါက်တစ်ခု ရှိသည့် ဧရိယာများ။"
-    },
-    "step4": {
-      "title": "Flow Graph Edges",
-      "description": "Basic blocks များကို control flow edges များဖြင့် ချိတ်ဆက်သည်။"
-    },
-    "scheduling": {
-      "title": "Instruction Scheduling",
+      "title": "List Scheduling",
       "description": "ဒေတာ မှီခိုမှုများကို ထိန်းသိမ်းရင်း pipeline stalls ကို လျှော့ချရန် instructions များကို ပြန်လည်စီစဉ်သည်။",
+      "algorithm": "List Scheduling",
       "noData": "Instruction schedule တွက်ချက်နေသည်..."
     },
-    "regalloc": {
-      "title": "Register Allocation",
-      "description": "Graph coloring ဖြင့် variables များကို physical registers များသို့ သတ်မှတ်သည်။",
+    "step3": {
+      "title": "Interference Graph",
+      "description": "တစ်ချိန်တည်း live ဖြစ်သော variables များသည် interfere လုပ်သည် — register တစ်ခုတည်း မျှဝေ၍ မရပါ။",
+      "algorithm": "Liveness Analysis"
+    },
+    "step4": {
+      "title": "Graph Coloring",
+      "description": "Graph coloring ဖြင့် variables များကို physical registers များသို့ သတ်မှတ်သည်။ ပိုလျှံသော variables များကို memory သို့ spill လုပ်သည်။",
+      "algorithm": "Graph Coloring",
       "noData": "Register allocation အတွက် liveness analysis CFG data လိုအပ်သည်။"
+    },
+    "legacy": {
+      "step1": "Expression Decomposition",
+      "step2": "Three-Address Code",
+      "step3": "Basic Block Construction",
+      "step4": "Flow Graph Edges",
+      "scheduling": "Instruction Scheduling",
+      "regalloc": "Register Allocation"
     },
     "interactions": {
       "title": "Interactions",
@@ -651,23 +674,23 @@
   "optimizer": {
     "step1": {
       "title": "Basic Blocks",
-      "description": "Control flow graph ကို basic blocks များအဖြစ် ခွဲခြမ်းသည် — အဆုံးကလွဲ၍ branch များမရှိသော instruction စီစဉ်မှုများ။"
+      "description": "ပရိုဂရမ်ကို basic blocks များအဖြစ် ခွဲခြမ်းသည် — အဆုံးကလွဲ၍ branch မရှိသော အရှည်ဆုံး ဖြောင့်တန်းသော ကုဒ်များ။",
+      "algorithm": "Leader Identification"
     },
     "step2": {
-      "title": "Dominator Tree",
-      "description": "Block A သည် entry မှ B သို့ ရောက်ရန် လမ်းတိုင်း A ကို ဖြတ်သန်းရပါက A က B ကို dominate လုပ်သည်။ Dominator tree တွင် ဤ immediate domination ဆက်စပ်မှုများကို ပြသသည်။"
+      "title": "Value Numbering",
+      "description": "Local Value Numbering သည် တူညီသော value တိုင်းကို နံပါတ်တစ်ခုပေးသည်။ တူညီသော expression ပေါ်လာပါက redundant ဖြစ်သည်။",
+      "algorithm": "Local Value Numbering"
     },
     "step3": {
-      "title": "SSA Form",
-      "description": "Static Single Assignment ပုံစံတွင် variable တိုင်းကို တစ်ကြိမ်သာ assign လုပ်သည်။ φ-functions များသည် control-flow join points များတွင် values များကို ပေါင်းစပ်ပေးသည်။"
+      "title": "Dominator Tree",
+      "description": "Block A သည် entry မှ B သို့ ရောက်ရန် လမ်းတိုင်း A ကို ဖြတ်သန်းရပါက A က B ကို dominate လုပ်သည်။",
+      "algorithm": "Iterative Dominance"
     },
     "step4": {
-      "title": "Data-Flow Analysis",
-      "description": "Liveness analysis သည် variable အသုံးပြုမှု အချက်အလက်များကို CFG မှတစ်ဆင့် နောက်ပြန် ပျံ့နှံ့စေသည်။ Variable တစ်ခုသည် ၎င်း၏ value ကို ပြန်သတ်မှတ်ခြင်းမပြုမီ ဖတ်မည်ဆိုပါက \"live\" ဖြစ်သည်။"
-    },
-    "step5": {
-      "title": "Instruction Scheduling",
-      "description": "List scheduling သည် data dependencies များကို ထိန်းသိမ်းရင်း pipeline stalls များကို လျှော့ချရန် instructions များကို ပြန်လည်စီစဉ်သည်။ Node တစ်ခုစီသည် instruction တစ်ခုဖြစ်ပြီး edges များမှာ အစီအစဉ်ကို ကန့်သတ်သော dependencies များဖြစ်သည်။"
+      "title": "SSA Form",
+      "description": "Static Single Assignment ပုံစံတွင် variable တိုင်းကို တစ်ကြိမ်သာ assign လုပ်သည်။ φ-functions များသည် join points များတွင် values များကို ပေါင်းစပ်ပေးသည်။",
+      "algorithm": "SSA Construction"
     }
   },
   "pipeline": {

@@ -4,6 +4,10 @@ export interface SemanticSymbol {
   type: string;
   scope: string;
   modifiers?: string;
+  lexicalLevel?: number;
+  category?: string;
+  returnType?: string;
+  parameters?: string;
 }
 
 export interface TypeResolutionEntry {

@@ -82,14 +82,14 @@ const SsaForm: React.FC<SsaFormProps> = ({ method, ssa, instructions, isPlaying,
       <div className="flex items-center gap-2 px-1">
         <Binary size={14} className="text-[var(--color-cyan)]" />
         <h4 className="text-[11px] font-bold text-[var(--color-text)] font-display tracking-[0.1em] uppercase m-0">
-          {t('optimizer.step3.title', 'SSA Form')}
+          {t('optimizer.step4.title', 'SSA Form')}
         </h4>
         <span className="text-[9px] text-[var(--color-text-muted)] font-mono">
           ({ssa.phiFunctions.length} φ-functions, {ssa.varDefs.length} renames)
         </span>
       </div>
       <p className="text-[10px] text-[var(--color-text-dim)] font-mono px-1 -mt-1">
-        {t('optimizer.step3.description', 'In Static Single Assignment form, every variable is assigned exactly once. φ-functions merge values at control-flow join points, and each definition gets a unique subscript.')}
+        {t('optimizer.step4.description', 'In Static Single Assignment form, every variable is assigned exactly once. φ-functions merge values at control-flow join points, and each definition gets a unique subscript.')}
       </p>
 
       {/* Phi-functions table */}

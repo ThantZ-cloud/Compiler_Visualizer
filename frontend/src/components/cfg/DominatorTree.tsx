@@ -208,14 +208,14 @@ const DomTree: React.FC<DominatorTreeProps> = ({ method, dominators, isPlaying, 
       <div className="flex items-center gap-2 px-1">
         <TreePine size={14} className="text-[#8A2BE2]" />
         <h4 className="text-[11px] font-bold text-[var(--color-text)] font-display tracking-[0.1em] uppercase m-0">
-          {t('optimizer.step2.title', 'Dominator Tree')}
+          {t('optimizer.step3.title', 'Dominator Tree')}
         </h4>
         <span className="text-[9px] text-[var(--color-text-muted)] font-mono">
           ({dominators.treeEdges.length} tree edges)
         </span>
       </div>
       <p className="text-[10px] text-[var(--color-text-dim)] font-mono px-1 -mt-1">
-        {t('optimizer.step2.description', 'Block A dominates block B if every path from the entry to B must go through A. The dominator tree shows these immediate domination relationships.')}
+        {t('optimizer.step3.description', 'Block A dominates block B if every path from the entry to B must go through A. The dominator tree shows these immediate domination relationships.')}
       </p>
       <div ref={(el) => { containerRef.current = el; roSetRef(el); }} className="w-full h-[420px] bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
         <svg ref={svgRef} className="w-full h-full" />

@@ -24,6 +24,7 @@ const ErrorReportPanel: React.FC<ErrorReportPanelProps> = ({ symbolTableJson, is
   const { t } = useTranslation();
   const [errors, setErrors] = useState<SemanticError[]>([]);
   const [revealCount, setRevealCount] = useState(0);
+  const [severityFilter, setSeverityFilter] = useState<'all' | 'ERROR' | 'WARNING'>('all');
 
   useEffect(() => {
     setErrors(parseErrors(symbolTableJson));
@@ -31,7 +32,7 @@ const ErrorReportPanel: React.FC<ErrorReportPanelProps> = ({ symbolTableJson, is
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(isCompleted ? errors.length : 0);
+      setRevealCount(errors.length);
       return;
     }
     setRevealCount(0);
@@ -41,7 +42,8 @@ const ErrorReportPanel: React.FC<ErrorReportPanelProps> = ({ symbolTableJson, is
     return () => clearInterval(interval);
   }, [isPlaying, isCompleted, errors.length]);
 
-  const visibleErrors = errors.slice(0, Math.min(revealCount, errors.length));
+  const filteredBySeverity = severityFilter === 'all' ? errors : errors.filter(e => e.severity === severityFilter);
+  const visibleErrors = filteredBySeverity.slice(0, Math.min(revealCount, filteredBySeverity.length));
   const errorCount = errors.filter(e => e.severity === 'ERROR').length;
   const warningCount = errors.filter(e => e.severity === 'WARNING').length;
 
@@ -54,6 +56,18 @@ const ErrorReportPanel: React.FC<ErrorReportPanelProps> = ({ symbolTableJson, is
         <p className="text-xs text-[var(--color-text-dim)] font-mono leading-relaxed">
           {t('semantic.errorReportingDescription')}
         </p>
+      </div>
+
+      <div className="flex flex-wrap gap-1 mb-2">
+        {(['all','ERROR','WARNING'] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setSeverityFilter(f)}
+            className={`px-2 py-0.5 rounded text-[10px] font-mono border capitalize ${severityFilter === f ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)] hover:text-[var(--color-text)]'}`}
+          >
+            {f === 'all' ? 'All' : f}
+          </button>
+        ))}
       </div>
 
       <div className="border border-[var(--color-border-bright)] rounded-lg overflow-hidden bg-[var(--color-card)]">
@@ -75,7 +89,7 @@ const ErrorReportPanel: React.FC<ErrorReportPanelProps> = ({ symbolTableJson, is
               </span>
             )}
             <span className="text-[9px] font-mono text-[var(--color-text-muted)]">
-              {Math.min(revealCount, errors.length)}/{errors.length} {t('semantic.reported')}
+              {Math.min(revealCount, filteredBySeverity.length)}/{filteredBySeverity.length} {severityFilter !== 'all' ? `(${errors.length} total)` : ''} {t('semantic.reported')}
             </span>
           </div>
         </div>

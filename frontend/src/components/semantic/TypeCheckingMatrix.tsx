@@ -33,6 +33,7 @@ const TypeCheckingMatrix: React.FC<TypeCheckingMatrixProps> = ({ symbolTableJson
   const { t } = useTranslation();
   const [checks, setChecks] = useState<TypeCheckEntry[]>([]);
   const [revealCount, setRevealCount] = useState(0);
+  const [filter, setFilter] = useState<'all' | 'pass' | 'fail' | 'unknown'>('all');
 
   useEffect(() => {
     setChecks(parseTypeChecks(symbolTableJson));
@@ -40,7 +41,7 @@ const TypeCheckingMatrix: React.FC<TypeCheckingMatrixProps> = ({ symbolTableJson
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(isCompleted ? checks.length : 0);
+      setRevealCount(checks.length);
       return;
     }
     setRevealCount(0);
@@ -50,10 +51,12 @@ const TypeCheckingMatrix: React.FC<TypeCheckingMatrixProps> = ({ symbolTableJson
     return () => clearInterval(interval);
   }, [isPlaying, isCompleted, checks.length]);
 
-  const visibleChecks = checks.slice(0, Math.min(revealCount, checks.length));
-  const passed = visibleChecks.filter(c => c.result === 'pass').length;
-  const failed = visibleChecks.filter(c => c.result === 'fail').length;
-  const unknown = visibleChecks.filter(c => c.result === 'unknown').length;
+  const baseVisible = checks.slice(0, Math.min(revealCount, checks.length));
+  const filteredVisible = filter === 'all' ? baseVisible : baseVisible.filter(c => c.result === filter);
+  const visibleChecks = filteredVisible;
+  const passed = baseVisible.filter(c => c.result === 'pass').length;
+  const failed = baseVisible.filter(c => c.result === 'fail').length;
+  const unknown = baseVisible.filter(c => c.result === 'unknown').length;
   const total = checks.length;
 
   return (
@@ -65,6 +68,18 @@ const TypeCheckingMatrix: React.FC<TypeCheckingMatrixProps> = ({ symbolTableJson
         <p className="text-xs text-[var(--color-text-dim)] font-mono leading-relaxed">
           {t('semantic.typeCheckingDescription')}
         </p>
+      </div>
+
+      <div className="flex flex-wrap gap-1 mb-2">
+        {(['all','pass','fail','unknown'] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-2 py-0.5 rounded text-[10px] font-mono border capitalize ${filter === f ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)] hover:text-[var(--color-text)]'}`}
+          >
+            {f}
+          </button>
+        ))}
       </div>
 
       <div className="border border-[var(--color-border-bright)] rounded-lg overflow-hidden bg-[var(--color-card)]">

@@ -9,9 +9,10 @@ interface RegisterAllocationProps {
   allocation: RegAllocationResult;
   isPlaying: boolean;
   isCompleted: boolean;
+  showInterferenceGraph?: boolean;
 }
 
-const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isPlaying, isCompleted }) => {
+const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isPlaying, isCompleted, showInterferenceGraph = true }) => {
   const { t } = useTranslation();
   const [visibleSteps, setVisibleSteps] = useState<Set<number>>(new Set());
   const [highlightVar, setHighlightVar] = useState<string | null>(null);
@@ -40,27 +41,31 @@ const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isP
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [isPlaying, isCompleted, allocation]);
 
-  const isVisible = isPlaying || isCompleted;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 px-1">
         <Cpu size={14} className="text-[#8A2BE2]" />
         <h4 className="text-[11px] font-bold text-[var(--color-text)] font-display tracking-[0.1em] uppercase m-0">
-          {t('codegen.regalloc.title', 'Register Allocation')}
+          {t(showInterferenceGraph ? 'codegen.regalloc.title' : 'codegen.step4.title', 'Register Allocation')}
         </h4>
+        {!showInterferenceGraph && (
+          <span className="text-[8px] font-bold font-mono px-1.5 py-0.5 tracking-wider border border-[rgba(138,43,226,0.3)] text-[#8A2BE2] bg-[rgba(138,43,226,0.06)]">
+            {t('codegen.step4.algorithm')}
+          </span>
+        )}
         <span className="text-[9px] text-[var(--color-text-muted)] font-mono">
           ({allocation.numRegisters} registers, {allocation.spills.length} spills)
         </span>
       </div>
       <p className="text-[10px] text-[var(--color-text-dim)] font-mono px-1 -mt-1">
-        {t('codegen.regalloc.description', 'Variables are assigned to physical registers using graph coloring. Variables that interfere (are simultaneously live) cannot share a register. Excess variables are spilled to memory.')}
+        {t(showInterferenceGraph ? 'codegen.regalloc.description' : 'codegen.step4.description', 'Variables are assigned to physical registers using graph coloring. Variables that interfere (are simultaneously live) cannot share a register. Excess variables are spilled to memory.')}
       </p>
 
-      {!isVisible ? (
-        <div className="border border-[var(--color-border)] bg-[var(--color-card)] h-[120px] flex items-center justify-center">
-          <span className="text-[10px] font-mono text-[var(--color-text-muted)]">Press Play to animate register allocation</span>
-        </div>
-      ) : (
+      {/*
+        The coloring log reveals step-by-step only while playing; the
+        assignments/spills/graph are always visible so the user never sees
+        an empty box.
+      */}
       <>
       {/* Stats */}
       <div className="flex gap-4 px-1">
@@ -81,7 +86,7 @@ const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isP
       </div>
 
       {/* Interference graph (D3 node-link) */}
-      {allocation.interferenceGraph.length > 0 && (
+      {showInterferenceGraph && allocation.interferenceGraph.length > 0 && (
         <div className="bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
           <div className="flex items-center justify-between px-3 pt-2.5 pb-1 gap-2 flex-wrap">
             <div className="text-[9px] text-[#8A2BE2] font-bold font-display tracking-[0.1em] uppercase">
@@ -243,7 +248,6 @@ const RegisterAllocation: React.FC<RegisterAllocationProps> = ({ allocation, isP
         </div>
       )}
       </>
-      )}
     </div>
   );
 };

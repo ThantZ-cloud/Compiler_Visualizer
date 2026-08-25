@@ -557,9 +557,43 @@ public class SymbolTableBuilder {
      */
     private static class TypeResolutionCollector extends VoidVisitorAdapter<Void> {
         private final ArrayNode result = mapper.createArrayNode();
+        private final Map<String, String> varTypes = new HashMap<>();
 
         public ArrayNode getResult() {
             return result;
+        }
+
+        @Override
+        public void visit(MethodDeclaration md, Void arg) {
+            for (Parameter param : md.getParameters()) {
+                varTypes.put(param.getNameAsString(), param.getType().asString());
+            }
+            super.visit(md, arg);
+        }
+
+        @Override
+        public void visit(VariableDeclarator vd, Void arg) {
+            varTypes.put(vd.getNameAsString(), vd.getType().asString());
+            super.visit(vd, arg);
+        }
+
+        @Override
+        public void visit(ForStmt fs, Void arg) {
+            for (Expression init : fs.getInitialization()) {
+                init.accept(this, arg);
+            }
+            fs.getCompare().ifPresent(c -> c.accept(this, arg));
+            for (Expression upd : fs.getUpdate()) {
+                upd.accept(this, arg);
+            }
+            fs.getBody().accept(this, arg);
+        }
+
+        @Override
+        public void visit(ForEachStmt fes, Void arg) {
+            fes.getVariable().accept(this, arg);
+            fes.getIterable().accept(this, arg);
+            fes.getBody().accept(this, arg);
         }
 
         @Override
@@ -569,7 +603,7 @@ public class SymbolTableBuilder {
             entry.put("symbol", name);
             entry.put("source", ne.getBegin().map(p -> p.line + ":" + p.column).orElse("?"));
 
-            // Pattern-based resolution for well-known stdlib symbols
+            // Pattern-based resolution for well-known stdlib symbols + local variable types
             String[] knownStdlib = {
                 "System", "String", "Object", "Math", "Integer", "Double",
                 "Boolean", "Character", "Byte", "Short", "Long", "Float",
@@ -586,11 +620,21 @@ public class SymbolTableBuilder {
                     break;
                 }
             }
+            String localType = varTypes.get(name);
+            if (!resolved && localType != null) {
+                resolved = true;
+                resolvedFqn = localType;
+            }
 
             entry.put("resolved", resolved);
             if (resolved) {
                 entry.put("fqn", resolvedFqn);
-                entry.put("kind", "class");
+                if (localType != null) {
+                    entry.put("type", localType);
+                    entry.put("kind", "variable");
+                } else {
+                    entry.put("kind", "class");
+                }
             } else {
                 entry.put("resolved", false);
             }
@@ -722,6 +766,27 @@ public class SymbolTableBuilder {
                 varTypes.put(param.getNameAsString(), param.getType().asString());
             }
             super.visit(md, arg);
+        }
+
+        @Override
+        public void visit(ForStmt fs, Void arg) {
+            // Ensure initialization (where loop variable is declared) is visited before compare/update/body
+            // Default VoidVisitorAdapter order can cause body to be visited before init, leading to false "cannot find symbol" for loop variables.
+            for (Expression init : fs.getInitialization()) {
+                init.accept(this, arg);
+            }
+            fs.getCompare().ifPresent(c -> c.accept(this, arg));
+            for (Expression upd : fs.getUpdate()) {
+                upd.accept(this, arg);
+            }
+            fs.getBody().accept(this, arg);
+        }
+
+        @Override
+        public void visit(ForEachStmt fes, Void arg) {
+            fes.getVariable().accept(this, arg);
+            fes.getIterable().accept(this, arg);
+            fes.getBody().accept(this, arg);
         }
 
         @Override

@@ -26,17 +26,15 @@ const TypeResolutionFlow: React.FC<TypeResolutionFlowProps> = ({ symbolTableJson
   const [resolutions, setResolutions] = useState<TypeResolutionEntry[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Filter to only the key resolution steps
-  const keySteps = resolutions.filter(r =>
-    r.symbol.includes('System') || r.symbol.includes('out') || r.symbol.includes('println')
-  );
+  // Show all resolution steps (dynamic Try It may contain Math, Integer, locals, etc.)
+  const keySteps = resolutions;
 
   const totalSteps = keySteps.length;
 
-  // Autoplay
+  // Autoplay — idle shows full flow so user can explore without pressing Play
   useEffect(() => {
     if (!isPlaying) {
-      setCurrentIndex(isCompleted ? Math.max(totalSteps - 1, -1) : -1);
+      setCurrentIndex(Math.max(totalSteps - 1, -1));
       return;
     }
     setCurrentIndex(-1);

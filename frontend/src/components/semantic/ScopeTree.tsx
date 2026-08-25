@@ -69,7 +69,8 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying, isCom
 
   useEffect(() => {
     if (!isPlaying) {
-      setRevealCount(isCompleted ? Number.MAX_SAFE_INTEGER : 0);
+      // idle or completed → show full tree so user can explore without pressing Play
+      setRevealCount(Number.MAX_SAFE_INTEGER);
       return;
     }
     setRevealCount(0);
@@ -114,9 +115,11 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying, isCom
     }
     const labelSeen = new Map<string, number>();
     const nodeCount = root.descendants().length;
-    const treeHeight = Math.max(height - 80, nodeCount * 30);
-    const treeWidth = Math.max(width - 250, 400);
-    d3.tree<ScopeNode>().size([treeHeight, treeWidth])(root);
+    // vertical layout: breadth = width, depth = height — keep tree inside container
+    // height controls vertical depth, so reserve space for labels (±20px)
+    const treeHeight = Math.max(200, Math.min(height - 80, nodeCount * 28 + 60));
+    const treeWidth = Math.max(width - 80, 320);
+    d3.tree<ScopeNode>().size([treeWidth, treeHeight])(root);
 
     const order = postOrder(scopeData, []);
     const revealed = new Set(order.slice(0, revealCount));
@@ -129,17 +132,17 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying, isCom
       .data(links)
       .join('path')
       .attr('class', 'link')
-      .attr('d', d3.linkHorizontal<d3.HierarchyPointLink<ScopeNode>, d3.HierarchyPointNode<ScopeNode>>()
-        .x(d => d.y)
-        .y(d => d.x))
+      .attr('d', d3.linkVertical<d3.HierarchyPointLink<ScopeNode>, d3.HierarchyPointNode<ScopeNode>>()
+        .x(d => d.x)
+        .y(d => d.y))
       .attr('opacity', d => revealed.has(d.source.data) && revealed.has(d.target.data) ? 1 : 0.1);
 
-    // Nodes
+    // Nodes — vertical layout: x = breadth, y = depth
     const nodesSel = g.selectAll<SVGGElement, d3.HierarchyPointNode<ScopeNode>>('.node')
       .data(root.descendants())
       .join('g')
       .attr('class', 'node')
-      .attr('transform', d => `translate(${d.y},${d.x})`)
+      .attr('transform', d => `translate(${d.x},${d.y})`)
       .attr('opacity', d => (revealed.has(d.data) ? 1 : 0));
 
     nodesSel.append('circle')
@@ -149,9 +152,9 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying, isCom
       .attr('stroke-width', 1.5);
 
     nodesSel.append('text')
-      .attr('dy', '0.31em')
-      .attr('x', d => (d.children ? -16 : 16))
-      .attr('text-anchor', d => (d.children ? 'end' : 'start'))
+      .attr('dy', d => (d.children ? -18 : 20))
+      .attr('x', 0)
+      .attr('text-anchor', 'middle')
       .text(d => {
         let label = buildLabel(d.data);
         if ((labelCounts.get(label) ?? 0) > 1) {
@@ -210,7 +213,7 @@ const ScopeTree: React.FC<ScopeTreeProps> = ({ symbolTableJson, isPlaying, isCom
             {Math.min(revealCount, treeSize)}/{treeSize} {t('syntax.step4.nodes')}
           </span>
         </div>
-        <div className="ast-tree-wrapper" ref={(el) => { containerRef.current = el; roSetRef(el); }} style={{ height: 420 }}>
+        <div className="ast-tree-wrapper" ref={(el) => { containerRef.current = el; roSetRef(el); }} style={{ height: 480 }}>
           <svg ref={svgRef} width="100%" height="100%" />
         </div>
       </div>

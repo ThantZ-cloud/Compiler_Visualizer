@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCompile } from '../context/CompileContext';
-import { TreePine } from 'lucide-react';
+import { TreePine, ArrowRight } from 'lucide-react';
 import type { PlayState } from '../lib/lexer/types';
 import { generateParseSteps } from '../lib/parser/parseSimulator';
 import { GRAMMAR_RULES } from '../lib/parser/javaGrammar';
@@ -21,6 +21,7 @@ const SYNTAX_STEP_NAMES = ['Grammar', 'PDA', 'Shift-Reduce', 'AST'];
 
 const SyntaxAnalysisPanel: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { result, loading } = useCompile();
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('view') === 'static' ? 'browser' : 'pipeline';
@@ -112,6 +113,15 @@ const SyntaxAnalysisPanel: React.FC = () => {
               <ErrorBoundary name="AstTreeAnimation">
                 <AstTreeAnimation astJson={result.astJson} isPlaying={playState === 'playing' && currentStep === 3} isCompleted={completedSteps.has(3) || playState === 'completed'} />
               </ErrorBoundary>
+            </div>
+
+            <div className="flex justify-end pt-6 pb-4">
+              <button
+                onClick={() => navigate('/visualize/semantic')}
+                className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-[0.1em] uppercase font-display border bg-[rgba(0,255,136,0.08)] border-[var(--color-neon)] text-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all"
+              >
+                Next: Semantic Analysis <ArrowRight size={14} />
+              </button>
             </div>
           </div>
           <StepControls currentStep={currentStep} playState={playState} stepNames={SYNTAX_STEP_NAMES} onPlay={handlePlay} onPause={handlePause} onPrev={handlePrev} onNext={handleNext} onRestart={handleRestart} onPlayOnePhase={handlePlayOnePhase} playOneDisabled={[0,1,2,3].every(s=>completedSteps.has(s))} />

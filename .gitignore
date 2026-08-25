@@ -39,3 +39,6 @@ backend/.mvn/repository/
 # SQLite temp files
 backend/dev.db-shm
 backend/dev.db-wal
+
+# opencode local config (contains MCP API keys)
+opencode.json

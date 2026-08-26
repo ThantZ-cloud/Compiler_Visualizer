@@ -41,38 +41,29 @@
       }
     },
     "capabilities": {
-      "label": "// CAPABILITIES",
-      "headline": "What you can do",
+      "label": "// EXPLORE",
+      "headline": "What you can explore",
       "features": [
         {
-          "id": "0x01",
-          "title": "Live Java Editor",
-          "description": "Monaco-powered editor in your browser. Write, edit, and compile Java code instantly."
+          "id": "01",
+          "title": "Learn How a Compiler Works",
+          "description": "Briefly explore the 3 phases and 8 stages — from source text to native execution.",
+          "cta": "Learn →",
+          "to": "/pipeline"
         },
         {
-          "id": "0x02",
-          "title": "Token Stream",
-          "description": "Watch the lexer break your code into tokens — keywords, identifiers, literals, operators."
+          "id": "02",
+          "title": "Compile & Run Java",
+          "description": "Write Java in the editor, hit Compile, and see output, timings and errors instantly.",
+          "cta": "Try Compiler →",
+          "to": "/compiler"
         },
         {
-          "id": "0x03",
-          "title": "AST Explorer",
-          "description": "Navigate the Abstract Syntax Tree. Collapsible nodes, type information, full hierarchy."
-        },
-        {
-          "id": "0x04",
-          "title": "Semantic Analysis",
-          "description": "Symbol tables, scope chains, type checking. See what the compiler knows about your code."
-        },
-        {
-          "id": "0x05",
-          "title": "Bytecode & CFG",
-          "description": "JVM instructions via javap disassembly. Control flow graphs for method analysis."
-        },
-        {
-          "id": "0x06",
-          "title": "Execute & Save",
-          "description": "Run compiled code with stdin. Sign in to save and load your code snippets."
+          "id": "03",
+          "title": "See Inside Your Compile",
+          "description": "Visualize your code's tokens, AST, symbol table, CFG and bytecode step by step.",
+          "cta": "Visualize →",
+          "to": "/visualize/lexical"
         }
       ]
     },

@@ -41,38 +41,29 @@
       }
     },
     "capabilities": {
-      "label": "// လုပ်ဆောင်ချက်များ",
-      "headline": "သင်လုပ်ဆောင်နိုင်သည်များ",
+      "label": "// စူးစမ်းရန်",
+      "headline": "သင်စူးစမ်းနိုင်သည်များ",
       "features": [
         {
-          "id": "0x01",
-          "title": "Java Editor အတက်ပြေး",
-          "description": "Browser တွင် Monaco-powered editor။ Java ကုဒ်ကို ချက်ချင်း ရေး၊ ပြင်၊ ဘာသာပြန်ပါ။"
+          "id": "01",
+          "title": "Compiler ဘယ်လိုအလုပ်လုပ်သည်ကို လေ့လာပါ",
+          "description": "အဆင့် ၃ ခု၊ အဆင့် ၈ ခုကို အကျဉ်းချုံး လေ့လာပါ — source မှ native execution အထိ။",
+          "cta": "လေ့လာရန် →",
+          "to": "/pipeline"
         },
         {
-          "id": "0x02",
-          "title": "Token Stream",
-          "description": "Lexer က သင့်ကုဒ်ကို tokens များအဖြစ် ခွဲသည် — keywords, identifiers, literals, operators။"
+          "id": "02",
+          "title": "Java Compile & Run",
+          "description": "Editor တွင် Java ရေး၊ Compile နှိပ်ပြီး output နှင့် error ကို ချက်ချင်းကြည့်ပါ။",
+          "cta": "Compiler စမ်းရန် →",
+          "to": "/compiler"
         },
         {
-          "id": "0x03",
-          "title": "AST Explorer",
-          "description": "Abstract Syntax Tree ကို လှည့်ပတ်ပါ။ Collapse လုပ်နိုင်သော nodes၊ type information၊ full hierarchy။"
-        },
-        {
-          "id": "0x04",
-          "title": "Semantic Analysis",
-          "description": "Symbol tables, scope chains, type checking။ ဘာသာပြန်က သင့်ကုဒ်အကြောင်း ဘာသိသည်ကို ကြည့်ပါ။"
-        },
-        {
-          "id": "0x05",
-          "title": "Bytecode & CFG",
-          "description": "javap disassembly မှ JVM instructions။ Method analysis အတွက် Control flow graphs။"
-        },
-        {
-          "id": "0x06",
-          "title": "လုပ်ဆောင် & သိမ်း",
-          "description": "Compiled code ကို stdin ဖြင့် လုပ်ဆောင်ပါ။ Code snippets ကို သိမ်းရန် sign in ပါ။"
+          "id": "03",
+          "title": "Compile အတွင်းကို ကြည့်ပါ",
+          "description": "သင့်ကုဒ်၏ tokens, AST, symbol table, CFG နှင့် bytecode ကို အဆင့်ဆင့် မြင်ကွင်းပြပါ။",
+          "cta": "မြင်ကွင်းပြရန် →",
+          "to": "/visualize/lexical"
         }
       ]
     },

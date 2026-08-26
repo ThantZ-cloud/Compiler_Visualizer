@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import Footer from '../components/Footer';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useScrollMemory } from '../hooks/useScrollMemory';
-import { Code, Layers, GitBranch, Search, Cpu, Save, Braces, Wand2 } from 'lucide-react';
+import { BookOpen, Play, Layers, Braces, Wand2, Cpu } from 'lucide-react';
 
 // ── Typewriter hook ──
 function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 2000) {
@@ -293,14 +293,11 @@ const LandingPage: React.FC = () => {
   // Remember scroll position across navigations (e.g. coming back from /about)
   useScrollMemory();
 
-  // Bento feature layout — varied card spans on md (2 cols) and lg (4 cols)
+  // 3-step explore — one button per card, with animation
   const features = useMemo(() => [
-    { id: 0, icon: Code, span: 'md:col-span-2 lg:col-span-2', accent: 'var(--color-neon)', tint: 'var(--color-neon-dim)' },
-    { id: 1, icon: Layers, span: '', accent: 'var(--color-cyan)', tint: 'var(--color-cyan-dim)' },
-    { id: 2, icon: GitBranch, span: '', accent: 'var(--color-magenta)', tint: 'var(--color-magenta-dim)' },
-    { id: 3, icon: Search, span: '', accent: 'var(--color-amber)', tint: 'var(--color-amber-dim)' },
-    { id: 4, icon: Cpu, span: '', accent: 'var(--color-rose)', tint: 'var(--color-rose-dim)' },
-    { id: 5, icon: Save, span: 'md:col-span-2 lg:col-span-2', accent: 'var(--color-cyan)', tint: 'var(--color-cyan-dim)' },
+    { id: 0, icon: BookOpen, accent: 'var(--color-neon)', tint: 'var(--color-neon-dim)' },
+    { id: 1, icon: Play, accent: 'var(--color-cyan)', tint: 'var(--color-cyan-dim)' },
+    { id: 2, icon: Layers, accent: 'var(--color-magenta)', tint: 'var(--color-magenta-dim)' },
   ], []);
 
   // How-it-works steps
@@ -418,18 +415,19 @@ const LandingPage: React.FC = () => {
               </h2>
             </Reveal>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mt-10 sm:mt-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-10 sm:mt-12">
               {features.map((f, i) => {
                 const Icon = f.icon;
                 return (
                   <motion.div
                     key={f.id}
-                    className={`card-lift group relative p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden ${f.span}`}
+                    className="card-lift group relative p-7 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden flex flex-col"
                     style={{ '--accent': f.accent, '--accent-tint': f.tint } as React.CSSProperties}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-60px' }}
-                    transition={{ duration: 0.4, delay: (i % 4) * 0.07 }}
+                    transition={{ duration: 0.5, delay: i * 0.12, ease: 'easeOut' }}
+                    whileHover={{ y: -4 }}
                   >
                     <div className="absolute inset-x-0 top-0 h-0.5" style={{ background: f.accent, opacity: 0.7 }} />
                     <div
@@ -440,14 +438,21 @@ const LandingPage: React.FC = () => {
                       <span className="font-mono text-xs font-bold" style={{ color: f.accent, opacity: 0.7 }}>
                         {t(`landing.capabilities.features.${f.id}.id`)}
                       </span>
-                      <Icon className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" style={{ color: f.accent }} />
+                      <Icon className="w-6 h-6 transition-transform duration-300 group-hover:scale-110" style={{ color: f.accent }} />
                     </div>
-                    <h3 className="text-base font-bold font-display tracking-wide text-[var(--color-text)] mb-2">
+                    <h3 className="relative text-base font-bold font-display tracking-wide text-[var(--color-text)] mb-2">
                       {t(`landing.capabilities.features.${f.id}.title`)}
                     </h3>
-                    <p className="text-sm text-[var(--color-text-dim)] leading-relaxed font-sans">
+                    <p className="relative text-sm text-[var(--color-text-dim)] leading-relaxed font-sans flex-1">
                       {t(`landing.capabilities.features.${f.id}.description`)}
                     </p>
+                    <button
+                      className="relative mt-6 inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase font-mono border border-[var(--color-border)] px-4 py-2.5 rounded-lg hover:border-[var(--accent)] hover:bg-[var(--accent-tint)] transition-colors"
+                      style={{ color: f.accent }}
+                      onClick={() => navigate(t(`landing.capabilities.features.${f.id}.to`))}
+                    >
+                      {t(`landing.capabilities.features.${f.id}.cta`)}
+                    </button>
                   </motion.div>
                 );
               })}

@@ -16,7 +16,7 @@ and bytecode execution. Write code in a VS Code–grade editor, then explore eac
 phase through animated algorithm walkthroughs, interactive D3.js graphs, a 3D
 Three.js pipeline scene, and raw bytecode disassembly.
 
-**Live:** [Frontend `compiler-visualizer-thant-zin.vercel.app`](https://compiler-visualizer-thant-zin.vercel.app) (Vercel) • [API `compiler-visualizer-api.onrender.com`](https://compiler-visualizer-api.onrender.com) (Render Singapore, Docker JDK) • DB Supabase Postgres `ap-southeast-1` — verified `2026-08-26` Chrome MCP `POST /api/compile → 200 Hello, World!` *(see [DEPLOYMENT.md](DEPLOYMENT.md))*
+**Live demo:** [compiler-visualizer-thant-zin.vercel.app](https://compiler-visualizer-thant-zin.vercel.app) — see [DEPLOYMENT.md](DEPLOYMENT.md) for how to deploy
 
 </div>
 

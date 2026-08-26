@@ -333,8 +333,8 @@ const LandingPage: React.FC = () => {
         <section className="relative flex items-center min-h-[calc(100dvh-3.5rem)] overflow-hidden">
           <div className="absolute inset-0 hero-dot-grid pointer-events-none" />
 
-          <div className="fixed top-3 left-3 w-8 h-8 md:top-6 md:left-6 md:w-16 md:h-16 border-t-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
-          <div className="fixed top-3 right-3 w-8 h-8 md:top-6 md:right-6 md:w-16 md:h-16 border-t-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
+          <div className="fixed top-[4.5rem] left-3 w-8 h-8 md:top-20 md:left-6 md:w-16 md:h-16 border-t-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
+          <div className="fixed top-[4.5rem] right-3 w-8 h-8 md:top-20 md:right-6 md:w-16 md:h-16 border-t-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
           <div className="fixed bottom-3 left-3 w-8 h-8 md:bottom-6 md:left-6 md:w-16 md:h-16 border-b-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
           <div className="fixed bottom-3 right-3 w-8 h-8 md:bottom-6 md:right-6 md:w-16 md:h-16 border-b-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
 

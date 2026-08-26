@@ -333,10 +333,10 @@ const LandingPage: React.FC = () => {
         <section className="relative flex items-center min-h-[calc(100dvh-3.5rem)] overflow-hidden">
           <div className="absolute inset-0 hero-dot-grid pointer-events-none" />
 
-          <div className="fixed top-[4.5rem] left-3 w-8 h-8 md:top-20 md:left-6 md:w-16 md:h-16 border-t-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
-          <div className="fixed top-[4.5rem] right-3 w-8 h-8 md:top-20 md:right-6 md:w-16 md:h-16 border-t-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
-          <div className="fixed bottom-3 left-3 w-8 h-8 md:bottom-6 md:left-6 md:w-16 md:h-16 border-b-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
-          <div className="fixed bottom-3 right-3 w-8 h-8 md:bottom-6 md:right-6 md:w-16 md:h-16 border-b-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-40 z-30 pointer-events-none" />
+          <div className="absolute top-6 left-3 w-8 h-8 md:top-6 md:left-6 md:w-16 md:h-16 border-t-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-40 z-10 pointer-events-none" />
+          <div className="absolute top-6 right-3 w-8 h-8 md:top-6 md:right-6 md:w-16 md:h-16 border-t-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-40 z-10 pointer-events-none" />
+          <div className="absolute bottom-3 left-3 w-8 h-8 md:bottom-6 md:left-6 md:w-16 md:h-16 border-b-2 border-l-2 border-[var(--color-neon)] neon-corner opacity-40 z-10 pointer-events-none" />
+          <div className="absolute bottom-3 right-3 w-8 h-8 md:bottom-6 md:right-6 md:w-16 md:h-16 border-b-2 border-r-2 border-[var(--color-neon)] neon-corner opacity-40 z-10 pointer-events-none" />
 
           <div className="relative z-20 w-full max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-20 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 sm:gap-12 lg:gap-16 items-center">
             {/* Left — copy */}

@@ -16,7 +16,7 @@ and bytecode execution. Write code in a VS Code–grade editor, then explore eac
 phase through animated algorithm walkthroughs, interactive D3.js graphs, a 3D
 Three.js pipeline scene, and raw bytecode disassembly.
 
-**Live demo:** [compiler-visualizer-thant-zin.vercel.app](https://compiler-visualizer-thant-zin.vercel.app) *(frontend — connects to a running backend for compiles)*
+**Live:** [Frontend `compiler-visualizer-thant-zin.vercel.app`](https://compiler-visualizer-thant-zin.vercel.app) (Vercel) • [API `compiler-visualizer-api.onrender.com`](https://compiler-visualizer-api.onrender.com) (Render Singapore, Docker JDK) • DB Supabase Postgres `ap-southeast-1` — verified `2026-08-26` Chrome MCP `POST /api/compile → 200 Hello, World!` *(see [DEPLOYMENT.md](DEPLOYMENT.md))*
 
 </div>
 
@@ -103,11 +103,10 @@ allocation, stack machine).
 | [Spring Data JPA](https://spring.io/projects/spring-data-jpa) | — | ORM layer over Hibernate |
 | [SQLite](https://www.sqlite.org/) | — | Dev database (`dev.db`, zero setup) |
 | [H2](https://www.h2database.com/) | — | Test database (auto-loaded under `src/test`) |
-| [MySQL](https://www.mysql.com/) | 8+ | Production database (`mysql` profile) |
+| [Postgres](https://supabase.com/) (Supabase) | 17 | Production (`prod` profile, `ap-southeast-1` Singapore — MySQL profile retained locally) |
 | [Lombok](https://projectlombok.org/) | — | Bye-bye boilerplate |
 
-**Database profiles:** `dev` (default, SQLite) · `test` (H2, used by JUnit) ·
-`mysql` (production — activate with `-Dspring-boot.run.profiles=mysql`).
+**Database profiles:** `dev` (default, SQLite) · `test` (H2, JUnit) · `prod` (Supabase Postgres Singapore — `SPRING_PROFILES_ACTIVE=prod`) · `mysql` (legacy local).
 
 ---
 
@@ -121,8 +120,7 @@ GitHub Actions runs two parallel jobs on every push/PR to `main`
 | 🎨 **Frontend** | `ubuntu-latest` + Node 22 LTS | `npm ci` → `eslint` → `tsc + vite build` |
 | ☕ **Backend** | `ubuntu-latest` + Java 17 (Temurin) | `mvn clean package` (compile + JUnit tests) |
 
-The production frontend deploys automatically: the repo is git-linked to
-**Vercel**, which rebuilds `frontend/` (output `dist`) on every push to `main`.
+Production deploys automatically on push to `main`: **Vercel** rebuilds `frontend/` (`dist`) and **Render** rebuilds the backend Docker image (`eclipse-temurin:17-jdk`). Keep-alive pings `/api/health` every 10 min (see [DEPLOYMENT.md](DEPLOYMENT.md)).
 
 > ℹ️ **Node 22 LTS is required** — Vite 8 enforces
 > `engines: ^20.19.0 || >=22.12.0`. With nvm:
@@ -141,7 +139,7 @@ The production frontend deploys automatically: the repo is git-linked to
 | **Java JDK** | 17+ | ✅ Yes (backend + runs `javac`/`javap`/compiled programs) |
 | **Node.js** | 22 LTS | ✅ Yes |
 | **Maven** | 3.6+ | ✅ Yes (installed separately — no wrapper in repo) |
-| **MySQL** | 8+ | ⬜ Production only (SQLite for dev) |
+| **Postgres (Supabase Free)** | — | ⬜ Production (local dev needs no DB; `mysql` profile still works if you have MySQL) |
 
 ### ☕ Backend
 
@@ -157,7 +155,9 @@ mvn clean package
 # Run tests (H2 in-memory, auto-configured)
 mvn test
 
-# Production profile (MySQL)
+# Production profile (Supabase Postgres — see DEPLOYMENT.md for env vars)
+SPRING_PROFILES_ACTIVE=prod DB_URL=... DB_USERNAME=... DB_PASSWORD=... JWT_SECRET=... mvn spring-boot:run
+# Legacy MySQL profile (local only)
 mvn spring-boot:run -Dspring-boot.run.profiles=mysql
 ```
 

@@ -64,7 +64,7 @@ function MiniLearnBox() {
   }, [reduce, phases.length]);
 
   return (
-    <div className="relative rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] overflow-hidden flex-1 flex flex-col p-3 min-h-[110px]">
+    <div className="relative rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] overflow-hidden flex flex-col h-[140px] shrink-0 p-3">
       <div className="flex items-center gap-1.5 mb-3">
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-rose)]" />
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-amber)]" />
@@ -94,6 +94,60 @@ function MiniLearnBox() {
       </div>
       <div className="text-center mt-3 font-mono text-[10px] text-[var(--color-text-dim)] h-3">
         {phases[active].hint}
+      </div>
+    </div>
+  );
+}
+
+// ── Mini visualize — NFA circles & arrows (a(b|c)) pulsing forever ──
+function MiniVisualizeBox() {
+  const reduce = useReducedMotion();
+  const [active, setActive] = useState(0);
+  // s0 --a--> s1 --b|c--> s2 (s2 accept)
+  useEffect(() => {
+    if (reduce) return;
+    const id = setInterval(() => setActive(p => (p + 1) % 3), 900);
+    return () => clearInterval(id);
+  }, [reduce]);
+
+  const states = [
+    { x: 40, label: 's0', accept: false, color: 'var(--color-neon)' },
+    { x: 100, label: 's1', accept: false, color: 'var(--color-cyan)' },
+    { x: 160, label: 's2', accept: true, color: 'var(--color-magenta)' },
+  ];
+
+  return (
+    <div className="relative rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] overflow-hidden flex flex-col h-[140px] shrink-0 p-3">
+      <div className="flex items-center gap-1.5 mb-2 shrink-0">
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-rose)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-amber)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-neon)]" />
+        <span className="ml-2 text-[10px] font-mono text-[var(--color-text-muted)]">NFA</span>
+      </div>
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <svg width="200" height="48" viewBox="0 0 200 48" className="overflow-visible">
+          {/* start arrow */}
+          <line x1="8" y1="24" x2="24" y2="24" stroke="var(--color-text-muted)" strokeWidth="1.2" opacity={active >= 0 ? 0.9 : 0.3} />
+          <polygon points="24,20 24,28 30,24" fill="var(--color-text-muted)" opacity={active >= 0 ? 0.9 : 0.3} />
+          {/* a edge s0->s1 */}
+          <line x1="56" y1="24" x2="84" y2="24" stroke={active >= 1 ? 'var(--color-cyan)' : 'var(--color-border)'} strokeWidth={active === 1 ? 1.8 : 1.2} opacity={active >= 1 ? 1 : 0.5} />
+          <polygon points="84,20 84,28 90,24" fill={active >= 1 ? 'var(--color-cyan)' : 'var(--color-border)'} opacity={active >= 1 ? 1 : 0.5} />
+          <text x="70" y="14" textAnchor="middle" fontSize="8" fontFamily="var(--font-mono)" fill={active === 1 ? 'var(--color-cyan)' : 'var(--color-text-muted)'}>a</text>
+          {/* b|c edge s1->s2 */}
+          <line x1="116" y1="24" x2="144" y2="24" stroke={active >= 2 ? 'var(--color-magenta)' : 'var(--color-border)'} strokeWidth={active === 2 ? 1.8 : 1.2} opacity={active >= 2 ? 1 : 0.5} />
+          <polygon points="144,20 144,28 150,24" fill={active >= 2 ? 'var(--color-magenta)' : 'var(--color-border)'} opacity={active >= 2 ? 1 : 0.5} />
+          <text x="130" y="14" textAnchor="middle" fontSize="8" fontFamily="var(--font-mono)" fill={active === 2 ? 'var(--color-magenta)' : 'var(--color-text-muted)'}>b|c</text>
+          {states.map((s, i) => (
+            <g key={s.label} style={{ transform: active === i ? 'scale(1.06)' : 'scale(1)', transformOrigin: `${s.x}px 24px`, transition: 'transform 300ms' }}>
+              <circle cx={s.x} cy="24" r="16" fill="var(--color-void)" stroke={active === i ? s.color : 'var(--color-border)'} strokeWidth={active === i ? 2 : 1.2} style={{ filter: active === i ? `drop-shadow(0 0 6px ${s.color})` : 'none' }} />
+              {s.accept && <circle cx={s.x} cy="24" r="11" fill="none" stroke={active === i ? s.color : 'var(--color-border)'} strokeWidth="1" opacity={active === i ? 1 : 0.6} />}
+              <text x={s.x} y="27.5" textAnchor="middle" fontSize="7" fontFamily="var(--font-mono)" fontWeight="700" fill={active === i ? s.color : 'var(--color-text-muted)'}>{s.label}</text>
+            </g>
+          ))}
+        </svg>
+        <div className="font-mono text-[10px] text-[var(--color-text-dim)] h-3 mt-1">
+          {active === 0 ? 'scan: a' : active === 1 ? 'scan: a → b' : 'accept: a(b|c)'}
+        </div>
       </div>
     </div>
   );
@@ -539,9 +593,7 @@ const LandingPage: React.FC = () => {
                     ) : i === 1 ? (
                       <MiniCompilerBox />
                     ) : (
-                      <p className="relative text-sm text-[var(--color-text-dim)] leading-relaxed font-sans flex-1">
-                        {t(`landing.capabilities.features.${f.id}.description`)}
-                      </p>
+                      <MiniVisualizeBox />
                     )}
                     <button
                       className="relative mt-6 inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase font-mono border border-[var(--color-border)] px-4 py-2.5 rounded-lg hover:border-[var(--accent)] hover:bg-[var(--accent-tint)] transition-colors"

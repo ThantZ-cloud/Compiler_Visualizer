@@ -16,28 +16,28 @@
   },
   "landing": {
     "statusBadge": "စနစ်အဆင်သင့်ဖြစ်သည်",
-    "description": "// Java ကုဒ်ရေးပါ။ ဘာသာပြန်ကို ကြည့်ပါ — တစ်ခုချင်းစီ ခွဲခြမ်းစိတ်ဖြာသည်။",
+    "description": "// Java ကုဒ်ရေးပါ။ ဘာသာပြန်က ၎င်းကို တိုကင်တိုင်း၊ သစ်ပင်တိုင်း၊ instruction တိုင်း ခွဲခြမ်းဖြတ်သည်ကို ကြည့်ပါ။",
     "begin": "စတင်ရန်",
     "openCompiler": "ဘာသာပြန်ဖွင့်ရန်",
     "viewPipeline": "လေ့လာကြရအောင်",
-    "exploreVisualizer": "VISUALIZER စမ်းကြည့်ရန်",
+    "exploreVisualizer": "Visualizer ကို စမ်းကြည့်ရန်",
     "hero": {
       "terminalTitle": "javac Main.java",
       "phaseLabel": "အဆင့်"
     },
     "contactUs": "ဆက်သွယ်ရန်",
     "why": {
-      "label": "// ပြဿနာကို ဘယ်လိုဖြေရှင်းသလဲ",
-      "headline": "ဘာသာပြန်များသည် အမှောင်ခန်းများဖြစ်သည်။",
-      "headlineAccent": "သင့်အား ဖွင့်ပါ။",
+      "label": "// ဘာကြောင့်ဖန်တီးသလဲ",
+      "headline": "ဘာသာပြန်များသည် အနက်ရောင် သေတ္တာများဖြစ်သည်။",
+      "headlineAccent": "သင့်ကိုယ်ပိုင်ကို ဖွင့်ပါ။",
       "body": "အများစုသော ကိရိယာများသည် ဘာသာပြန်အောင်မြင်မှု သို့မဟုတ် အမှားကိုသာ ပြသည်။ ၎င်းက Java ဘယ်လို bytecode ဖြစ်သွားသည်ကို ပြသည် — lex, parse, AST, semantic analysis, bytecode generation — ထို့နောက် ရလဒ်ကို လုပ်ဆောင်သည်။",
       "compilerVsInterpreter": "Compiler သည် ပရိုဂရမ်တစ်ခုလုံးကို မလုပ်ဆောင်မီ ဘာသာပြန်ပေးသည်; interpreter သည် တစ်ကြောင်းချင်း လုပ်ဆောင်သည်။ Java သည် နှစ်မျိုးပေါင်းစပ်မှုဖြစ်သည် — javac က bytecode သို့ compile လုပ်ပြီး JVM က interpret လုပ်ကာ JIT compiler က hot code ကို native machine code အဖြစ် ပြောင်းလဲပေးသည်။",
       "forLabel": "အတွက် ဖန်တီးထားသည်",
-      "bestFor": "ဤဝဘ်ဆိုဒ်သည် အကောင်းဆုံးဖြစ်သည်",
+      "bestFor": "ဤဝဘ်ဆိုဒ်သည် အောက်ပါတို့အတွက် အကောင်းဆုံးဖြစ်သည်",
       "forItems": {
         "students": "CS ကျောင်းသားများ",
         "educators": "ဆရာများ",
-        "developers": "စိတ်ဝင်စားသူများ"
+        "developers": "စူးစမ်းလိုသော developer များ"
       }
     },
     "capabilities": {
@@ -53,7 +53,7 @@
         },
         {
           "id": "02",
-          "title": "Java Compile & Run",
+          "title": "Java ဘာသာပြန် & လုပ်ဆောင်ခြင်း",
           "description": "Editor တွင် Java ရေး၊ Compile နှိပ်ပြီး output နှင့် error ကို ချက်ချင်းကြည့်ပါ။",
           "cta": "Compiler စမ်းရန် →",
           "to": "/compiler"
@@ -102,7 +102,7 @@
         "Execute"
       ],
       "cta": "PIPELINE အပြည့်ကို လေ့လာရန်",
-      "description": "လူဖတ်နိုင်သော source မှ native execution အထိ — optimizer နှင့် JVM အပါအဝင်။ အပြောင်းအလဲ အဆင့်တိုင်းကို လမ်းလျှောက်ပါ။"
+      "description": "လူဖတ်နိုင်သော source မှ native execution အထိ — optimizer နှင့် JVM အပါအဝင်။ အသွင်ပြောင်းမှု အဆင့်တိုင်းကို ဖြတ်သန်းကြည့်ပါ။"
     },
     "preview": {
       "label": "// SYSTEM ကို ကြိုတင်ကြည့်ရှုမှု",
@@ -140,7 +140,7 @@
     },
     "finalCta": {
       "label": "// စတင်ရန် အဆင်သင့်",
-      "headline": "ဘာသာပြန်များကို စတင် ရှာဖွေပါ။",
+      "headline": "ကွန်ပလိုင်လာများကို စတင် စူးစမ်းပါ။",
       "subline": "// အခမဲ့ စမ်းကြည့်ရန် · Code သိမ်းရန် sign in ပါ",
       "primaryCta": "စတင်ရန်",
       "secondaryCta": "လေ့လာကြရအောင်"
@@ -285,7 +285,7 @@
     "stdin": "STDIN:",
     "stdinPlaceholder": "$ ထည့်သွင်းမှု ထည့်ပါ...",
     "output": "ထွက်ရလဒ်",
-    "clickCompile": "သင့်ကုဒ်ကို အောင်မြင်စွာ ဆောင်ရွက်ရန် COMPILE ကိုနှိပ်ပါ။",
+    "clickCompile": "သင့်ကုဒ်ကို လုပ်ဆောင်ရန် COMPILE ကို နှိပ်ပါ။",
     "saveFile": "ဖိုင် သိမ်းဆည်းရန်",
     "enterFileName": "သင့်ဖိုင်အတွက် အမည်ထည့်ပါ:",
     "unsavedChangesTitle": "သိမ်းမထားသော ပြောင်းလဲမှုများ",
@@ -340,8 +340,8 @@
   },
   "lexical": {
     "tabs": {
-      "pipeline": "Dynamic",
-      "tokenBrowser": "Static"
+      "pipeline": "အဆင့်ဆင့်",
+      "tokenBrowser": "ခြုံငုံမြင်ကွင်း"
     },
     "controls": {
       "play": "ဖွင့်ပါ",
@@ -352,20 +352,20 @@
       "step": "အဆင့် {{current}} / {{total}}"
     },
     "step1": {
-      "title": "Regular Expressions",
+      "title": "Regular Expressions (ပုံမှန် အသုံးအနှုန်းများ)",
       "description": "တိုကင်အမျိုးအစားတစ်ခုစီကို regex pattern ဖြင့် သတ်မှတ်သည်။ ဤ pattern များသည် Java တွင် တရားဝင်တိုကင်များ ဘယ်လိုပုံစံဖြစ်ကြောင်း ဖော်ပြသည်။",
       "caption": "ဘယ်လိုအလုပ်လုပ်သလဲ — တိုကင်အမျိုးအစားတစ်ခုစီသည် regular expression ဖြစ်သည်; scanner က ထို RE များကို နောက်အဆင့်တွင် စက်အဖြစ် ပြောင်းလဲသည်။",
       "columnType": "တိုကင် အမျိုးအစား",
-      "columnRegex": "Regular Expression",
+      "columnRegex": "Regular Expression (ပုံမှန် အသုံးအနှုန်း)",
       "columnCount": "အရေအတွက်",
       "foundInCode": "သင့်ကုဒ်တွင် တွေ့ရှိ",
       "notFoundInCode": "မရှိပါ",
-      "tableView": "ဇယား",
-      "examplesView": "Try It",
+      "tableView": "Java ပရိုဂရမ်",
+      "examplesView": "ကိုယ်တိုင်စမ်းကြည့်ပါ",
       "examplesHint": "Try It — သင့်ကိုယ်ပိုင် RE ကို ရိုက်ထည့်ပြီး parse tree ကို ကြည့်ပါ။ ဦးစားပေး: () > * + ? > concat > |",
       "tryOwnRe": "သင့်ကိုယ်ပိုင် RE စမ်းပါ:",
-      "parseTreeLabel": "Parse tree",
-      "nodesCount": "{{count}} nodes",
+      "parseTreeLabel": "Parse tree (ခွဲခြမ်းမှုပင်)",
+      "nodesCount": "{{count}} node",
       "yourRe": "သင့် RE: {{re}}",
       "precedenceHint": "ဦးစားပေး: () အမြင့်ဆုံး၊ ထို့နောက် * + ?, ထို့နောက် ပေါင်းစပ်ခြင်း၊ ထို့နောက် | အနိမ့်ဆုံး",
       "slashHint": "— | ကို ရည်ရွယ်ပါသလား? / သည် စာလုံးအဖြစ်သာ ဖြစ်သည်။",
@@ -388,12 +388,12 @@
       "title": "Finite Automaton (NFA) — Thompson တည်ဆောက်မှု",
       "description": "regex တစ်ခုစီကို Thompson တည်ဆောက်မှုဖြင့် NFA အဖြစ်ပြောင်းသည် — စက်ဝိုင်း (states) နှင့် မြှား (transitions) များဖြင့် ဖွဲ့စည်းထားသော စက်။ ε သည် empty-string transition ကိုပြသည်။",
       "algorithm": "Thompson Construction",
-      "startState": "Start",
-      "acceptState": "Accept",
+      "startState": "စတင်သည့် state",
+      "acceptState": "လက်ခံသည့် state",
       "epsilon": "\u03B5",
       "overview": "အနှစ်ချုပ်",
-      "flatView": "အပြည့်",
-      "buildView": "Try It",
+      "flatView": "Java ပရိုဂရမ်",
+      "buildView": "ကိုယ်တိုင်စမ်းကြည့်ပါ",
       "caption": "ဘယ်လိုအလုပ်လုပ်သလဲ — token ပုံစံတစ်ခုစီသည် start တစ်ခုနှင့် accept တစ်ခုပါသော စက်ငယ်ဖြစ်သွားသည်။",
       "overviewHint": "ပေါင်းစည်းထားသော start state သည် \u03B5-transition များဖြင့် token ပုံစံတစ်ခုစီအတွက် သီးခြား machine များဆီသို့ ခွဲထွက်သည်။",
       "flatHint": "အပြည့် NFA — states/edges အားလုံးကို ဘယ်မှ ညာသို့ အလွှာဖြင့် ချထားသည်။",
@@ -425,19 +425,19 @@
       "fixedPointReached": "Minimization fixed point ရောက်ရှိပါပြီ"
     },
     "step4": {
-      "title": "Scanner (on minimized DFA)",
+      "title": "Scanner (minimized DFA ပေါ်တွင်)",
       "description": "Minimized DFA scanner သည် ကုဒ်ကို Δ ဖြင့် ဖတ်ပြီး longest-match ဖြင့် တိုကင်ထုတ်သည်။",
       "sourceCode": "ရင်းမြစ် ကုဒ်",
       "dfaState": "DFA State",
       "tokensEmitted": "ထုတ်ပေးခဲ့သော တိုကင်များ",
       "scanning": "ဖတ်နေသည်...",
       "complete": "ဖတ်ပြီးပါပြီ",
-      "charPosition": "Char {{pos}}: '{{char}}'"
+      "charPosition": "စာလုံး {{pos}}: '{{char}}'"
     }
   },
   "tokens": {
     "noTokens": "တိုကင်များ မထုတ်လုပ်ပါ",
-    "distributionTitle": "အမျိုးအစားအလိုက် တိုကင် ဖြန့်ချီမှု",
+    "distributionTitle": "အမျိုးအစားအလိုက် တိုကင် ဖြန့်ဖြူးမှု",
     "flowTitle": "တိုကင် စီးဆင်းမှု (ရင်းမြစ်ကုဒ် အစဉ်လိုက်)",
     "hoverHint": "အသေးစိတ်ကြည့်ရန် တိုကင်များအပေါ် ရွှေ့ကြည့်ပါ",
     "filterPlaceholder": "$ တိုကင်များ စစ်ရန်...",
@@ -453,15 +453,15 @@
       "fromLexical": "lexer မှ",
       "grammarRules": "Grammar ထုတ်လုပ်နည်း စည်းမျဉ်းများ",
       "rewrites": "စည်းမျဉ်း",
-      "noRules": "ဤပရိုးဂရမ်တွင် အသုံးပြုသော grammar စည်းမျဉ်း မရှိပါ",
-      "tableView": "Your Program",
-      "tryItView": "Try It",
-      "tryItHint": "Try It — type your own expression and watch the rightmost derivation grow, then see its parse tree. Example: a + b × c",
-      "tryOwnExpr": "Try your own expression:",
-      "tryGrammarTitle": "Example grammar — Classic Expression Grammar",
-      "tryGrammarHint": "Start symbol is Goal. Terminals are name, +, -, *, /, (, ).",
-      "tryTreeTitle": "Corresponding Parse Tree",
-      "tryTreeHint": "Each derivation step expands the rightmost nonterminal — the tree shows the same rules as nested boxes."
+      "noRules": "ဤပရိုဂရမ်တွင် အသုံးပြုသော grammar စည်းမျဉ်း မရှိပါ",
+      "tableView": "Java ပရိုဂရမ်",
+      "tryItView": "ကိုယ်တိုင်စမ်းကြည့်ပါ",
+      "tryItHint": "စမ်းကြည့်ပါ — ကိုယ်ပိုင် expression ရိုက်ထည့်ပြီး rightmost derivation ကြီးထွားပုံကို ကြည့်ပါ၊ ထို့နောက် ၎င်း၏ parse tree ကို မြင်ရပါမည်။ ဥပမာ- a + b × c",
+      "tryOwnExpr": "ကိုယ်ပိုင် expression ရိုက်ကြည့်ပါ:",
+      "tryGrammarTitle": "ဥပမာ grammar — Classic Expression Grammar",
+      "tryGrammarHint": "စတင်သင်္ကေတမှာ Goal ဖြစ်သည်။ Terminal များမှာ name, +, -, *, /, (, ) ဖြစ်သည်။",
+      "tryTreeTitle": "သက်ဆိုင်ရာ Parse tree",
+      "tryTreeHint": "Derivation အဆင့်တိုင်းသည် ညာဘက်ဆုံး nonterminal ကို ချဲ့သည် — သစ်ပင်သည် တူညီသော စည်းမျဉ်းများကို ထပ်ဆင့် boxes များအဖြစ် ပြသည်။"
     },
     "step2": {
       "title": "Pushdown Automaton (PDA)",
@@ -470,24 +470,24 @@
       "empty": "stack ဗလာ",
       "awaitingInput": "တိုကင်များ စောင့်ဆိုင်းနေသည်",
       "accepted": "INPUT လက်ခံပြီး",
-      "tableView": "Your Program",
-      "tryItView": "Try It",
-      "tryItHint": "Try It — type your own expression and watch the leftmost top-down (LL(1)) parser predict, match, and accept. Example: a + b × c",
-      "tryOwnExpr": "Try your own expression:",
-      "tryGrammarTitle": "Example grammar — Right-recursive (LL(1))",
-      "tryGrammarHint": "Start symbol is Goal. ε is empty. This grammar is naturally LL(1) — no left recursion, perfect for top-down."
+      "tableView": "Java ပရိုဂရမ်",
+      "tryItView": "ကိုယ်တိုင်စမ်းကြည့်ပါ",
+      "tryItHint": "စမ်းကြည့်ပါ — ကိုယ်ပိုင် expression ရိုက်ထည့်ပြီး leftmost top-down (LL(1)) parser က predict, match, accept လုပ်ပုံကို ကြည့်ပါ။ ဥပမာ- a + b × c",
+      "tryOwnExpr": "ကိုယ်ပိုင် expression ရိုက်ကြည့်ပါ:",
+      "tryGrammarTitle": "ဥပမာ grammar — Right-recursive (LL(1))",
+      "tryGrammarHint": "စတင်သင်္ကေတမှာ Goal ဖြစ်သည်။ ε သည် ဗလာဖြစ်သည်။ ဤသဒ္ဒါသည် သဘာဝအားဖြင့် LL(1) — left recursion မရှိ၍ top-down parsing အတွက် အကောင်းဆုံးဖြစ်သည်။"
     },
     "step3": {
-      "title": "Shift-Reduce Parser",
-      "description": "တိုကင်များကို input buffer မှ parse stack သို့Shift လုပ်ပြီးတစ်ခုချင်းတင်သည်။ stack ထိပ်တွင် grammar rule တစ်ခု၏ right-hand side နှင့် ကိုက်ညီပါက parser က ထို symbols များကို left-hand side non-terminal အဖြစ် လျှော့ချသည် (reduce)။",
-      "tableView": "သင့် Program",
-      "tryItView": "Try It",
+      "title": "Shift-Reduce Parser (ရွှေ့-လျှော့ချ parser)",
+      "description": "တိုကင်များကို input buffer မှ parse stack သို့ Shift လုပ်ပြီး တစ်ခုချင်း တင်သည်။ stack ထိပ်တွင် grammar rule တစ်ခု၏ right-hand side နှင့် ကိုက်ညီပါက parser က ထို symbols များကို left-hand side non-terminal အဖြစ် လျှော့ချသည် (reduce)။",
+      "tableView": "Java ပရိုဂရမ်",
+      "tryItView": "ကိုယ်တိုင်စမ်းကြည့်ပါ",
       "tryItHint": "Try It — ကိုယ်ပိုင် expression ရေးပြီး bottom-up parser က တိုကင်များကို shift လုပ်၊ handle ရှာပြီး Goal အထိ reduce လုပ်ပုံကို ကြည့်ပါ။ ဥပမာ- a + b × c",
       "tryOwnInput": "ကိုယ်ပိုင် expression စမ်းကြည့်ပါ-",
       "tryGrammarTitle": "ဥပမာ grammar — Goal′ → Goal ဖြင့် ချဲ့ထားသည်",
       "tryGrammarHint": "Bottom-up: stack ထိပ်တွင် handle (rule ၏ right side) ရှိလာသည်အထိ shift လုပ်ပြီး left side သို့ reduce လုပ်သည်။ reverse rightmost derivation တည်ဆောက်သည် — ဘယ်မှညာသို့ scan၊ lookahead ၁ ခု။",
-      "inputBuffer": "Input Buffer",
-      "parseStack": "Parse Stack",
+      "inputBuffer": "Input Buffer (ထည့်သွင်းမှု ကြားခံ)",
+      "parseStack": "Parse Stack (ခွဲခြမ်းမှု stack)",
       "actionLog": "လုပ်ဆောင်ချက် မှတ်တမ်း",
       "empty": "(stack ဗလာ)",
       "bufferEmpty": "တိုကင်အားလုံး စားသုံးပြီးပါပြီ"
@@ -495,11 +495,11 @@
     "step4": {
       "title": "Abstract Syntax Tree (AST) တည်ဆောက်ခြင်း",
       "description": "ထို reduce အသစ်တစ်ခုစီသည် Abstract Syntax Tree ၏ node တစ်ခုကို တည်ဆောက်သည်။ Syntax analysis ၏ နောက်ဆုံး ထွက်ပေါ်ရလဒ်မှာ semantic analysis သို့ ပို့သောအပြည့်အစုံ AST ဖြစ်ကြောင်း ကြည့်ရှုနိုင်သည်။",
-      "tableView": "သင့် Program",
-      "tryItView": "Try It",
+      "tableView": "Java ပရိုဂရမ်",
+      "tryItView": "ကိုယ်တိုင်စမ်းကြည့်ပါ",
       "tryItHint": "Try It — ကိုယ်ပိုင် expression ရေးပြီး ၎င်း၏ abstract syntax tree ကြီးထွားပုံကို ကြည့်ပါ- operator များသည် internal node၊ နာမည်နှင့် နံပါတ်များသည် leaf ဖြစ်သည်။ ဥပမာ- a + b × c",
       "tryOwnInput": "ကိုယ်ပိုင် expression စမ်းကြည့်ပါ-",
-      "nodes": "nodes"
+      "nodes": "node"
     }
   },
   "ast": {
@@ -510,82 +510,82 @@
     "selected": "ရွေးချယ်ထားသည်:"
   },
   "semantic": {
-    "noSymbolTable": "သင်္ကေတ ဇယား မထုတ်လုပ်ပါ",
+    "noSymbolTable": "သင်္ကေတဇယား မထုတ်လုပ်ပါ",
     "kind": "အမျိုးအစား",
     "name": "အမည်",
-    "modifiers": "Modifiers",
-    "type": "Type",
-    "parent": "Parent",
+    "modifiers": "ပြုပြင်မွမ်းမံချက်များ",
+    "type": "ဒေတာအမျိုးအစား",
+    "parent": "မိဘ",
     "details": "အသေးစိတ်",
     "entries": "ခု",
-    "scopeTree": "သင်္ကေတ်မျှဝမ်း",
-    "scopeTreeDescription": "ကုဒ်ဘာသာပြန်သည် သင်္ကေတ်မျှဝမ်းများ၏ တည်ငဉ်းသားသောင်းကို လေးထုံးစံပါသည် — ပါကော်စာရင်းတစ်ခုတွင် ကလားစသည်းများပါဝင်သည်၊ ကလားစသည်တစ်ခုတွင် စက်မှူးများပါဝင်သည်၊ စက်မှူးတစ်ခုတွင် သင်္ကေတ်ကွဲယောင်းများနှင့် သူ့များပါဝင်သည်။",
-    "symbolCollection": "သင်္ကေတ် စုံထွင့်မျှတင်မှု",
-    "symbolCollectionDescription": "ကုဒ်ဘာသာပြန်သည် AST ကို လမ်းလာရာတွင် အမည်ရှိသည်များအားလုံးကို (ဗားရီးယား၊ သတ်မှတ်များ၊ စက်မှူးများ၊ ဖိုင်းဒ်) စုံထွင့်၍ သူ့အမြေသတ်မျှဝမ်းသို့ စာရင့်ကောက်ထားသည်။",
-    "symbolsInScopes": "သင်္ကေတ်များနှင့်သင်္ကေတ်မျှ",
-    "collected": "စုံထွင့်ပြီး",
-    "noSymbols": "သင်္ကေတ်များ မတွေ့ရှိ",
-    "typeResolution": "အမျိုးအစား ဖော်ပြမှု",
-    "typeResolutionDescription": "သင်စာရင်း System.out.println() ကို ရေးထားသော်၊ ကုဒ်ဘာသာပြန်သည် တစ်ချက်ချင်း ဖော်ပြုရေးရမည် — System → java.lang.System, out → java.io.PrintStream, println → PrintStream.println(String)။",
-    "resolutionFlow": "ဖော်ပြမှုလမ်းကြီး",
+    "scopeTree": "နယ်ပယ် အထက်အောက်",
+    "scopeTreeDescription": "ဘာသာပြန်ရှင်သည် နယ်ပယ်များ၏ အထက်အောက် သစ်ပင်ကို တည်ဆောက်သည် — package တစ်ခုတွင် class များပါဝင်သည်၊ class တစ်ခုတွင် method များပါဝင်ပြီး method တစ်ခုတွင် ၎င်း၏ကိုယ်ပိုင် variable များပါသော အတွင်းပိုင်း block များပါဝင်သည်။",
+    "symbolCollection": "သင်္ကေတ စုဆောင်းခြင်း",
+    "symbolCollectionDescription": "ဘာသာပြန်ရှင်သည် AST ကို လျှောက်လာရင်း အမည်ရှိသည့်အရာအားလုံး (variable, parameter, method, field) ကို စုဆောင်းပြီး ၎င်းတို့၏ သက်ဆိုင်ရာ နယ်ပယ်များတွင် မှတ်တမ်းတင်သည်။",
+    "symbolsInScopes": "နယ်ပယ်အလိုက် သင်္ကေတများ",
+    "collected": "စုဆောင်းပြီး",
+    "noSymbols": "သင်္ကေတများ မတွေ့ရှိ",
+    "typeResolution": "အမျိုးအစား ခွဲခြားဖော်ပြခြင်း",
+    "typeResolutionDescription": "System.out.println() ဟု ရေးသောအခါ ဘာသာပြန်ရှင်သည် အပိုင်းတစ်ခုချင်းစီကို ခွဲခြားဖော်ပြရမည် — System → java.lang.System, out → java.io.PrintStream, println → PrintStream.println(String)။ ဤအဆင့်ဆင့် ဖော်ပြမှုကို ကြည့်ရှုပါ။",
+    "resolutionFlow": "ခွဲခြားဖော်ပြမှု စီးဆင်းမှု",
     "steps": "အဆင့်များ",
-    "resolving": "ဖော်ပြန်နေသည်",
-    "resolved": "ဖော်ပြီးစီး",
-    "unresolved": "မဖော်ပြနိုင်သော",
-    "noResolutions": "ဖော်ပြမှုများ မရှိ",
+    "resolving": "ခွဲခြားဖော်ပြနေသည်",
+    "resolved": "ခွဲခြားဖော်ပြပြီး",
+    "unresolved": "ခွဲခြားဖော်ပြ၍ မရသော",
+    "noResolutions": "ပြရန် အမျိုးအစား ခွဲခြားဖော်ပြချက်များ မရှိပါ",
     "typeChecking": "အမျိုးအစား စစ်ဆေးခြင်း",
-    "typeCheckingDescription": "ကုဒ်ဘာသာပြန်သည် ဘာသာရပ်ကူးများ၊ စက်မှူးဆက်များ နှင့် ပုံစံများအားလုံးကို အမျိုးအစားလိုက်လံ၍ စစ်ဆေးသည်။ အမျိုးအစားမကောင်းသော ပုံစံများသည်ဘိုင်းကုဒ်လုပ်ငန်းလုပ်မှုမျှင့်မီးမှာ အမှားမျောက်သည်။",
-    "typeCheckMatrix": "အမျိုးအစား စစ်ဆေးခြင်းအလိုက်မျဇယား",
+    "typeCheckingDescription": "ဘာသာပြန်ရှင်သည် assignment, method call နှင့် expression တိုင်းသည် type-safe ဖြစ်ကြောင်း စစ်ဆေးသည်။ ကိုက်ညီမှုမရှိသော အမျိုးအစားများသည် bytecode မထုတ်လုပ်မီ အမှားများကို ဖြစ်ပေါ်စေသည်။",
+    "typeCheckMatrix": "အမျိုးအစား စစ်ဆေးမှု ဇယား",
     "check": "စစ်ဆေး",
-    "target": "မည",
-    "expected": "လိုအပ်သော",
-    "actual": "အမျိုးအစား",
+    "target": "ပစ်မှတ်",
+    "expected": "မျှော်လင့်ထားသော",
+    "actual": "လက်ရှိ",
     "location": "နေရာ",
-    "result": "ရလာသလား",
-    "passed": "အဆင်ပြ",
-    "failed": "မအဆင်ပြ",
-    "unknown": "မသိန်းမကောင်း",
-    "typeErrorsDetected": "အမျိုးအစား အမှားအယောက်",
-    "noChecks": "စစ်ဆေးချက်များ မရှိ",
-    "errorReporting": "အမှား မီးလက်ဆွဲခြင်း",
-    "errorReportingDescription": "နောက်ဆုံးသုံးသော အဆင့်သည် သင်္ကေတ်စီမေး အမှားများကို စုံထွင့်ထားသည် — အမည်မရှိသေးသောဗားရီးယား၊ အမျိုးအစားမကော္ဂျား၊ မလိုအပ်သလို စက်မှူးဆက်များ။ အမှားစရာမလိုင်းမလို မျှင့်ငန်းလုပ်ငယ့်အခါသာဘဲ။",
-    "semanticErrors": "သင်္ကေတ် အမှားများ",
-    "severity": "အလေးအနအား",
-    "message": "မက်ဆက်",
+    "result": "ရလဒ်",
+    "passed": "အောင်မြင်",
+    "failed": "မအောင်မြင်",
+    "unknown": "မသိ",
+    "typeErrorsDetected": "အမျိုးအစား အမှားများ တွေ့ရှိသည်",
+    "noChecks": "ပြရန် စစ်ဆေးချက်များ မရှိပါ",
+    "errorReporting": "အမှား အစီရင်ခံခြင်း",
+    "errorReportingDescription": "နောက်ဆုံးအဆင့်သည် အဓိပ္ပာယ်ဖော်ပြချက် အမှားအားလုံး — ကြေညာမထားသော variable၊ အမျိုးအစား မကိုက်ညီမှုနှင့် မမှန်ကန်သော method call များ — ကို စုစည်းသည်။ ဤစာရင်း ဗလာဖြစ်မှသာ ဘာသာပြန်ရှင်သည် code generation သို့ ဆက်လုပ်သည်။",
+    "semanticErrors": "အဓိပ္ပာယ်ဖော်ပြချက် အမှားများ",
+    "severity": "အရေးပါမှု",
+    "message": "မက်ဆေ့ချ်",
     "errors": "အမှားများ",
-    "warnings": "သတိပါကောင့်",
-    "reported": "မီးလက်ဆွဲပြီး",
-    "noErrors": "သင်္ကေတ် အမှားများ မတွေ့ရှိ!",
+    "warnings": "သတိပေးချက်များ",
+    "reported": "တင်ပြပြီး",
+    "noErrors": "အဓိပ္ပာယ်ဖော်ပြချက် အမှားများ မတွေ့ရှိပါ!",
     "symbolExplorer": "သင်္ကေတဇယား",
     "allKinds": "အမျိုးအစားအားလုံး",
-    "variable": "ဗားရီးယား",
-    "parameter": "သတ်မှတ်များ",
-    "field": "ဖိုင်းဒ်",
-    "method": "စက်မှူး",
-    "scope": "သင်္ကေတ်မျှဝမ်း",
-    "searchSymbols": "သင်္ကေတ်များ ရလိုက်...",
-    "symbolsMatch": "သင်္ကေတ်များ တည်ရှိ",
-    "scopeHierarchy": "သင်္ကေတ်မျှဝမ်းတည်ငဉ်း"
+    "variable": "variable",
+    "parameter": "parameter",
+    "field": "field",
+    "method": "method",
+    "scope": "နယ်ပယ်",
+    "searchSymbols": "သင်္ကေတများ ရှာဖွေရန်...",
+    "symbolsMatch": "သင်္ကေတများ ကိုက်ညီ",
+    "scopeHierarchy": "နယ်ပယ် အထက်အောက်"
   },
   "bytecode": {
     "noBytecode": "ဘိုက်ကုဒ် မထုတ်လုပ်ပါ",
     "pipeline": {
       "noMethods": "ဘိုက်ကုဒ်တွင် methods မတွေ့ပါ။",
       "listing": {
-        "title": "Bytecode Listing",
+        "title": "Bytecode Listing (ဘိုက်ကုဒ် စာရင်း)",
         "description": "javap output ကို ဖတ်ပြီး class structure, constant pool, နှင့် method bytecode instructions များကို opcode descriptions ဖြင့် ပြသသည်။"
       },
       "stackMachine": {
-        "title": "Stack Machine Simulation",
+        "title": "Stack Machine Simulation (stack စက် သရုပ်ဖော်ခြင်း)",
         "description": "JVM သည် operand stack ကို အသုံးပြု၍ bytecode ကို execute လုပ်သည်။"
       },
       "flow": {
-        "title": "Execution Flow",
+        "title": "Execution Flow (လုပ်ဆောင်မှု စီးဆင်းမှု)",
         "description": "JVM က bytecode instruction တစ်ခုချင်းစီကို ဘယ်လို process လုပ်သည်ကို အဆင့်ဆင့် ပြသသည်။"
       }
     },
     "peephole": {
-      "title": "Peephole Optimization",
+      "title": "Peephole Optimization (အနီးကပ် အကောင်းဆုံးဖြစ်အောင်)",
       "patternsFound": "ပုံစံများ တွေ့ရှိသည်"
     }
   },
@@ -595,30 +595,27 @@
   "codegen": {
     "noData": "ကုဒ်ဖန်တီးမှု ဒေတာ မရှိပါ",
     "tabs": {
-      "pipeline": "Dynamic",
-      "static": "Static"
+      "pipeline": "အဆင့်ဆင့်",
+      "static": "ခြုံငုံမြင်ကွင်း"
     },
     "phase1": {
-      "title": "Phase 1 — Instruction Selection",
-      "chapter": "Chapter 11"
+      "title": "အဆင့် ၁ — Instruction Selection"
     },
     "phase2": {
-      "title": "Phase 2 — Instruction Scheduling",
-      "chapter": "Chapter 12"
+      "title": "အဆင့် ၂ — Instruction Scheduling"
     },
     "phase3": {
-      "title": "Phase 3 — Register Allocation",
-      "chapter": "Chapter 13"
+      "title": "အဆင့် ၃ — Register Allocation"
     },
     "step0": {
-      "title": "TAC Generation",
+      "title": "TAC ဖန်တီးခြင်း",
       "description": "Expressions များကို three-address code (TAC) အဖြစ် ခွဲခြမ်းသည်။ instruction တစ်ခုစီတွင် operand သုံးခုထက်မက ပါဝင်သည်။ CFG ကို Optimizer တွင် ကြည့်ပါ။",
       "algorithm": "TAC Decomposition",
-      "viewDecomposition": "Decomposition",
-      "viewFullTac": "Full TAC"
+      "viewDecomposition": "ခွဲခြမ်းမှု",
+      "viewFullTac": "TAC အပြည့်အစုံ"
     },
     "step1": {
-      "title": "Dependence Graph",
+      "title": "Dependence Graph (မှီခိုမှု ဂရပ်)",
       "description": "Data (RAW), anti (WAR), output (WAW) dependencies များကို ရှာဖွေသည်။ critical path သည် အနိမ့်ဆုံး execution time ကို သတ်မှတ်သည်။",
       "algorithm": "Dependence Analysis"
     },
@@ -629,7 +626,7 @@
       "noData": "Instruction schedule တွက်ချက်နေသည်..."
     },
     "step3": {
-      "title": "Interference Graph",
+      "title": "Interference Graph (အနှောင့်အယှက် ဂရပ်)",
       "description": "တစ်ချိန်တည်း live ဖြစ်သော variables များသည် interfere လုပ်သည် — register တစ်ခုတည်း မျှဝေ၍ မရပါ။",
       "algorithm": "Liveness Analysis"
     },
@@ -688,8 +685,8 @@
   "pipeline": {
     "title": "ဘာသာပြန် လုပ်ငန်းစဉ်",
     "subtitle": "Java သည် သင့်ကုဒ်ကို ဘယ်လို ဘာသာပြန်သည်",
-    "subtitleLine1": "Java သည် ဘယ်လို",
-    "subtitleLine2": "ဘာသာပြန်သည်",
+    "subtitleLine1": "Java က သင့်ကုဒ်ကို",
+    "subtitleLine2": "ဘယ်လို ဘာသာပြန်သလဲ",
     "description": "လူဖတ်နိုင်သော အရင်းအမြစ်ကုဒ်မှ JVM အတွင်း native execution အထိ ခရီးကို လိုက်ပါ။ အဆင့်ရှစ်ဆင့်ဖြင့် သင့်ကုဒ်ကို စက်လုပ်ဆောင်နိုင်သည့်အရာသို့ အဆင့်ဆင့် ပြောင်းလဲပေးသည်။",
     "complete": "လုပ်ငန်းစဉ် ပြီးဆုံးပါပြီ",
     "completeHeadline": "စာသားမှ လုပ်ဆောင်ခြင်းသို့",
@@ -733,38 +730,38 @@
         "explanation1": "Lexer (ဇာတ်လုံး ခွဲခြမ်းစိတ်ဖြာရှင်) သည် သင့်အရင်းအမြစ်ကုဒ်ကို အက္ခရာတစ်ခုချင်းစီ ဖတ်ပြီး တိုကင်ဟု ခေါ်သည့် အဓိပ္ပာယ်ရှိသည့် ယူနစ်များအဖြစ် စုစည်းသည် — ဝါကျကို စကားလုံးတစ်ခုချင်းစီအဖြစ် ခွဲခြမ်းသကဲ့သို့ပင်။",
         "explanation2": "ဥပမာအားဖြင့် 'public' ဟူသည့် စကားလုံးသည် KEYWORD တိုကင်အဖြစ် ပြောင်းလဲပြီး 'HelloWorld' သည် IDENTIFIER တိုကင်အဖြစ်၊ '\"Hello, World!\"' သည် STRING_LITERAL တိုကင်အဖြစ် ပြောင်းလဲပါသည်။",
         "explanation3": "၎င်းသည် သင် ဖတ်တတ်အောင် သင်ယူခဲ့ပုံကဲ့သို့ပင် — ဝါကျများကို နားလည်နိုင်ခင် စကားလုံးတစ်ခုချင်းစီကို အရင် မှတ်မိသည်။ Lexer သည် နေရာလွတ်နှင့် မှတ်ချက်များကို လျစ်လျူရှုသည် — ၎င်းတို့သည် ပရိုဂရမ်၏ အဓိပ္ပာယ်ကို မထိခိုက်ပါ။",
-        "javaConcept": "Java တွင် ရှိးကီး ၆၇ ခု (class, public, static, void ကဲ့သို့)၊ identifier များ (သင်ဖန်တီးသည့် အမည်များ)၊ literal များ (သတ်မှတ်ထားသည့် တန်ဖိုးများ)၊ operator များ (+, -, =) နှင့် separator များ ({, }, ;) ရှိသည်။ Lexer သည် သင့်ကုဒ်၏ အစိတ်အပိုင်းတိုင်းကို အမျိုးအစားခွဲခြမ်းသည်။"
+        "javaConcept": "Java တွင် keyword ၆၇ ခု (class, public, static, void ကဲ့သို့)၊ identifier များ (သင်ဖန်တီးသည့် အမည်များ)၊ literal များ (သတ်မှတ်ထားသည့် တန်ဖိုးများ)၊ operator များ (+, -, =) နှင့် separator များ ({, }, ;) ရှိသည်။ Lexer သည် သင့်ကုဒ်၏ အစိတ်အပိုင်းတိုင်းကို အမျိုးအစားခွဲခြမ်းသည်။"
       },
       "syntax": {
         "title": "ဝါကျဖွဲ့စည်းပုံ ခွဲခြမ်းစိတ်ဖြာခြင်း",
         "subtitle": "မူလအဓိပ္ပာယ် ဝါကျပင် (AST)",
         "explanation1": "Parser သည် ဖြောင့်ဖြောင့်တန်းတန်း တိုကင်စာရင်းကို ယူပြီး AST ဟု ခေါ်သည့် သစ်ပင်ဖွဲ့စည်းပုံအဖြစ် စီစဉ်သည်။ ၎င်းသည် သင့်ကုဒ်၏ သဒ္ဒါဖွဲ့စည်းပုံကို ပြသည်။",
-        "explanation2": "၎င်းကို အင်္ဂလိပ်စာတန်းမှာ ဝါကျကို မြေပုံဆွဲသကဲ့သို့ — ခေါင်းစဉ်၊ ကြွယ်ကြွယ်၊ ချဉ်းကပ်မှုနှင့် ၎င်းတို့၏ ဆက်စပ်မှုများကို ခွဲခြမ်းသကဲ့သို့ တွေးကြည့်ပါ။ AST သည် သင့်ကုဒ်၏ အစိတ်အပိုင်းများသည် အခြားအစိတ်အပိုင်းများကို ဘယ်လို ပါဝင်ကြောင်း ပြသည်။",
+        "explanation2": "၎င်းကို အင်္ဂလိပ်စာတန်းမှာ ဝါကျကို မြေပုံဆွဲသကဲ့သို့ — ကတ္တား၊ ကြိယာ၊ ကံနှင့် ၎င်းတို့၏ ဆက်စပ်မှုများကို ခွဲခြမ်းသကဲ့သို့ တွေးကြည့်ပါ။ AST သည် သင့်ကုဒ်၏ အစိတ်အပိုင်းများသည် အခြားအစိတ်အပိုင်းများကို ဘယ်လို ပါဝင်ကြောင်း ပြသည်။",
         "explanation3": "သစ်ပင်ဖွဲ့စည်းပုံသည် နောက်ဆက်တွဲ အဆင့်များအတွက် အဆင့်ဆင့် နားလည်ရလွယ်ကူစေသည် — class တစ်ခုတွင် method များပါဝင်ပြီး method တစ်ခုတွင် statement များပါဝင်ကာ statement တစ်ခုတွင် expression များပါဝင်သည်။ node တိုင်းသည် ၎င်း၏ အမျိုးအစား၊ တည်နေရာနှင့် child များကို သိရှိသည်။",
         "javaConcept": "Java တွင် တင်းကျပ်သည့် သဒ္ဒါစည်းမျဉ်းများ ရှိသည် (Java Language Specification တွင် ဖော်ပြထားသည်)။ Parser သည် သင့်တိုကင်များသည် ဤစည်းမျဉ်းများကို လိုက်နာကြောင်း စစ်ဆေးသည် — ဥပမာအားဖြင့် '{' တစ်ခုချင်းစီတွင် ကိုက်ညီသည့် '}' ရှိပြီး statement များသည် ';' ဖြင့် ပြီးဆုံးရန်။ မဟုတ်ပါက syntax error ရရှိပါသည်။"
       },
       "semantic": {
         "title": "အဓိပ္ပာယ်ဖော်ပြချက် ခွဲခြမ်းစိတ်ဖြာခြင်း",
-        "subtitle": "သင်္ကေတဇယားနှင့် အမျိုးအစား စစ်ဆေးခြင်း",
-        "explanation1": "အဓိပ္ပာယ်ဖော်ပြချက် ခွဲခြမ်းစိတ်ဖြာခြင်းသည် သင့်ကုဒ်သည် တကယ်အဓိပ္ပာယ်ရှိမရှိကို စစ်ဆေးသည် — သဒ္ဒါအရသာမက ယုတ္တိအရပါဖြစ်သည်။ ၎င်းသည် သင်္ကေတဇယားတစ်ခုကို တည်ဆောက်သည် — သင့်ပရိုဂရမ်ရှိ အမည်တိုင်းနှင့် ၎င်း၏ အဓိပ္ပာယ်ကို ဖော်ပြသည့် အဘိဓာန်ဖြစ်သည်။",
-        "explanation2": "၎င်းကို စာအုပ်တစ်အုပ်အတွက် အဘိဓာန်တစ်ခုလို တွေးကြည့်ပါ။ 'System.out.println()' ကို ဖတ်သောအခါ ဘာသာပြန်ရှင်သည် 'System' ကို ၎င်း၏ဇယားတွင် ရှာဖွေပြီး java.lang ရှိ class တစ်ခုဖြစ်ကြောင်း ရှာဖွေကာ 'out' သည် PrintStream အမျိုးအစား static field ဖြစ်ပြီး 'println(String)' သည် ၎င်းပေါ်ရှိ တရားဝင် method ဖြစ်ကြောင်း စစ်ဆေးသည်။",
-        "explanation3": "ဤအဆင့်သည် ကြေညာမထားသည့် variable အသုံးပြုခြင်း၊ argument အမျိုးအစား မှားယွင်းစွာ method ခေါ်ဆိုခြင်း သို့မဟုတ် String ကို int သို့ သတ်မှတ်ရန် ကြိုးစားခြင်းကဲ့သို့သော အမှားများကို ဖမ်းယူသည်။ ဘာသာပြန်ရှင်သည် သင်ရေးထားသည့်အရာကို ဘာသာစကား၏ စည်းမျဉ်းများနှင့် နှိုင်းယှဉ်စစ်ဆေးသည်။",
+        "subtitle": "နယ်ပယ်၊ သင်္ကေတဇယားနှင့် အမျိုးအစား ခွဲခြားစစ်ဆေးခြင်း",
+        "explanation1": "အဓိပ္ပာယ်ဖော်ပြချက် ခွဲခြမ်းစိတ်ဖြာခြင်းသည် သင့်ကုဒ်သည် တကယ်အဓိပ္ပာယ်ရှိမရှိကို စစ်ဆေးသည် — သဒ္ဒါအရသာမက ယုတ္တိအရပါဖြစ်သည်။ ၎င်းသည် နယ်ပယ် (scope) အထက်အောက် သစ်ပင်ကို တည်ဆောက်သည် — package → class → method → block — မည်သည့်အရာက မည်သည့်နေရာတွင် မြင်ရသည်ကို ခြေရာခံသည်။",
+        "explanation2": "၎င်းကို စာအုပ်တစ်အုပ်အတွက် အဘိဓာန်တစ်ခုလို တွေးကြည့်ပါ။ 'System.out.println()' ကို ဖတ်သောအခါ ဘာသာပြန်ရှင်သည် 'System' ကို ၎င်း၏ဇယားတွင် ရှာဖွေ၍ java.lang ရှိ class တစ်ခုဖြစ်ကြောင်း တွေ့ရှိကာ 'out' သည် PrintStream အမျိုးအစား static field ဖြစ်ပြီး 'println(String)' သည် ၎င်းပေါ်ရှိ တရားဝင် method ဖြစ်ကြောင်း စစ်ဆေးသည်။",
+        "explanation3": "ဤအဆင့်သည် ကြေညာမထားသည့် variable အသုံးပြုခြင်း၊ argument အမျိုးအစား မှားယွင်းစွာ method ခေါ်ဆိုခြင်း သို့မဟုတ် String ကို int သို့ သတ်မှတ်ရန် ကြိုးစားခြင်းကဲ့သို့သော အမှားများကို ဖမ်းယူသည်။ စစ်ဆေးမှုအားလုံး အောင်မြင်မှသာ ဘာသာပြန်ရှင်သည် code generation သို့ ဆက်လုပ်သည်။",
         "javaConcept": "Java သည် static type ရှိသည် — variable တိုင်းတွင် ကြေညာထားသည့် အမျိုးအစားရှိရမည်ဖြစ်ပြီး အမျိုးအစားများ ကိုက်ညီရမည်ဖြစ်သည်။ သင်္ကေတဇယားသည် class အမည်များ၊ method လက်မှတ်များ၊ variable အမျိုးအစားများနှင့် scope (ဘယ်နေရာတွင် မြင်ရသည်) ကို ခြေရာခံသည်။ ၎င်းသည် ဘာသာပြန်ရှင်သည် သင့်ပရိုဂရမ်၏ အဓိပ္ပာယ်ကို နားလည်အောင် ဆောက်ထားသည့် မြေပုံတစ်ခုလိုပင်။"
       },
       "ir": {
         "title": "အလယ်အလတ် ကိုယ်စားပြုပုံစံ",
         "subtitle": "သုံးလုံးတန်းကုဒ် (IR)",
         "explanation1": "front end ၏ နောက်ဆုံးအလုပ်မှာ IR (Intermediate Representation) ဖန်တီးခြင်းဖြစ်သည် — ၎င်းသည် ကွန်ပလိုင်လာ၏ အဓိပ္ပာယ်သတ်မှတ်ထားသော ကုဒ်ပုံစံဖြစ်သည်။ TAC (Three-Address Code) သည် ဂန္တဝင် IR တစ်မျိုးဖြစ်ပြီး ညွှန်ကြားချက်တိုင်းတွင် operand အများဆုံး သုံးခုသာ ပါဝင်သည် — ထည့်သွင်းမှု နှစ်ခုနှင့် ထွက်ရလဒ် တစ်ခု။",
-        "explanation2": "၎င်းကို သင့်ကုဒ်၏ ရိုးရှင်းပြီး လျှော့ချထားသည့် ဗားရှင်းတစ်ခုလို တွေးကြည့်ပါ — ရှုပ်ထွေးသည့် သင်္ချာညီမျှခြင်းကို အဆင့်ဆင့် လျှော့ချသကဲ့သို့။ ရှုပ်ထွေးသည့် expression များကို ရိုးရှင်းသည့် အပိုင်းများအဖြစ် ခွဲခြမ်းသည် — ဤဟာကို ဖွင့်ပါ၊ ဟိုဟာကို ခေါ်ပါ၊ ရလဒ်ကို ဒီမှာ သိမ်းပါ။",
+        "explanation2": "၎င်းကို သင့်ကုဒ်၏ ရိုးရှင်းပြီး လျှော့ချထားသည့် ဗားရှင်းတစ်ခုလို တွေးကြည့်ပါ — ရှုပ်ထွေးသည့် သင်္ချာညီမျှခြင်းကို အဆင့်ဆင့် လျှော့ချသကဲ့သို့။ ရှုပ်ထွေးသည့် expression များကို ရိုးရှင်းသည့် အပိုင်းများအဖြစ် ခွဲခြမ်းသည် — ဤတန်ဖိုးကို ဝန်တင်ပါ၊ ထို method ကို ခေါ်ပါ၊ ရလဒ်ကို ဤနေရာတွင် သိမ်းပါ။",
         "explanation3": "ဤအချက်မှစ၍ ကွန်ပလိုင်လာသည် သင့်ရင်းမြစ်စာသားကို ပြန်မကြည့်တော့ပါ — IR ပေါ်တွင်သာ အလုပ်လုပ်သည်။ ထို့ကြောင့် IR သည် အရေးကြီးသည် — နောက်အဆင့်တိုင်း (optimizer, back end) သည် ဤကိုယ်စားပြုပုံစံတစ်ခုတည်းကိုသာ ဖတ်ရေးလုပ်သည်။",
-        "javaConcept": "ကျွန်တော်တို့၏ ဥပမာတွင် System.out.println('Hello, World!') method call ကို — System class ကို ဖွင့်ခြင်း၊ ၎င်း၏ out field ကို ဝင်ရောက်ခြင်း၊ string ကြွယ်ဝမှုကို ဖွင့်ခြင်း၊ ပြီးနောက် println ကို ခေါ်ဆိုခြင်းအဖြစ် ခွဲခြမ်းစိတ်ဖြာပါသည်။ အဆင့်တိုင်းသည် ရိုးရှင်းသည့် ညွှန်ကြားချက် တစ်ခုဖြစ်သည်။"
+        "javaConcept": "ကျွန်တော်တို့၏ ဥပမာတွင် System.out.println('Hello, World!') method call ကို — System class ကို ဝန်တင်ခြင်း၊ ၎င်း၏ out field ကို ဝင်ရောက်ခြင်း၊ string constant ကို ဝန်တင်ခြင်း၊ ပြီးနောက် println ကို ခေါ်ဆိုခြင်းအဖြစ် ခွဲခြမ်းစိတ်ဖြာပါသည်။ အဆင့်တိုင်းသည် ရိုးရှင်းသည့် ညွှန်ကြားချက် တစ်ခုဖြစ်သည်။"
       },
       "bytecode": {
         "title": "ဘိုက်ကုဒ်",
         "subtitle": "JVM ညွှန်ကြားချက်များ",
         "explanation1": "back end သည် optimize ပြီးသော IR ကို JVM instruction set သို့ ပြောင်းလဲပေးသည် — IR operation တစ်ခုစီအတွက် မည်သည့် instruction သုံးမည် (instruction selection)၊ မည်သည့်အစီအစဉ်ဖြင့် လုပ်ဆောင်မည် (scheduling) နှင့် မည်သည့် register များတွင် တန်ဖိုးများ ထားမည် (allocation) ကို ဆုံးဖြတ်သည်။ နောက်ဆုံးထွက်ရလဒ်သည် JVM လုပ်ဆောင်နိုင်သော bytecode ဖြစ်ပြီး .class ဖိုင်များတွင် သိမ်းဆည်းပါသည်။",
         "explanation2": "ဘိုက်ကုဒ်ကို ပြင်ဆင်ပြီးသား ချက်ပြုတ်နည်းတစ်ခုလို တွေးကြည့်ပါ — ညွှန်ကြားချက်တိုင်းသည် တိကျပြီး နံပါတ်တပ်ထားကာ လိုက်နာဖို့ အဆင်သင့်ဖြစ်သည်။ JVM သည် ဤညွှန်ကြားချက်များကို တစ်ခုချင်းစီ ဖတ်ပြီး သင့်စက်ပေါ်တွင် အောင်မြင်စွာ ဆောင်ရွက်သည်။",
-        "explanation3": "Java သည် 'တစ်ကြိမ်ရေး၊ ဘယ်နေရာမဆို လုပ်ဆောင်' ဖြစ်သည် — JVM ရှိသည့် ဖုန်းမည်သည့်ဖုန်းတွင်မဆို ဘိုက်ကုဒ်အတူတူကို လုပ်ဆောင်သည်။ ဘိုက်ကုဒ်သည် platform-independent ဖြစ်ပြီး JVM သည် platform-specific အသေးစိတ်များကို ကိုင်တွယ်သည်။",
+        "explanation3": "Java သည် 'တစ်ကြိမ်ရေး၊ ဘယ်နေရာမဆို လုပ်ဆောင်' ဖြစ်သည် — JVM ရှိသည့် မည်သည့် ကိရိယာတွင်မဆို (Windows, Mac သို့မဟုတ် Linux) ဘိုက်ကုဒ်အတူတူကို လုပ်ဆောင်သည်။ ဘိုက်ကုဒ်သည် platform-independent ဖြစ်ပြီး JVM သည် platform-specific အသေးစိတ်များကို ကိုင်တွယ်သည်။",
         "javaConcept": "javac ဘာသာပြန်ရှင်သည် ဘိုက်ကုဒ်ပါဝင်သည့် .class ဖိုင်များကို ထုတ်လုပ်သည်။ ၎င်းတို့ကို javap -c (Java class file disassembler) ဖြင့် စစ်ဆေးနိုင်သည်။ ဘိုက်ကုဒ်ညွှန်ကြားချက်တိုင်းသည် byte တစ်ခုတည်း ရှည်လျားပြီး opcode 0-255 ရှိသည်။"
       },
       "optimizer": {

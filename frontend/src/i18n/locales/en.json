@@ -27,7 +27,7 @@
     },
     "contactUs": "Contact Us",
     "why": {
-      "label": "// HOW WE SOLVE THE PROBLEM",
+      "label": "// WHY_THIS_EXISTS",
       "headline": "Compilers are black boxes.",
       "headlineAccent": "Open yours.",
       "body": "Most tools show compile success or failure. This one shows how Java becomes bytecode — lex, parse, AST, semantic analysis, bytecode generation — then runs the result.",
@@ -360,8 +360,8 @@
       "columnCount": "Count",
       "foundInCode": "Found in your code",
       "notFoundInCode": "Not present",
-      "tableView": "Table",
-      "examplesView": "Try It",
+      "tableView": "Java Program",
+      "examplesView": "Try Yourself",
       "examplesHint": "Try It — type your own RE and see its parse tree. Precedence: () > * + ? > concat > |",
       "tryOwnRe": "Try your own RE:",
       "parseTreeLabel": "Parse tree",
@@ -392,8 +392,8 @@
       "acceptState": "Accept",
       "epsilon": "\u03B5",
       "overview": "Overview",
-      "flatView": "Full",
-      "buildView": "Try It",
+      "flatView": "Java Program",
+      "buildView": "Try Yourself",
       "caption": "How it works: each token pattern becomes a small machine with one start and one accept. The unified start fans out to all patterns via ε.",
       "overviewHint": "The unified start state fans out via \u03B5-transitions into one machine per token pattern — select a token type below to inspect how it was built.",
       "flatHint": "Full combined NFA: every state and ε/symbol edge laid left→right in layers — the true combined machine.",
@@ -454,8 +454,8 @@
       "grammarRules": "Grammar Production Rules",
       "rewrites": "rules",
       "noRules": "No grammar rules exercised by this program",
-      "tableView": "Your Program",
-      "tryItView": "Try It",
+      "tableView": "Java Program",
+      "tryItView": "Try Yourself",
       "tryItHint": "Try It — type your own expression and watch the rightmost derivation grow, then see its parse tree. Example: a + b × c",
       "tryOwnExpr": "Try your own expression:",
       "tryGrammarTitle": "Example grammar — Classic Expression Grammar",
@@ -470,8 +470,8 @@
       "empty": "stack empty",
       "awaitingInput": "waiting for tokens",
       "accepted": "INPUT ACCEPTED",
-      "tableView": "Your Program",
-      "tryItView": "Try It",
+      "tableView": "Java Program",
+      "tryItView": "Try Yourself",
       "tryItHint": "Try It — type your own expression and watch the leftmost top-down (LL(1)) parser predict, match, and accept. Example: a + b × c",
       "tryOwnExpr": "Try your own expression:",
       "tryGrammarTitle": "Example grammar — Right-recursive (LL(1))",
@@ -480,8 +480,8 @@
     "step3": {
       "title": "Shift-Reduce Parser",
       "description": "Tokens are shifted from the input buffer onto the parse stack one at a time. Whenever the top of the stack matches the right-hand side of a grammar rule, the parser reduces those symbols into the left-hand side non-terminal.",
-      "tableView": "Your Program",
-      "tryItView": "Try It",
+      "tableView": "Java Program",
+      "tryItView": "Try Yourself",
       "tryItHint": "Try It — type your own expression and watch the bottom-up parser shift tokens, find handles, and reduce to Goal. Example: a + b × c",
       "tryOwnInput": "Try your own expression:",
       "tryGrammarTitle": "Example grammar — augmented with Goal′ → Goal",
@@ -495,8 +495,8 @@
     "step4": {
       "title": "Abstract Syntax Tree Construction",
       "description": "Each reduction builds a node of the Abstract Syntax Tree. Watch the tree grow from the leaves up — the final output of syntax analysis is the complete AST handed to semantic analysis.",
-      "tableView": "Your Program",
-      "tryItView": "Try It",
+      "tableView": "Java Program",
+      "tryItView": "Try Yourself",
       "tryItHint": "Try It — type your own expression and watch its abstract syntax tree grow: operators become internal nodes, names and numbers become leaves. Example: a + b × c",
       "tryOwnInput": "Try your own expression:",
       "nodes": "nodes"
@@ -599,16 +599,13 @@
       "static": "Static"
     },
     "phase1": {
-      "title": "Phase 1 — Instruction Selection",
-      "chapter": "Chapter 11"
+      "title": "Phase 1 — Instruction Selection"
     },
     "phase2": {
-      "title": "Phase 2 — Instruction Scheduling",
-      "chapter": "Chapter 12"
+      "title": "Phase 2 — Instruction Scheduling"
     },
     "phase3": {
-      "title": "Phase 3 — Register Allocation",
-      "chapter": "Chapter 13"
+      "title": "Phase 3 — Register Allocation"
     },
     "step0": {
       "title": "TAC Generation",

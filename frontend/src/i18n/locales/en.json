@@ -27,7 +27,7 @@
     },
     "contactUs": "Contact Us",
     "why": {
-      "label": "// WHY_THIS_EXISTS",
+      "label": "// HOW WE SOLVE THE PROBLEM",
       "headline": "Compilers are black boxes.",
       "headlineAccent": "Open yours.",
       "body": "Most tools show compile success or failure. This one shows how Java becomes bytecode — lex, parse, AST, semantic analysis, bytecode generation — then runs the result.",

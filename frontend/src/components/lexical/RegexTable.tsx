@@ -141,8 +141,8 @@ const RegexTable: React.FC<RegexTableProps> = ({ groups, isPlaying, isCompleted 
 
       <div className="flex flex-wrap gap-1.5 mb-3">
         {[
-          { key: 'TABLE', labelKey: 'lexical.step1.tableView', fallback: 'Table' },
-          { key: 'EXAMPLES', labelKey: 'lexical.step1.examplesView', fallback: 'Try It' },
+          { key: 'TABLE', labelKey: 'lexical.step1.tableView', fallback: 'Java Program' },
+          { key: 'EXAMPLES', labelKey: 'lexical.step1.examplesView', fallback: 'Try Yourself' },
         ].map(v => tabBtn(t(v.labelKey), v.key))}
       </div>
 

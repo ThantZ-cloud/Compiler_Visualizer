@@ -117,8 +117,8 @@ const ShiftReduceAnimation: React.FC<ShiftReduceAnimationProps> = ({
 
       <div className="flex flex-wrap gap-1.5 mb-3">
         {[
-          { key: 'TABLE' as const, labelKey: 'syntax.step3.tableView', fallback: 'Your Program' },
-          { key: 'TRYIT' as const, labelKey: 'syntax.step3.tryItView', fallback: 'Try It' },
+          { key: 'TABLE' as const, labelKey: 'syntax.step3.tableView', fallback: 'Java Program' },
+          { key: 'TRYIT' as const, labelKey: 'syntax.step3.tryItView', fallback: 'Try Yourself' },
         ].map(v => tabBtn(t(v.labelKey, { defaultValue: v.fallback }), v.key))}
       </div>
 

@@ -215,8 +215,8 @@ function prunedKeywordItems(root: ReNode, keywords: string[]): { items: AltItem[
 
 const VIEW_TABS: Array<{ key: string; labelKey: string; fallback: string }> = [
   { key: 'OVERVIEW', labelKey: 'lexical.step2.overview', fallback: 'OVERVIEW' },
-  { key: 'FLAT', labelKey: 'lexical.step2.flatView', fallback: 'FULL' },
-  { key: 'BUILD', labelKey: 'lexical.step2.buildView', fallback: 'TRY IT' },
+  { key: 'FLAT', labelKey: 'lexical.step2.flatView', fallback: 'JAVA PROGRAM' },
+  { key: 'BUILD', labelKey: 'lexical.step2.buildView', fallback: 'TRY YOURSELF' },
 ];
 
 const NfaGraph: React.FC<NfaGraphProps> = ({ nfa, keywords = [], groupCounts = {}, isPlaying, isCompleted }) => {

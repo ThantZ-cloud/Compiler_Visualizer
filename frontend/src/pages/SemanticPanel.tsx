@@ -168,16 +168,16 @@ interface SymbolTableJson {
 }
 
 const KIND_COLORS: Record<string, string> = {
-  package: '#569cd6',
-  import: '#6a9955',
-  class: '#4ec9b0',
-  interface: '#4ec9b0',
-  enum: '#4ec9b0',
-  record: '#4ec9b0',
-  method: '#dcdcaa',
-  constructor: '#dcdcaa',
-  field: '#569cd6',
-  initializer: '#c586c0',
+  package: 'var(--color-chart-default)',
+  import: 'var(--color-chart-comment)',
+  class: 'var(--color-chart-type)',
+  interface: 'var(--color-chart-type)',
+  enum: 'var(--color-chart-type)',
+  record: 'var(--color-chart-type)',
+  method: 'var(--color-chart-annotation)',
+  constructor: 'var(--color-chart-annotation)',
+  field: 'var(--color-chart-default)',
+  initializer: 'var(--color-chart-keyword)',
 };
 
 const SemanticPanel: React.FC = () => {
@@ -242,8 +242,9 @@ const SemanticPanel: React.FC = () => {
                     <span
                       className="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded"
                       style={{
-                        color: KIND_COLORS[row.kind] || '#d4d4d4',
-                        background: `${KIND_COLORS[row.kind] || '#d4d4d4'}15`,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        color: KIND_COLORS[row.kind] || ('var(--color-chart-separator)' as any),
+                        background: `color-mix(in srgb, ${KIND_COLORS[row.kind] || 'var(--color-chart-separator)'} 15%, transparent)`,
                       }}
                     >
                       {row.kind}

@@ -17,43 +17,43 @@ interface AstTreeProps {
   astJson: string;
 }
 
-// Colors matching VS Code theme
+// Light-aware: CSS vars resolve per [data-theme]
 const NODE_COLORS: Record<string, string> = {
-  'CompilationUnit': '#4ec9b0',
-  'PackageDeclaration': '#4ec9b0',
-  'ImportDeclaration': '#808080',
-  'ClassOrInterfaceDeclaration': '#4ec9b0',
-  'EnumDeclaration': '#4ec9b0',
-  'RecordDeclaration': '#4ec9b0',
-  'MethodDeclaration': '#dcdcaa',
-  'ConstructorDeclaration': '#dcdcaa',
-  'FieldDeclaration': '#569cd6',
-  'Parameter': '#9cdcfe',
-  'VariableDeclarator': '#9cdcfe',
-  'BlockStmt': '#569cd6',
-  'ExpressionStmt': '#d4d4d4',
-  'ReturnStmt': '#c586c0',
-  'IfStmt': '#c586c0',
-  'ForStmt': '#c586c0',
-  'WhileStmt': '#c586c0',
-  'MethodCallExpr': '#dcdcaa',
-  'NameExpr': '#9cdcfe',
-  'FieldAccessExpr': '#9cdcfe',
-  'StringLiteralExpr': '#ce9178',
-  'IntegerLiteralExpr': '#b5cea8',
-  'LongLiteralExpr': '#b5cea8',
-  'DoubleLiteralExpr': '#b5cea8',
-  'BooleanLiteralExpr': '#569cd6',
-  'CharLiteralExpr': '#ce9178',
-  'BinaryExpr': '#d4d4d4',
-  'UnaryExpr': '#d4d4d4',
-  'AssignExpr': '#d4d4d4',
-  'ObjectCreationExpr': '#4ec9b0',
-  'TypeDeclaration': '#4ec9b0',
+  'CompilationUnit': 'var(--color-chart-type)',
+  'PackageDeclaration': 'var(--color-chart-type)',
+  'ImportDeclaration': 'var(--color-text-muted)',
+  'ClassOrInterfaceDeclaration': 'var(--color-chart-type)',
+  'EnumDeclaration': 'var(--color-chart-type)',
+  'RecordDeclaration': 'var(--color-chart-type)',
+  'MethodDeclaration': 'var(--color-chart-annotation)',
+  'ConstructorDeclaration': 'var(--color-chart-annotation)',
+  'FieldDeclaration': 'var(--color-chart-default)',
+  'Parameter': 'var(--color-chart-identifier)',
+  'VariableDeclarator': 'var(--color-chart-identifier)',
+  'BlockStmt': 'var(--color-chart-default)',
+  'ExpressionStmt': 'var(--color-chart-separator)',
+  'ReturnStmt': 'var(--color-chart-keyword)',
+  'IfStmt': 'var(--color-chart-keyword)',
+  'ForStmt': 'var(--color-chart-keyword)',
+  'WhileStmt': 'var(--color-chart-keyword)',
+  'MethodCallExpr': 'var(--color-chart-annotation)',
+  'NameExpr': 'var(--color-chart-identifier)',
+  'FieldAccessExpr': 'var(--color-chart-identifier)',
+  'StringLiteralExpr': 'var(--color-chart-string)',
+  'IntegerLiteralExpr': 'var(--color-chart-number)',
+  'LongLiteralExpr': 'var(--color-chart-number)',
+  'DoubleLiteralExpr': 'var(--color-chart-number)',
+  'BooleanLiteralExpr': 'var(--color-chart-default)',
+  'CharLiteralExpr': 'var(--color-chart-string)',
+  'BinaryExpr': 'var(--color-chart-separator)',
+  'UnaryExpr': 'var(--color-chart-separator)',
+  'AssignExpr': 'var(--color-chart-separator)',
+  'ObjectCreationExpr': 'var(--color-chart-type)',
+  'TypeDeclaration': 'var(--color-chart-type)',
 };
 
 function getNodeColor(type: string): string {
-  return NODE_COLORS[type] || '#d4d4d4';
+  return NODE_COLORS[type] || 'var(--color-chart-separator)';
 }
 
 function getNodeLabel(type: string, name?: string): string {
@@ -298,7 +298,7 @@ const AstTree: React.FC<AstTreeProps> = ({ astJson }) => {
       {selectedNode && (
         <div className="ast-node-detail">
           <span className="detail-label">{t('ast.selected')}</span>
-          <span className="detail-type" style={{ backgroundColor: getNodeColor(selectedNode.type) + '33', color: getNodeColor(selectedNode.type) }}>
+          <span className="detail-type" style={{ backgroundColor: `color-mix(in srgb, ${getNodeColor(selectedNode.type)} 20%, transparent)`, color: getNodeColor(selectedNode.type) }}>
             {selectedNode.type}
           </span>
           {selectedNode.name && <span className="detail-name">{selectedNode.name}</span>}

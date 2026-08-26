@@ -83,7 +83,7 @@ const BytecodeListing: React.FC<BytecodeListingProps> = ({ bytecode, isPlaying, 
         return (
           <div
             key={mi}
-            className={`bg-[var(--color-card)] border border-[var(--color-border)] transition-all duration-300 ${
+            className={`bg-[var(--color-card)] border border-[var(--color-border)] transition-all duration-500 ${
               visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
             }`}
           >
@@ -95,39 +95,44 @@ const BytecodeListing: React.FC<BytecodeListingProps> = ({ bytecode, isPlaying, 
               </span>
             </div>
             <div className="p-2">
-              {method.instructions.map((instr, ii) => (
-                <div
-                  key={ii}
-                  className={`flex items-center gap-3 text-[10px] font-mono py-0.5 px-2 transition-colors ${
-                    hoveredInstr === ii ? 'bg-[rgba(0,255,136,0.06)]' : ''
-                  }`}
-                  onMouseEnter={() => setHoveredInstr(ii)}
-                  onMouseLeave={() => setHoveredInstr(null)}
-                >
-                  <span className="text-[var(--color-text-muted)] w-8 text-right shrink-0 text-[9px] sm:text-[10px]">{instr.offset}:</span>
-                  <span className="w-20 sm:w-28 shrink-0 text-[9px] sm:text-[10px]" style={{ color: getOpcodeColor(instr.opcode) }}>
-                    {instr.opcode}
-                  </span>
-                  <span className="text-[var(--color-text-dim)] break-all text-[9px] sm:text-[10px]">{instr.operands}</span>
-                  {hoveredInstr === ii && (
-                    <span className="hidden lg:ml-auto lg:flex flex-col items-end gap-0.5 text-[8px] font-mono min-w-[180px] xl:min-w-[220px]">
-                      <span className="text-[var(--color-text)]">
-                        {getOpcodeDetails(instr.opcode).description}
-                      </span>
-                      <span className="text-[#FFB000]">
-                        {getOpcodeDetails(instr.opcode).category}
-                      </span>
-                      <span className="text-[var(--color-text-dim)] italic leading-snug text-right">
-                        {getOpcodeDetails(instr.opcode).pattern}
-                      </span>
-                      <span className="text-[var(--color-text-muted)]">
-                        selection cost: {getOpcodeDetails(instr.opcode).cost}
-                        {getOpcodeDetails(instr.opcode).example && ` · e.g. ${getOpcodeDetails(instr.opcode).example}`}
-                      </span>
+              {method.instructions.map((instr, ii) => {
+                const instrVisible = visibleMethods.has(mi);
+                return (
+                  <div
+                    key={ii}
+                    className={`flex items-center gap-3 text-[10px] font-mono py-0.5 px-2 transition-all duration-300 ${
+                      instrVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1'
+                    } ${
+                      hoveredInstr === ii ? 'bg-[rgba(0,255,136,0.06)]' : ''
+                    }`}
+                    onMouseEnter={() => setHoveredInstr(ii)}
+                    onMouseLeave={() => setHoveredInstr(null)}
+                  >
+                    <span className="text-[var(--color-text-muted)] w-8 text-right shrink-0 text-[9px] sm:text-[10px]">{instr.offset}:</span>
+                    <span className="w-20 sm:w-28 shrink-0 text-[9px] sm:text-[10px]" style={{ color: getOpcodeColor(instr.opcode) }}>
+                      {instr.opcode}
                     </span>
-                  )}
-                </div>
-              ))}
+                    <span className="text-[var(--color-text-dim)] break-all text-[9px] sm:text-[10px]">{instr.operands}</span>
+                    {hoveredInstr === ii && (
+                      <span className="hidden lg:ml-auto lg:flex flex-col items-end gap-0.5 text-[8px] font-mono min-w-[180px] xl:min-w-[220px]">
+                        <span className="text-[var(--color-text)]">
+                          {getOpcodeDetails(instr.opcode).description}
+                        </span>
+                        <span className="text-[#FFB000]">
+                          {getOpcodeDetails(instr.opcode).category}
+                        </span>
+                        <span className="text-[var(--color-text-dim)] italic leading-snug text-right">
+                          {getOpcodeDetails(instr.opcode).pattern}
+                        </span>
+                        <span className="text-[var(--color-text-muted)]">
+                          selection cost: {getOpcodeDetails(instr.opcode).cost}
+                          {getOpcodeDetails(instr.opcode).example && ` · e.g. ${getOpcodeDetails(instr.opcode).example}`}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
               {method.instructions.length === 0 && (
                 <div className="text-[9px] text-[var(--color-text-muted)] font-mono px-2 py-1">
                   (no instructions)

@@ -11,7 +11,7 @@ interface LoginModalProps {
 
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegister }) => {
   const { t } = useTranslation();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
     setError('');
     setLoading(true);
     try {
-      await login(username, password);
+      await login(email, password);
       onClose();
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -38,7 +38,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
 
   return (
     <div
-      className="fixed inset-0 bg-[rgba(10,10,15,0.85)] flex items-center justify-center z-[100] backdrop-blur-[4px]"
+      className="fixed inset-0 bg-[var(--color-backdrop)] flex items-center justify-center z-[100] backdrop-blur-[4px]"
       onClick={onClose}
     >
       <div
@@ -65,15 +65,15 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
           )}
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="login-username" className="text-[10px] font-bold text-[var(--color-text-dim)] font-display tracking-[0.12em] uppercase">
-              {t('auth.username')}
+            <label htmlFor="login-email" className="text-[10px] font-bold text-[var(--color-text-dim)] font-display tracking-[0.12em] uppercase">
+              {t('auth.email')}
             </label>
             <input
-              id="login-username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder={t('auth.loginUsernamePlaceholder')}
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t('auth.loginEmailPlaceholder')}
               required
               autoFocus
               className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"

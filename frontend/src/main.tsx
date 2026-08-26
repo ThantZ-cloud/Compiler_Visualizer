@@ -5,9 +5,14 @@ import './i18n'
 import './index.css'
 import { AuthProvider } from './context/AuthContext'
 import { CompileProvider } from './context/CompileContext'
-import { ThemeProvider } from './context/ThemeContext'
+import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { LanguageProvider } from './context/LanguageContext'
 import ErrorBoundary from './components/ErrorBoundary'
+
+function ThemedToaster() {
+  const { resolvedTheme } = useTheme()
+  return <Toaster position="bottom-right" theme={resolvedTheme} />
+}
 import Layout from './components/Layout'
 import LandingPage from './pages/LandingPage'
 import AboutPage from './pages/AboutPage'
@@ -28,7 +33,7 @@ createRoot(document.getElementById('root')!).render(
         <LanguageProvider>
           <AuthProvider>
             <CompileProvider>
-              <Toaster position="bottom-right" theme="dark" />
+              <ThemedToaster />
               <Routes>
                 <Route element={<Layout />}>
                   <Route path="/" element={<LandingPage />} />

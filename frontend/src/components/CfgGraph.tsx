@@ -10,13 +10,13 @@ interface CfgGraphProps {
 }
 
 const COLOR_MAP: Record<string, { bg: string; border: string; text: string; headerBg: string }> = {
-  entry: { bg: '#161622', border: '#8A2BE2', text: '#D8BFD8', headerBg: 'rgba(138, 43, 226, 0.25)' },
-  exit: { bg: '#20161A', border: '#FF3366', text: '#FF99B2', headerBg: 'rgba(255, 51, 102, 0.25)' },
-  condition: { bg: '#1F1B12', border: '#FFB000', text: '#FFE082', headerBg: 'rgba(255, 176, 0, 0.25)' },
-  branch: { bg: '#102018', border: '#00FF88', text: '#A3FFD6', headerBg: 'rgba(0, 255, 136, 0.2)' },
-  loop: { bg: '#1F1220', border: '#FF00FF', text: '#FFB3FF', headerBg: 'rgba(255, 0, 255, 0.25)' },
-  merge: { bg: '#121A24', border: '#00D4FF', text: '#99EBFF', headerBg: 'rgba(0, 212, 255, 0.2)' },
-  basic: { bg: '#16161F', border: '#3A3A52', text: '#E0E0F0', headerBg: 'rgba(58, 58, 82, 0.4)' },
+  entry: { bg: 'var(--color-card)', border: 'var(--color-cfg-entry)', text: 'var(--color-text)', headerBg: 'var(--color-cyan-dim)' },
+  exit: { bg: 'var(--color-card)', border: 'var(--color-cfg-exit)', text: 'var(--color-text)', headerBg: 'var(--color-rose-dim)' },
+  condition: { bg: 'var(--color-card)', border: 'var(--color-cfg-condition)', text: 'var(--color-text)', headerBg: 'var(--color-amber-dim)' },
+  branch: { bg: 'var(--color-card)', border: 'var(--color-cfg-branch)', text: 'var(--color-text)', headerBg: 'var(--color-neon-dim)' },
+  loop: { bg: 'var(--color-card)', border: 'var(--color-cfg-loop)', text: 'var(--color-text)', headerBg: 'var(--color-magenta-dim)' },
+  merge: { bg: 'var(--color-card)', border: 'var(--color-cfg-merge)', text: 'var(--color-text)', headerBg: 'var(--color-cyan-dim)' },
+  basic: { bg: 'var(--color-card)', border: 'var(--color-border-bright)', text: 'var(--color-text)', headerBg: 'var(--color-surface-2)' },
 };
 
 function getBlockStyle(type?: string, label?: string) {
@@ -32,12 +32,12 @@ function getBlockStyle(type?: string, label?: string) {
 
 function getEdgeColor(label: string): string {
   const lower = (label || '').toLowerCase();
-  if (lower.includes('true') || lower === 't') return '#00FF88';
-  if (lower.includes('false') || lower === 'f') return '#FF3366';
-  if (lower.includes('loop')) return '#FF00FF';
-  if (lower.includes('break') || lower.includes('continue') || lower.includes('catch')) return '#FFB000';
-  if (lower.includes('case') || lower.includes('default')) return '#00D4FF';
-  return '#6A7B9B';
+  if (lower.includes('true') || lower === 't') return 'var(--color-cfg-branch)';
+  if (lower.includes('false') || lower === 'f') return 'var(--color-cfg-exit)';
+  if (lower.includes('loop')) return 'var(--color-cfg-loop)';
+  if (lower.includes('break') || lower.includes('continue') || lower.includes('catch')) return 'var(--color-cfg-condition)';
+  if (lower.includes('case') || lower.includes('default')) return 'var(--color-cfg-merge)';
+  return 'var(--color-cfg-unconditional)';
 }
 
 function parseCfg(jsonStr: string): CfgMethod[] | null {
@@ -269,7 +269,7 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
     edgeLabelG.append('rect')
       .attr('rx', 4)
       .attr('ry', 4)
-      .attr('fill', '#0E0E18')
+      .attr('fill', 'var(--color-card)')
       .attr('stroke', d => getEdgeColor(d.label))
       .attr('stroke-width', 1)
       .attr('height', 18);
@@ -319,9 +319,9 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
         .attr('rx', 8)
         .attr('ry', 8)
         .attr('fill', style.bg)
-        .attr('stroke', isSelected ? '#00FF88' : style.border)
+        .attr('stroke', isSelected ? 'var(--color-neon)' : style.border)
         .attr('stroke-width', isSelected ? 3 : 1.5)
-        .attr('filter', isSelected ? 'drop-shadow(0 0 12px rgba(0,255,136,0.5))' : 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))');
+        .attr('filter', isSelected ? 'drop-shadow(0 0 12px var(--color-neon-dim))' : 'drop-shadow(0 4px 10px rgba(0,0,0,0.35))');
 
       // Card Header
       const headerG = group.append('g').attr('class', 'card-header');
@@ -378,7 +378,7 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
         group.append('text')
           .attr('x', 14)
           .attr('y', 48)
-          .attr('fill', '#666680')
+          .attr('fill', 'var(--color-text-muted)')
           .attr('font-size', '10px')
           .attr('font-style', 'italic')
           .attr('font-family', 'JetBrains Mono, monospace')
@@ -400,18 +400,18 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
           const textEl = group.append('text')
             .attr('x', 26)
             .attr('y', yPos)
-            .attr('fill', '#E0E0F0')
+            .attr('fill', 'var(--color-text)')
             .attr('font-size', '11px')
             .attr('font-family', 'JetBrains Mono, monospace')
             .text(displayCode);
 
           // Highlight key control keywords
           if (stmt.startsWith('if ') || stmt.startsWith('while ') || stmt.startsWith('for ')) {
-            textEl.attr('fill', '#FFB000').attr('font-weight', 'bold');
+            textEl.attr('fill', 'var(--color-amber)').attr('font-weight', 'bold');
           } else if (stmt.startsWith('return ') || stmt.startsWith('return')) {
-            textEl.attr('fill', '#FF00FF').attr('font-weight', 'bold');
+            textEl.attr('fill', 'var(--color-magenta)').attr('font-weight', 'bold');
           } else if (stmt.startsWith('break') || stmt.startsWith('continue')) {
-            textEl.attr('fill', '#00D4FF').attr('font-weight', 'bold');
+            textEl.attr('fill', 'var(--color-cyan)').attr('font-weight', 'bold');
           }
         });
 
@@ -419,7 +419,7 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
           group.append('text')
             .attr('x', 26)
             .attr('y', 48 + 6 * LINE_HEIGHT)
-            .attr('fill', '#8888AA')
+            .attr('fill', 'var(--color-text-muted)')
             .attr('font-size', '10px')
             .attr('font-weight', 'bold')
             .attr('font-family', 'JetBrains Mono, monospace')
@@ -556,16 +556,16 @@ const CfgGraph: React.FC<CfgGraphProps> = ({ cfgJson }) => {
         <div className="flex items-center gap-4">
           <div className="hidden lg:flex items-center gap-3 text-[10px] font-mono text-[var(--color-text-muted)]">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#00FF88]" /> True
+              <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-cfg-branch)]" /> True
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FF3366]" /> False
+              <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-cfg-exit)]" /> False
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FF00FF]" /> Loop
+              <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-cfg-loop)]" /> Loop
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#00D4FF]" /> Unconditional
+              <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-cfg-merge)]" /> Unconditional
             </span>
           </div>
 

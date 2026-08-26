@@ -32,11 +32,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
 
     setLoading(true);
     try {
-      await register(username, email, password);
+      await register(email, username || undefined, password);
       onClose();
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
-      const message = error.response?.data?.message || 'Registration failed. Try a different username.';
+      const message = error.response?.data?.message || 'Registration failed. Try a different email.';
       setError(message);
       toast.error(error.response ? message : 'Connection failed');
     } finally {
@@ -46,7 +46,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
 
   return (
     <div
-      className="fixed inset-0 bg-[rgba(10,10,15,0.85)] flex items-center justify-center z-[100] backdrop-blur-[4px]"
+      className="fixed inset-0 bg-[var(--color-backdrop)] flex items-center justify-center z-[100] backdrop-blur-[4px]"
       onClick={onClose}
     >
       <div
@@ -82,8 +82,6 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder={t('auth.usernamePlaceholder')}
-              required
-              autoFocus
               className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
             />
           </div>

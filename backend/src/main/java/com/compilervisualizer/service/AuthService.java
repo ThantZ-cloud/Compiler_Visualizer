@@ -24,9 +24,9 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
 
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername()) ||
-            userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Registration failed. The username or email may already be in use.");
+        if (userRepository.existsByEmail(request.getEmail()) ||
+            (request.getUsername() != null && userRepository.existsByUsername(request.getUsername()))) {
+            throw new RuntimeException("Registration failed. The email or username may already be in use.");
         }
 
         User user = User.builder()
@@ -37,7 +37,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        String token = tokenProvider.generateToken(user.getUsername());
+        String token = tokenProvider.generateToken(user.getEmail());
 
         return AuthResponse.builder()
                 .token(token)
@@ -51,14 +51,14 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
+                        request.getEmail(),
                         request.getPassword()
                 )
         );
 
         String token = tokenProvider.generateToken(authentication);
 
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         return AuthResponse.builder()
@@ -70,8 +70,8 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse getCurrentUser(String username) {
-        User user = userRepository.findByUsername(username)
+    public AuthResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
         return AuthResponse.builder()
                 .userId(user.getId())

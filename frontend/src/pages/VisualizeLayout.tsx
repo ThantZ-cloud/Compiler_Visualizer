@@ -26,11 +26,11 @@ const VisualizeLayout: React.FC = () => {
   const activeView = searchParams.get('view') === 'static' ? 'static' : 'dynamic';
 
   const phaseInfo = isLexical || isSyntax || isSemantic
-    ? { label: t('visualize.phaseBadge.frontEnd'), color: '#00D4FF' }
+    ? { label: t('visualize.phaseBadge.frontEnd'), color: 'var(--color-cyan)', bg: 'var(--color-cyan-dim)' }
     : isOptimizer
-      ? { label: t('visualize.phaseBadge.optimizer'), color: '#A3E635' }
+      ? { label: t('visualize.phaseBadge.optimizer'), color: 'var(--color-neon)', bg: 'var(--color-neon-dim)' }
       : isCodegen || isBytecode
-        ? { label: t('visualize.phaseBadge.backEnd'), color: '#FF3366' }
+        ? { label: t('visualize.phaseBadge.backEnd'), color: 'var(--color-rose)', bg: 'var(--color-rose-dim)' }
         : null;
 
   const setView = (view: 'dynamic' | 'static') => {
@@ -64,7 +64,7 @@ const VisualizeLayout: React.FC = () => {
     const isActive = isActivePhase(path);
     return `flex items-center justify-center gap-2 text-xs font-bold tracking-[0.12em] border transition-all font-display uppercase no-underline whitespace-nowrap ${
       isActive
-        ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.05)] border-[var(--color-neon)] shadow-[0_0_10px_var(--color-neon-dim),inset_0_0_10px_var(--color-neon-dim)]'
+        ? 'text-[var(--color-neon)] bg-[var(--color-neon-dim)] border-[var(--color-neon)] shadow-[0_0_10px_var(--color-neon-dim),inset_0_0_10px_var(--color-neon-dim)]'
         : 'text-[var(--color-text-muted)] bg-transparent border-transparent hover:text-[var(--color-text)] hover:border-[var(--color-border)]'
     }`;
   };
@@ -75,7 +75,7 @@ const VisualizeLayout: React.FC = () => {
         onClick={() => setView('dynamic')}
         className={`px-3 py-[6px] text-[9px] font-bold tracking-[0.1em] uppercase font-display border-none cursor-pointer transition-all text-center whitespace-nowrap ${
           activeView === 'dynamic'
-            ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)] shadow-[0_0_8px_var(--color-neon-dim)]'
+            ? 'text-[var(--color-neon)] bg-[var(--color-neon-dim)] shadow-[0_0_8px_var(--color-neon-dim)]'
             : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
         }`}
       >
@@ -85,7 +85,7 @@ const VisualizeLayout: React.FC = () => {
         onClick={() => setView('static')}
         className={`px-3 py-[6px] text-[9px] font-bold tracking-[0.1em] uppercase font-display border-none cursor-pointer transition-all text-center whitespace-nowrap ${
           activeView === 'static'
-            ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)] shadow-[0_0_8px_var(--color-neon-dim)]'
+            ? 'text-[var(--color-neon)] bg-[var(--color-neon-dim)] shadow-[0_0_8px_var(--color-neon-dim)]'
             : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
         }`}
       >
@@ -127,7 +127,7 @@ const VisualizeLayout: React.FC = () => {
                 onClick={() => setView('dynamic')}
                 className={`px-3 py-[6px] text-[9px] font-bold tracking-[0.1em] uppercase font-display border-none cursor-pointer transition-all text-center whitespace-nowrap ${
                   activeView === 'dynamic'
-                    ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)] shadow-[0_0_8px_var(--color-neon-dim)]'
+                    ? 'text-[var(--color-neon)] bg-[var(--color-neon-dim)] shadow-[0_0_8px_var(--color-neon-dim)]'
                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
@@ -137,7 +137,7 @@ const VisualizeLayout: React.FC = () => {
                 onClick={() => setView('static')}
                 className={`px-3 py-[6px] text-[9px] font-bold tracking-[0.1em] uppercase font-display border-none cursor-pointer transition-all text-center whitespace-nowrap ${
                   activeView === 'static'
-                    ? 'text-[var(--color-neon)] bg-[rgba(0,255,136,0.1)] shadow-[0_0_8px_var(--color-neon-dim)]'
+                    ? 'text-[var(--color-neon)] bg-[var(--color-neon-dim)] shadow-[0_0_8px_var(--color-neon-dim)]'
                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
@@ -150,7 +150,7 @@ const VisualizeLayout: React.FC = () => {
         {phaseInfo && (
           <div
             className="shrink-0 ml-auto text-center text-[9px] font-bold tracking-[0.25em] px-3 py-1.5 border font-display uppercase whitespace-nowrap self-center"
-            style={{ color: phaseInfo.color, borderColor: `${phaseInfo.color}55`, background: `${phaseInfo.color}0D` }}
+            style={{ color: phaseInfo.color, borderColor: `color-mix(in srgb, ${phaseInfo.color} 35%, transparent)`, background: (phaseInfo as unknown as { bg: string }).bg }}
           >
             {phaseInfo.label}
           </div>
@@ -186,7 +186,7 @@ const VisualizeLayout: React.FC = () => {
         {phaseInfo && (
           <div
             className="text-center text-[9px] font-bold tracking-[0.25em] py-1.5 border font-display uppercase"
-            style={{ color: phaseInfo.color, borderColor: `${phaseInfo.color}55`, background: `${phaseInfo.color}0D` }}
+            style={{ color: phaseInfo.color, borderColor: `color-mix(in srgb, ${phaseInfo.color} 35%, transparent)`, background: (phaseInfo as unknown as { bg: string }).bg }}
           >
             {phaseInfo.label}
           </div>

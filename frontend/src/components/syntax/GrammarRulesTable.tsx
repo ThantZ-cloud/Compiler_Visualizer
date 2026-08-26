@@ -91,8 +91,8 @@ const GrammarRulesTable: React.FC<GrammarRulesTableProps> = ({
 
       <div className="flex flex-wrap gap-1.5 mb-3">
         {[
-          { key: 'TABLE' as const, labelKey: 'syntax.step1.tableView', fallback: 'Your Program' },
-          { key: 'TRYIT' as const, labelKey: 'syntax.step1.tryItView', fallback: 'Try It' },
+          { key: 'TABLE' as const, labelKey: 'syntax.step1.tableView', fallback: 'Java Program' },
+          { key: 'TRYIT' as const, labelKey: 'syntax.step1.tryItView', fallback: 'Try Yourself' },
         ].map(v => tabBtn(t(v.labelKey, { defaultValue: v.fallback }), v.key))}
       </div>
 

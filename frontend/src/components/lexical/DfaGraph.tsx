@@ -23,7 +23,7 @@ interface CustomResult {
 
 const VIEW_TABS = [
   { key: 'OVERVIEW', fallback: 'OVERVIEW' },
-  { key: 'FULL', fallback: 'FULL' },
+  { key: 'FULL', fallback: 'JAVA PROGRAM' },
   { key: 'EXAMPLES', fallback: 'TRY IT' },
 ] as const;
 

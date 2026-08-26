@@ -26,6 +26,23 @@
   --color-text-dim: #8888AA;
   --color-text-muted: #9A9AB8;
   --color-binary: #00FF8844;
+  --color-backdrop: rgba(10, 10, 15, 0.85);
+  --color-chart-keyword: #c586c0;
+  --color-chart-type: #4ec9b0;
+  --color-chart-identifier: #9cdcfe;
+  --color-chart-string: #ce9178;
+  --color-chart-number: #b5cea8;
+  --color-chart-comment: #6a9955;
+  --color-chart-annotation: #dcdcaa;
+  --color-chart-separator: #d4d4d4;
+  --color-chart-default: #569cd6;
+  --color-cfg-entry: #8A2BE2;
+  --color-cfg-exit: #FF3366;
+  --color-cfg-condition: #FFB000;
+  --color-cfg-branch: #00FF88;
+  --color-cfg-loop: #FF00FF;
+  --color-cfg-merge: #00D4FF;
+  --color-cfg-unconditional: #6A7B9B;
   --font-display: 'Orbitron', monospace;
   --font-body: 'JetBrains Mono', 'Fira Code', monospace;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -55,6 +72,23 @@
   --color-magenta: #880088;
   --color-amber: #996600;
   --color-rose: #991144;
+  --color-backdrop: rgba(240, 240, 248, 0.85);
+  --color-chart-keyword: #7A3FA0;
+  --color-chart-type: #0E7F6B;
+  --color-chart-identifier: #0050A0;
+  --color-chart-string: #9A4A2E;
+  --color-chart-number: #1B6B2A;
+  --color-chart-comment: #2F7D32;
+  --color-chart-annotation: #7A6A00;
+  --color-chart-separator: #5A5A6A;
+  --color-chart-default: #2A5FAA;
+  --color-cfg-entry: #6B1FA0;
+  --color-cfg-exit: #991144;
+  --color-cfg-condition: #7A5A00;
+  --color-cfg-branch: #007A4C;
+  --color-cfg-loop: #880088;
+  --color-cfg-merge: #007799;
+  --color-cfg-unconditional: #5A6B8A;
 }
 
 /* Base resets — wrapped in @layer base so Tailwind utilities (later layer) override them.

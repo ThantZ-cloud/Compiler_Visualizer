@@ -55,7 +55,7 @@ const PhaseDivider: React.FC<{ phaseKey: string }> = ({ phaseKey }) => {
     <div className="flex items-center gap-3 py-1">
       <div className="h-px flex-1 bg-[var(--color-neon)] opacity-20" />
       <span className="text-[9px] font-bold text-[var(--color-neon)] font-display tracking-[0.2em] uppercase whitespace-nowrap">
-        {t(`codegen.${phaseKey}.title`)} &middot; {t(`codegen.${phaseKey}.chapter`)}
+        {t(`codegen.${phaseKey}.title`)}
       </span>
       <div className="h-px flex-1 bg-[var(--color-neon)] opacity-20" />
     </div>
@@ -149,8 +149,8 @@ const CodeGenerationPanel: React.FC = () => {
     const isTry = stepTryIt[idx];
     return (
       <div className="flex gap-1.5 mb-2">
-        <button onClick={() => toggleStepTryIt(idx, false)} className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold tracking-wide border ${!isTry ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>Your Program</button>
-        <button onClick={() => toggleStepTryIt(idx, true)} className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold tracking-wide border ${isTry ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>Try It</button>
+        <button onClick={() => toggleStepTryIt(idx, false)} className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold tracking-wide border ${!isTry ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>Java Program</button>
+        <button onClick={() => toggleStepTryIt(idx, true)} className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold tracking-wide border ${isTry ? 'bg-[var(--color-neon-dim)] text-[var(--color-neon)] border-[var(--color-neon)]' : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border-bright)]'}`}>Try Yourself</button>
       </div>
     );
   };

@@ -16,24 +16,24 @@ interface TokenChartProps {
 }
 
 const TOKEN_COLORS: Record<string, string> = {
-  'KEYWORD': '#c586c0',
-  'TYPE': '#4ec9b0',
-  'IDENTIFIER': '#9cdcfe',
-  'STRING_LITERAL': '#ce9178',
-  'CHAR_LITERAL': '#ce9178',
-  'INTEGER_LITERAL': '#b5cea8',
-  'LONG_LITERAL': '#b5cea8',
-  'FLOAT_LITERAL': '#b5cea8',
-  'DOUBLE_LITERAL': '#b5cea8',
-  'BOOLEAN_LITERAL': '#569cd6',
-  'NULL_LITERAL': '#569cd6',
-  'SEPARATOR': '#d4d4d4',
-  'OPERATOR': '#d4d4d4',
-  'WHITESPACE': '#808080',
-  'LINE_COMMENT': '#6a9955',
-  'BLOCK_COMMENT': '#6a9955',
-  'JAVADOC_COMMENT': '#6a9955',
-  'ANNOTATION': '#dcdcaa',
+  'KEYWORD': 'var(--color-chart-keyword)',
+  'TYPE': 'var(--color-chart-type)',
+  'IDENTIFIER': 'var(--color-chart-identifier)',
+  'STRING_LITERAL': 'var(--color-chart-string)',
+  'CHAR_LITERAL': 'var(--color-chart-string)',
+  'INTEGER_LITERAL': 'var(--color-chart-number)',
+  'LONG_LITERAL': 'var(--color-chart-number)',
+  'FLOAT_LITERAL': 'var(--color-chart-number)',
+  'DOUBLE_LITERAL': 'var(--color-chart-number)',
+  'BOOLEAN_LITERAL': 'var(--color-chart-default)',
+  'NULL_LITERAL': 'var(--color-chart-default)',
+  'SEPARATOR': 'var(--color-chart-separator)',
+  'OPERATOR': 'var(--color-chart-separator)',
+  'WHITESPACE': 'var(--color-text-muted)',
+  'LINE_COMMENT': 'var(--color-chart-comment)',
+  'BLOCK_COMMENT': 'var(--color-chart-comment)',
+  'JAVADOC_COMMENT': 'var(--color-chart-comment)',
+  'ANNOTATION': 'var(--color-chart-annotation)',
 };
 
 function getColor(type: string): string {
@@ -41,7 +41,7 @@ function getColor(type: string): string {
   for (const [key, color] of Object.entries(TOKEN_COLORS)) {
     if (upper.includes(key)) return color;
   }
-  return '#569cd6';
+  return 'var(--color-chart-default)';
 }
 
 const TokenChart: React.FC<TokenChartProps> = ({ tokens }) => {

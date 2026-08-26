@@ -6,8 +6,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, username: string | undefined, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -51,16 +51,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [token]);
 
-  const login = useCallback(async (username: string, password: string) => {
-    const response = await authAPI.login({ username, password });
+  const login = useCallback(async (email: string, password: string) => {
+    const response = await authAPI.login({ email, password });
     const data: AuthResponse = response.data;
     localStorage.setItem('token', data.token);
     setToken(data.token);
     setUser({ id: data.userId || 0, username: data.username, email: data.email || '' });
   }, []);
 
-  const register = useCallback(async (username: string, email: string, password: string) => {
-    const response = await authAPI.register({ username, email, password });
+  const register = useCallback(async (email: string, username: string | undefined, password: string) => {
+    const response = await authAPI.register({ email, username, password });
     const data: AuthResponse = response.data;
     localStorage.setItem('token', data.token);
     setToken(data.token);

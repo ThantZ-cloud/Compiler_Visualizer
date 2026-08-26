@@ -299,8 +299,8 @@ const AstTreeAnimation: React.FC<AstTreeAnimationProps> = ({ astJson, isPlaying,
 
       <div className="flex flex-wrap gap-1.5 mb-3">
         {[
-          { key: 'TABLE' as const, labelKey: 'syntax.step4.tableView', fallback: 'Your Program' },
-          { key: 'TRYIT' as const, labelKey: 'syntax.step4.tryItView', fallback: 'Try It' },
+          { key: 'TABLE' as const, labelKey: 'syntax.step4.tableView', fallback: 'Java Program' },
+          { key: 'TRYIT' as const, labelKey: 'syntax.step4.tryItView', fallback: 'Try Yourself' },
         ].map(v => tabBtn(t(v.labelKey, { defaultValue: v.fallback }), v.key))}
       </div>
 

@@ -110,7 +110,7 @@
         "Bytecode",
         "Execute"
       ],
-      "cta": "PIPELINE အပြည့်ကို ကြည့်ရန်",
+      "cta": "PIPELINE အပြည့်ကို လေ့လာရန်",
       "description": "လူဖတ်နိုင်သော source မှ native execution အထိ — optimizer နှင့် JVM အပါအဝင်။ အပြောင်းအလဲ အဆင့်တိုင်းကို လမ်းလျှောက်ပါ။"
     },
     "preview": {

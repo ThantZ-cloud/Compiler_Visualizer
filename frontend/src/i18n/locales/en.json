@@ -110,7 +110,7 @@
         "Bytecode",
         "Execute"
       ],
-      "cta": "VIEW FULL PIPELINE",
+      "cta": "LEARN FULL PIPELINE",
       "description": "From human-readable source to native execution — including the optimizer and the JVM itself. Walk through every transformation step."
     },
     "preview": {

@@ -47,6 +47,58 @@ function MiniCompilerBox() {
   );
 }
 
+// ── Mini learn — 3 pills pulsing forever ──
+function MiniLearnBox() {
+  const reduce = useReducedMotion();
+  const [active, setActive] = useState(0);
+  const phases = useMemo(() => [
+    { label: 'FRONT END', color: 'var(--color-neon)', hint: 'scan → parse' },
+    { label: 'OPTIMIZER', color: 'var(--color-cyan)', hint: 'IR → IR' },
+    { label: 'BACK END', color: 'var(--color-magenta)', hint: 'IR → bytecode' },
+  ], []);
+
+  useEffect(() => {
+    if (reduce) return;
+    const id = setInterval(() => setActive(p => (p + 1) % phases.length), 1200);
+    return () => clearInterval(id);
+  }, [reduce, phases.length]);
+
+  return (
+    <div className="relative rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] overflow-hidden flex-1 flex flex-col p-3 min-h-[110px]">
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-rose)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-amber)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-neon)]" />
+        <span className="ml-2 text-[10px] font-mono text-[var(--color-text-muted)]">Phases</span>
+      </div>
+      <div className="flex items-center justify-center gap-1.5 flex-1">
+        {phases.map((p, i) => (
+          <React.Fragment key={p.label}>
+            <span
+              className="px-2 py-1 rounded border font-mono text-[9px] font-bold tracking-wider transition-all duration-300"
+              style={{
+                color: active === i ? p.color : 'var(--color-text-muted)',
+                borderColor: active === i ? p.color : 'var(--color-border)',
+                background: active === i ? 'var(--color-card)' : 'transparent',
+                transform: active === i ? 'scale(1.05)' : 'scale(1)',
+                boxShadow: active === i ? `0 0 10px ${p.color}55` : 'none',
+              }}
+            >
+              {p.label}
+            </span>
+            {i < phases.length - 1 && (
+              <span className="text-[var(--color-text-muted)] opacity-40">→</span>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      <div className="text-center mt-3 font-mono text-[10px] text-[var(--color-text-dim)] h-3">
+        {phases[active].hint}
+      </div>
+    </div>
+  );
+}
+
 // ── Typewriter hook ──
 function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 2000) {
   const [display, setDisplay] = useState('');
@@ -482,7 +534,9 @@ const LandingPage: React.FC = () => {
                     <h3 className="relative text-base font-bold font-display tracking-wide text-[var(--color-text)] mb-2">
                       {t(`landing.capabilities.features.${f.id}.title`)}
                     </h3>
-                    {i === 1 ? (
+                    {i === 0 ? (
+                      <MiniLearnBox />
+                    ) : i === 1 ? (
                       <MiniCompilerBox />
                     ) : (
                       <p className="relative text-sm text-[var(--color-text-dim)] leading-relaxed font-sans flex-1">

@@ -408,34 +408,6 @@ const LandingPage: React.FC = () => {
           </div>
         </section>
 
-        {/* ═══ VALUE STATEMENT — left-aligned band ═══ */}
-        <section className="relative bg-[var(--color-card)] border-y border-[var(--color-border)]">
-          <div className="absolute inset-0 band-grid opacity-60 pointer-events-none" />
-          <div className="relative max-w-6xl mx-auto px-6 py-24">
-            <Reveal>
-              <div className="lg:grid lg:grid-cols-12 gap-8 items-start">
-                <div className="lg:col-span-7">
-                  <SectionLabel>{t('landing.why.label')}</SectionLabel>
-                  <h2 className="text-3xl md:text-5xl font-black font-display text-[var(--color-text)] leading-tight">
-                    {t('landing.why.headline')}
-                    <span className="block neon-text mt-1">{t('landing.why.headlineAccent')}</span>
-                  </h2>
-                </div>
-                <div className="lg:col-span-5 lg:mt-2">
-                  <p className="text-base text-[var(--color-text-dim)] leading-relaxed font-sans mb-6">
-                    {t('landing.why.body')}
-                  </p>
-                  <div className="border-l-2 border-[var(--color-neon)] pl-4">
-                    <p className="text-xs text-[var(--color-text-dim)] leading-relaxed font-mono">
-                      {t('landing.why.compilerVsInterpreter')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
         {/* ═══ BENTO FEATURE GRID — asymmetric, per-card accent ═══ */}
         <section className="relative py-16 sm:py-24">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -480,6 +452,34 @@ const LandingPage: React.FC = () => {
                 );
               })}
             </div>
+          </div>
+        </section>
+
+        {/* ═══ VALUE STATEMENT — left-aligned band ═══ */}
+        <section className="relative bg-[var(--color-card)] border-y border-[var(--color-border)]">
+          <div className="absolute inset-0 band-grid opacity-60 pointer-events-none" />
+          <div className="relative max-w-6xl mx-auto px-6 py-24">
+            <Reveal>
+              <div className="lg:grid lg:grid-cols-12 gap-8 items-start">
+                <div className="lg:col-span-7">
+                  <SectionLabel>{t('landing.why.label')}</SectionLabel>
+                  <h2 className="text-3xl md:text-5xl font-black font-display text-[var(--color-text)] leading-tight">
+                    {t('landing.why.headline')}
+                    <span className="block neon-text mt-1">{t('landing.why.headlineAccent')}</span>
+                  </h2>
+                </div>
+                <div className="lg:col-span-5 lg:mt-2">
+                  <p className="text-base text-[var(--color-text-dim)] leading-relaxed font-sans mb-6">
+                    {t('landing.why.body')}
+                  </p>
+                  <div className="border-l-2 border-[var(--color-neon)] pl-4">
+                    <p className="text-xs text-[var(--color-text-dim)] leading-relaxed font-mono">
+                      {t('landing.why.compilerVsInterpreter')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
           </div>
         </section>
 

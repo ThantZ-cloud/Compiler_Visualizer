@@ -8,6 +8,45 @@ import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useScrollMemory } from '../hooks/useScrollMemory';
 import { BookOpen, Play, Layers, Braces, Wand2, Cpu } from 'lucide-react';
 
+// ── Mini compiler editor — forever typing Hello World ──
+function MiniCompilerBox() {
+  const code = `public class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}`;
+  const [display, setDisplay] = useState('');
+  const [phase, setPhase] = useState<'typing' | 'pausing'>('typing');
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    if (phase === 'typing') {
+      if (display.length < code.length) {
+        timer = setTimeout(() => setDisplay(code.slice(0, display.length + 1)), 22);
+      } else {
+        setPhase('pausing');
+      }
+    } else {
+      timer = setTimeout(() => {
+        setDisplay('');
+        setPhase('typing');
+      }, 1800);
+    }
+    return () => clearTimeout(timer);
+  }, [display, phase, code]);
+
+  return (
+    <div className="relative rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] overflow-hidden flex-1 flex flex-col">
+      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-void-light)]">
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-rose)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-amber)]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-neon)]" />
+        <span className="ml-2 text-[10px] font-mono text-[var(--color-text-muted)]">Main.java</span>
+      </div>
+      <pre className="p-3 font-mono text-[11px] leading-relaxed text-[var(--color-text)] whitespace-pre-wrap flex-1 min-h-[110px]">
+        {display}
+        <span className="inline-block w-1.5 h-3 bg-[var(--color-neon)] ml-0.5 align-middle animate-pulse" />
+      </pre>
+    </div>
+  );
+}
+
 // ── Typewriter hook ──
 function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 2000) {
   const [display, setDisplay] = useState('');
@@ -443,9 +482,13 @@ const LandingPage: React.FC = () => {
                     <h3 className="relative text-base font-bold font-display tracking-wide text-[var(--color-text)] mb-2">
                       {t(`landing.capabilities.features.${f.id}.title`)}
                     </h3>
-                    <p className="relative text-sm text-[var(--color-text-dim)] leading-relaxed font-sans flex-1">
-                      {t(`landing.capabilities.features.${f.id}.description`)}
-                    </p>
+                    {i === 1 ? (
+                      <MiniCompilerBox />
+                    ) : (
+                      <p className="relative text-sm text-[var(--color-text-dim)] leading-relaxed font-sans flex-1">
+                        {t(`landing.capabilities.features.${f.id}.description`)}
+                      </p>
+                    )}
                     <button
                       className="relative mt-6 inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase font-mono border border-[var(--color-border)] px-4 py-2.5 rounded-lg hover:border-[var(--accent)] hover:bg-[var(--accent-tint)] transition-colors"
                       style={{ color: f.accent }}

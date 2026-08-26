@@ -384,10 +384,10 @@ const LandingPage: React.FC = () => {
                 </button>
               </div>
 
-              <h3 className="text-sm font-bold tracking-[0.18em] uppercase mt-10 mb-4" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
+              <h3 className="text-sm font-bold tracking-[0.18em] uppercase mt-6 mb-3" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
                 {t('landing.why.bestFor')}
               </h3>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 pb-4">
                 <div className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--color-void)] hover:border-[var(--color-neon)] transition-colors rounded-lg">
                   <span className="w-1.5 h-1.5 bg-[var(--color-neon)]" />
                   <span className="text-xs font-mono text-[var(--color-text-dim)]">{t('landing.why.forItems.students')}</span>

@@ -71,7 +71,7 @@ const Footer: React.FC = () => {
           <div className="flex items-center gap-1">
             {/* GitHub */}
             <a
-              href="https://github.com"
+              href="https://github.com/ThantZ-cloud/Compiler_Visualizer"
               target="_blank"
               rel="noopener noreferrer"
               className="min-w-[44px] min-h-[44px] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-neon)] hover:bg-[var(--color-surface)] transition-colors"

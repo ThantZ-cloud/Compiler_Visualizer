@@ -32,7 +32,7 @@ function MiniCompilerBox() {
   }, [display, phase, code]);
 
   return (
-    <div className="relative rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] overflow-hidden flex-1 flex flex-col h-[140px]">
+    <div className="relative rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] overflow-hidden flex flex-col h-[140px] shrink-0 w-full">
       <div className="flex items-center gap-1.5 px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-void-light)] shrink-0">
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-rose)]" />
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-amber)]" />

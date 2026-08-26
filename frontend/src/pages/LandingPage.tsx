@@ -8,7 +8,7 @@ import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useScrollMemory } from '../hooks/useScrollMemory';
 import { BookOpen, Play, Layers, Braces, Wand2, Cpu } from 'lucide-react';
 
-// ── Mini compiler editor — forever typing Hello World ──
+// ── Mini compiler editor — typing forever, fixed box size (no layout shift) ──
 function MiniCompilerBox() {
   const code = `public class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}`;
   const [display, setDisplay] = useState('');
@@ -32,14 +32,14 @@ function MiniCompilerBox() {
   }, [display, phase, code]);
 
   return (
-    <div className="relative rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] overflow-hidden flex-1 flex flex-col">
-      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-void-light)]">
+    <div className="relative rounded-lg border border-[var(--color-border)] bg-[var(--color-void)] overflow-hidden flex-1 flex flex-col h-[140px]">
+      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-void-light)] shrink-0">
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-rose)]" />
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-amber)]" />
         <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-neon)]" />
         <span className="ml-2 text-[10px] font-mono text-[var(--color-text-muted)]">Main.java</span>
       </div>
-      <pre className="p-3 font-mono text-[11px] leading-relaxed text-[var(--color-text)] whitespace-pre-wrap flex-1 min-h-[110px]">
+      <pre className="p-3 font-mono text-[11px] leading-relaxed text-[var(--color-text)] whitespace-pre-wrap flex-1 overflow-hidden">
         {display}
         <span className="inline-block w-1.5 h-3 bg-[var(--color-neon)] ml-0.5 align-middle animate-pulse" />
       </pre>

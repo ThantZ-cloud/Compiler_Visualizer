@@ -384,16 +384,22 @@ const LandingPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="flex flex-wrap gap-x-6 gap-y-2 mt-10">
-                <span className="flex items-center gap-2 text-xs font-mono text-[var(--color-text-dim)]">
-                  <span className="w-1.5 h-1.5 bg-[var(--color-neon)]" /> {t('landing.why.forItems.students')}
-                </span>
-                <span className="flex items-center gap-2 text-xs font-mono text-[var(--color-text-dim)]">
-                  <span className="w-1.5 h-1.5 bg-[var(--color-cyan)]" /> {t('landing.why.forItems.educators')}
-                </span>
-                <span className="flex items-center gap-2 text-xs font-mono text-[var(--color-text-dim)]">
-                  <span className="w-1.5 h-1.5 bg-[var(--color-magenta)]" /> {t('landing.why.forItems.developers')}
-                </span>
+              <h3 className="text-sm font-bold tracking-[0.18em] uppercase mt-10 mb-4" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
+                {t('landing.why.bestFor')}
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                <div className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--color-void)] hover:border-[var(--color-neon)] transition-colors rounded-lg">
+                  <span className="w-1.5 h-1.5 bg-[var(--color-neon)]" />
+                  <span className="text-xs font-mono text-[var(--color-text-dim)]">{t('landing.why.forItems.students')}</span>
+                </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--color-void)] hover:border-[var(--color-cyan)] transition-colors rounded-lg">
+                  <span className="w-1.5 h-1.5 bg-[var(--color-cyan)]" />
+                  <span className="text-xs font-mono text-[var(--color-text-dim)]">{t('landing.why.forItems.educators')}</span>
+                </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--color-void)] hover:border-[var(--color-magenta)] transition-colors rounded-lg">
+                  <span className="w-1.5 h-1.5 bg-[var(--color-magenta)]" />
+                  <span className="text-xs font-mono text-[var(--color-text-dim)]">{t('landing.why.forItems.developers')}</span>
+                </div>
               </div>
             </motion.div>
 
@@ -419,27 +425,10 @@ const LandingPage: React.FC = () => {
                   <p className="text-base text-[var(--color-text-dim)] leading-relaxed font-sans mb-6">
                     {t('landing.why.body')}
                   </p>
-                  <div className="border-l-2 border-[var(--color-neon)] pl-4 mb-8">
+                  <div className="border-l-2 border-[var(--color-neon)] pl-4">
                     <p className="text-xs text-[var(--color-text-dim)] leading-relaxed font-mono">
                       {t('landing.why.compilerVsInterpreter')}
                     </p>
-                  </div>
-                  <h3 className="text-sm font-bold tracking-[0.18em] uppercase mb-4" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
-                    {t('landing.why.bestFor')}
-                  </h3>
-                  <div className="flex flex-wrap gap-3">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--color-void)] hover:border-[var(--color-neon)] transition-colors rounded-lg">
-                      <span className="w-1.5 h-1.5 bg-[var(--color-neon)]" />
-                      <span className="text-xs font-mono text-[var(--color-text-dim)]">{t('landing.why.forItems.students')}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--color-void)] hover:border-[var(--color-cyan)] transition-colors rounded-lg">
-                      <span className="w-1.5 h-1.5 bg-[var(--color-cyan)]" />
-                      <span className="text-xs font-mono text-[var(--color-text-dim)]">{t('landing.why.forItems.educators')}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--color-void)] hover:border-[var(--color-magenta)] transition-colors rounded-lg">
-                      <span className="w-1.5 h-1.5 bg-[var(--color-magenta)]" />
-                      <span className="text-xs font-mono text-[var(--color-text-dim)]">{t('landing.why.forItems.developers')}</span>
-                    </div>
                   </div>
                 </div>
               </div>

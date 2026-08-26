@@ -6,7 +6,7 @@ read  @CLAUDE.md
 ## Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Vite, **shadcn-style components** co-located in `frontend/src/components/` (no separate `ui/` folder) and **Tailwind CSS v4** with custom `@theme` tokens in `frontend/src/index.css` (no component-level CSS files; everything is utility classes)
-- **Backend**: Spring Boot 3.2 (Java 17) + **SQLite** for local dev (H2 for tests, MySQL for production)
+- **Backend**: Spring Boot 3.2 (Java 17) + **SQLite** for local dev (H2 for tests, **Postgres (Supabase `ap-southeast-1` Singapore)** for production — MySQL profile retained locally; live API at `https://compiler-visualizer-api.onrender.com` (Render Singapore, Docker JDK))
 - **i18n**: i18next with English (`en`) and Myanmar (`my`) locales
 - **Visualization**: D3.js (AST, tokens, symbol tables, CFG), Three.js (3D pipeline)
 - **Auth**: Spring Security + JWT (stateless)
@@ -19,7 +19,7 @@ read  @CLAUDE.md
 - No emoji anywhere in the UI — use Lucide icons
 - All user-facing copy goes through i18n in `frontend/src/i18n/locales/{en,my}.json`
 - Three DB profiles: dev (SQLite, default), test (H2, auto-loaded under `src/test`), prod (MySQL, activate with `-Dspring-boot.run.profiles=mysql`)
-- **Production frontend**: hosted on Vercel (`compiler-visualizer-thant-zin.vercel.app`), git-linked to GitHub for auto-deploy on `git push main`. Vite build config: root dir `frontend/`, output dir `dist`
+- **Production frontend**: **verified live 2026-08-26** at `https://compiler-visualizer-thant-zin.vercel.app` (canonical, Vercel auto-deploy on `git push main`, Vite `frontend/` → `dist`) — Chrome MCP `POST /api/compile → 200 Hello, World!`; canonical CORS origin `https://compiler-visualizer-thant-zin.vercel.app` + `http://localhost:5173` (see `DEPLOYMENT.md`)
 
 ## Teaching Style & Provenance (persist every session)
 

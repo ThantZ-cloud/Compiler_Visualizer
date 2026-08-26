@@ -19,7 +19,7 @@
     "description": "// Write Java code. Watch the compiler dissect it — token by token, tree by tree, instruction by instruction.",
     "begin": "GET STARTED",
     "openCompiler": "OPEN COMPILER",
-    "viewPipeline": "VIEW PIPELINE",
+    "viewPipeline": "LET'S LEARN",
     "exploreVisualizer": "TRY THE VISUALIZER",
     "hero": {
       "terminalTitle": "javac Main.java",
@@ -33,6 +33,7 @@
       "body": "Most tools show compile success or failure. This one shows how Java becomes bytecode — lex, parse, AST, semantic analysis, bytecode generation — then runs the result.",
       "compilerVsInterpreter": "A compiler translates the whole program before it runs; an interpreter executes it line by line. Java is a hybrid — javac compiles to bytecode, the JVM interprets it, and a JIT compiler turns hot code into native machine code.",
       "forLabel": "BUILT FOR",
+      "bestFor": "This Website is best for",
       "forItems": {
         "students": "CS Students",
         "educators": "Educators",
@@ -151,7 +152,7 @@
       "headline": "Start exploring compilers.",
       "subline": "// Free to try · Sign in to save code",
       "primaryCta": "GET STARTED",
-      "secondaryCta": "VIEW PIPELINE"
+      "secondaryCta": "LET'S LEARN"
     }
   },
   "footer": {
@@ -159,7 +160,7 @@
     "contactUs": "Contact Us",
     "product": "Product",
     "compiler": "Compiler",
-    "pipeline": "Pipeline",
+    "pipeline": "Learn",
     "visualize": "Visualize",
     "features": "Features",
     "resources": "Resources",

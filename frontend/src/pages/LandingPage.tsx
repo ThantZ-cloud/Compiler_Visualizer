@@ -424,6 +424,9 @@ const LandingPage: React.FC = () => {
                       {t('landing.why.compilerVsInterpreter')}
                     </p>
                   </div>
+                  <h3 className="text-sm font-bold tracking-[0.18em] uppercase mb-4" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)' }}>
+                    {t('landing.why.bestFor')}
+                  </h3>
                   <div className="flex flex-wrap gap-3">
                     <div className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--color-void)] hover:border-[var(--color-neon)] transition-colors rounded-lg">
                       <span className="w-1.5 h-1.5 bg-[var(--color-neon)]" />

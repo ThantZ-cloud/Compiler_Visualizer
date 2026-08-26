@@ -19,7 +19,7 @@
     "description": "// Java ကုဒ်ရေးပါ။ ဘာသာပြန်ကို ကြည့်ပါ — တစ်ခုချင်းစီ ခွဲခြမ်းစိတ်ဖြာသည်။",
     "begin": "စတင်ရန်",
     "openCompiler": "ဘာသာပြန်ဖွင့်ရန်",
-    "viewPipeline": "လုပ်ငန်းစဉ်ကြည့်ရန်",
+    "viewPipeline": "လေ့လာကြရအောင်",
     "exploreVisualizer": "VISUALIZER စမ်းကြည့်ရန်",
     "hero": {
       "terminalTitle": "javac Main.java",
@@ -33,6 +33,7 @@
       "body": "အများစုသော ကိရိယာများသည် ဘာသာပြန်အောင်မြင်မှု သို့မဟုတ် အမှားကိုသာ ပြသည်။ ၎င်းက Java ဘယ်လို bytecode ဖြစ်သွားသည်ကို ပြသည် — lex, parse, AST, semantic analysis, bytecode generation — ထို့နောက် ရလဒ်ကို လုပ်ဆောင်သည်။",
       "compilerVsInterpreter": "Compiler သည် ပရိုဂရမ်တစ်ခုလုံးကို မလုပ်ဆောင်မီ ဘာသာပြန်ပေးသည်; interpreter သည် တစ်ကြောင်းချင်း လုပ်ဆောင်သည်။ Java သည် နှစ်မျိုးပေါင်းစပ်မှုဖြစ်သည် — javac က bytecode သို့ compile လုပ်ပြီး JVM က interpret လုပ်ကာ JIT compiler က hot code ကို native machine code အဖြစ် ပြောင်းလဲပေးသည်။",
       "forLabel": "အတွက် ဖန်တီးထားသည်",
+      "bestFor": "ဤဝဘ်ဆိုဒ်သည် အကောင်းဆုံးဖြစ်သည်",
       "forItems": {
         "students": "CS ကျောင်းသားများ",
         "educators": "ဆရာများ",
@@ -151,7 +152,7 @@
       "headline": "ဘာသာပြန်များကို စတင် ရှာဖွေပါ။",
       "subline": "// အခမဲ့ စမ်းကြည့်ရန် · Code သိမ်းရန် sign in ပါ",
       "primaryCta": "စတင်ရန်",
-      "secondaryCta": "PIPELINE ကြည့်ရန်"
+      "secondaryCta": "လေ့လာကြရအောင်"
     }
   },
   "footer": {
@@ -159,7 +160,7 @@
     "contactUs": "ဆက်သွယ်ရန်",
     "product": "ထုတ်ကုန်",
     "compiler": "ဘာသာပြန်",
-    "pipeline": "လုပ်ငန်းစဉ်",
+    "pipeline": "လေ့လာရန်",
     "visualize": "မြင်ကွင်းပြရန်",
     "features": "လုပ်ဆောင်ချက်များ",
     "resources": "အရင်းအမြစ်များ",

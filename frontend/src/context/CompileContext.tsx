@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { compileAPI, codeAPI } from '../services/api';
+import { compileAPI } from '../services/api';
+import { snippetsAPI } from '../services/snippets';
 import type { CompileResponse } from '../types';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -17,12 +18,12 @@ interface CompileContextType {
   handleCompile: () => Promise<void>;
   compileSample: (source: string) => Promise<void>;
   handleCancel: () => void;
-  currentFileId: number | null;
+  currentFileId: string | null;
   currentFileName: string;
   setCurrentFileName: (name: string) => void;
   isDirty: boolean;
-  saveFile: (title: string, codeOverride?: string) => Promise<number>;
-  loadFile: (id: number) => Promise<void>;
+  saveFile: (title: string, codeOverride?: string) => Promise<string>;
+  loadFile: (id: string) => Promise<void>;
   newFile: () => void;
   /** Whether the "discard unsaved changes" dialog is currently open. */
   discardDialogOpen: boolean;
@@ -72,7 +73,7 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
   const [error, setError] = useState<string | null>(null);
   const [stdinInput, setStdinInput] = useState<string>('');
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
-  const [currentFileId, setCurrentFileId] = useState<number | null>(null);
+  const [currentFileId, setCurrentFileId] = useState<string | null>(null);
   const [currentFileName, setCurrentFileName] = useState<string>('Main.java');
   const [isDirty, setIsDirty] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -172,19 +173,19 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
     setLoading(false);
   }, []);
 
-  const saveFile = useCallback(async (title: string, codeOverride?: string): Promise<number> => {
+  const saveFile = useCallback(async (title: string, codeOverride?: string): Promise<string> => {
     let codeToSave = codeOverride !== undefined ? codeOverride : code;
     if (!codeToSave.trim()) {
       codeToSave = buildStarterCode(title);
     }
     if (currentFileId) {
-      const response = await codeAPI.update(currentFileId, title, codeToSave);
+      const updated = await snippetsAPI.update(currentFileId, title, codeToSave);
       lastSavedCodeRef.current = codeToSave;
       setIsDirty(false);
-      return response.data.id ?? currentFileId;
+      return updated.id;
     } else {
-      const response = await codeAPI.save(title, codeToSave);
-      const newId = response.data.id;
+      const created = await snippetsAPI.create(title, codeToSave);
+      const newId = created.id;
       setCurrentFileId(newId);
       setCurrentFileName(title);
       setCodeState(codeToSave);
@@ -194,13 +195,13 @@ export const CompileProvider: React.FC<CompileProviderProps> = ({ children }) =>
     }
   }, [currentFileId, code]);
 
-  const loadFile = useCallback(async (id: number) => {
-    const response = await codeAPI.getById(id);
-    setCodeState(response.data.sourceCode);
-    lastSavedCodeRef.current = response.data.sourceCode;
+  const loadFile = useCallback(async (id: string) => {
+    const data = await snippetsAPI.getById(id);
+    setCodeState(data.sourceCode);
+    lastSavedCodeRef.current = data.sourceCode;
     setIsDirty(false);
-    setCurrentFileId(response.data.id);
-    setCurrentFileName(response.data.title);
+    setCurrentFileId(data.id);
+    setCurrentFileName(data.title);
     setResult(null);
     setError(null);
   }, []);

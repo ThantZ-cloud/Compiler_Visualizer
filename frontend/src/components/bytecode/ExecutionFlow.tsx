@@ -22,39 +22,47 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
   const [visibleSteps, setVisibleSteps] = useState<Set<number>>(new Set());
   const [activeIdx, setActiveIdx] = useState<number>(-1);
   const [expandedLoops, setExpandedLoops] = useState<Set<number>>(new Set());
+  const [revealedCount, setRevealedCount] = useState(0);
+  const [hasBeenVisible, setHasBeenVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const entranceTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const trace: ExecutionTrace = useMemo(() => simulateExecution(method.instructions, method.maxLocals), [method]);
 
   const loopGroups: LoopGroup[] = useMemo(() => {
     const groups: LoopGroup[] = [];
-    const pcToFirstIdx = new Map<number, number>();
+    const pcIndices = new Map<number, number[]>();
     trace.steps.forEach((step, i) => {
-      if (!pcToFirstIdx.has(step.pc)) pcToFirstIdx.set(step.pc, i);
+      const arr = pcIndices.get(step.pc);
+      if (arr) arr.push(i);
+      else pcIndices.set(step.pc, [i]);
     });
 
     for (let i = 0; i < trace.steps.length - 1; i++) {
-      const nextIdx = pcToFirstIdx.get(trace.steps[i].pc);
-      if (nextIdx !== undefined && nextIdx > i) {
-        const patternLen = nextIdx - i;
-        if (patternLen < 2) continue;
+      const indices = pcIndices.get(trace.steps[i].pc);
+      if (!indices) continue;
+      const nextIdx = indices.find(idx => idx > i);
+      if (nextIdx === undefined) continue;
 
-        const pattern = trace.steps.slice(i, nextIdx);
-        let iterations = 1;
-        let cursor = nextIdx;
-        while (cursor + patternLen <= trace.steps.length) {
-          const chunk = trace.steps.slice(cursor, cursor + patternLen);
-          if (chunk.every((s, j) => s.pc === pattern[j].pc)) {
-            iterations++;
-            cursor += patternLen;
-          } else break;
-        }
+      const patternLen = nextIdx - i;
+      if (patternLen < 2) continue;
 
-        if (iterations > 1) {
-          const overlaps = groups.some(g => g.startIdx <= i && g.endIdx >= nextIdx - 1);
-          if (!overlaps) {
-            groups.push({ startIdx: i, endIdx: nextIdx - 1, iterations });
-          }
+      const pattern = trace.steps.slice(i, nextIdx);
+      let iterations = 1;
+      let cursor = nextIdx;
+      while (cursor + patternLen <= trace.steps.length) {
+        const chunk = trace.steps.slice(cursor, cursor + patternLen);
+        if (chunk.every((s, j) => s.pc === pattern[j].pc)) {
+          iterations++;
+          cursor += patternLen;
+        } else break;
+      }
+
+      if (iterations > 1) {
+        const overlaps = groups.some(g => g.startIdx <= i && g.endIdx >= nextIdx - 1);
+        if (!overlaps) {
+          groups.push({ startIdx: i, endIdx: nextIdx - 1, iterations });
         }
       }
     }
@@ -115,11 +123,56 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
       setVisibleSteps(prev => new Set([...prev, i]));
       setActiveIdx(i);
       i++;
-      timerRef.current = setTimeout(show, 300);
+      timerRef.current = setTimeout(show, 180);
     };
-    timerRef.current = setTimeout(show, 300);
+    timerRef.current = setTimeout(show, 200);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [isPlaying, isCompleted, displayedSteps.length]);
+
+  // For idle state, defer entrance until scrolled into view — but pipeline Play overrides this
+  useEffect(() => {
+    if (hasBeenVisible || isPlaying || isCompleted) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasBeenVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasBeenVisible, isPlaying, isCompleted]);
+
+  // Entrance animation: flat staggered reveal (50ms per displayed step) — deferred via hasBeenVisible, but pipeline Play bypasses it
+  useEffect(() => {
+    // If pipeline is playing/completed, entrance is not needed — play effect handles it
+    if (isPlaying || isCompleted) return;
+    if (!hasBeenVisible) return;
+    entranceTimersRef.current.forEach(clearTimeout);
+    entranceTimersRef.current = [];
+    setRevealedCount(0);
+    if (!displayedSteps.length) return;
+    let count = 0;
+    const revealNext = () => {
+      if (count >= displayedSteps.length) return;
+      count++;
+      setRevealedCount(count);
+      const t = setTimeout(revealNext, 50);
+      entranceTimersRef.current.push(t);
+    };
+    const start = setTimeout(revealNext, 100);
+    entranceTimersRef.current.push(start);
+    return () => { entranceTimersRef.current.forEach(clearTimeout); entranceTimersRef.current = []; };
+  }, [displayedSteps, isPlaying, isCompleted, hasBeenVisible]);
+
+  // Pipeline play reaches this panel — mark visible so idle entrance won't re-trigger after
+  useEffect(() => {
+    if (isPlaying || isCompleted) setHasBeenVisible(true);
+  }, [isPlaying, isCompleted]);
 
   const getOpcodeColor = (opcode: string): string => {
     if (opcode.startsWith('if') || opcode === 'goto') return '#FF3366';
@@ -135,7 +188,7 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
   const maxDepth = Math.max(...trace.steps.map(s => s.afterStack.length)) || 1;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div ref={containerRef} className="flex flex-col gap-3">
       <div className="flex items-center gap-2 px-1">
         <Play size={14} className="text-[#FF00FF]" />
         <h4 className="text-[11px] font-bold text-[var(--color-text)] font-display tracking-[0.1em] uppercase m-0">
@@ -163,8 +216,11 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
             {trace.steps.map((step, i) => {
               const depth = step.afterStack.length;
               const height = Math.max(4, (depth / maxDepth) * 32);
-              const isActive = i === trace.steps.findIndex(s => s === displayedSteps[activeIdx]);
-              const executed = visibleSteps.has(displayedSteps.findIndex(s => s === step));
+              const isActive = isPlaying && i === trace.steps.findIndex(s => s === displayedSteps[activeIdx]);
+              const playExecuted = visibleSteps.has(displayedSteps.findIndex(s => s === step));
+              const entranceProgress = displayedSteps.length ? revealedCount / displayedSteps.length : 0;
+              const entranceExecuted = entranceProgress >= (i / trace.steps.length);
+              const executed = isCompleted ? true : (isPlaying ? playExecuted : entranceExecuted);
               const color = depth === 0 ? '#6b7280' : executed ? (isActive ? '#00FF88' : '#00D4FF') : '#374151';
               return (
                 <div
@@ -203,8 +259,11 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
           <div className="bg-[var(--color-surface-2)] px-2 py-1.5 text-[9px] font-bold text-[#00FF88] font-display uppercase">Live</div>
 
           {displayedSteps.map((step, i) => {
-            const visible = visibleSteps.has(i);
-            const isActive = activeIdx === i;
+            const playVisible = visibleSteps.has(i);
+            const entranceVisible = i < revealedCount;
+            const visible = isCompleted ? true : (isPlaying ? playVisible : entranceVisible);
+            const isActive = isPlaying ? activeIdx === i : false;
+            const isPast = isPlaying && activeIdx > i;
             const isCollapsedMarker = collapsedSteps.has(trace.steps.findIndex(s => s === step));
             const group = groupStartMap.get(trace.steps.findIndex(s => s === step));
             const isLoopHeader = group !== undefined && !expandedLoops.has(group.startIdx);
@@ -215,7 +274,9 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
             return (
               <React.Fragment key={i}>
                 {showLoopBanner && (
-                  <div className="col-span-6 px-2 py-0.5 text-[8px] font-mono bg-[rgba(255,51,102,0.05)] border-b border-[#FF3366]/20 flex items-center justify-between cursor-pointer hover:bg-[rgba(255,51,102,0.08)]"
+                  <div className={`col-span-6 px-2 py-0.5 text-[8px] font-mono border-b flex items-center justify-between cursor-pointer transition-all duration-300 ${
+                    visible ? 'opacity-100 translate-y-0 bg-[rgba(255,51,102,0.05)] border-[#FF3366]/20' : 'opacity-0 -translate-y-1'
+                  } hover:bg-[rgba(255,51,102,0.08)]`}
                     onClick={() => setExpandedLoops(prev => new Set([...prev, group.startIdx]))}>
                     <span className="text-[#FF3366] flex items-center gap-1">
                       <span>↻</span>
@@ -224,29 +285,31 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
                     <span className="text-[var(--color-text-dim)]">at PC {step.pc}</span>
                   </div>
                 )}
-                <div className={`px-2 py-1 text-[9px] font-mono transition-colors duration-200 ${
-                  isActive ? 'bg-[rgba(255,0,255,0.08)] text-[#FF00FF]' : 'bg-[var(--color-card)] text-[var(--color-text-muted)]'
-                } ${visible ? 'opacity-100' : 'opacity-0'}`}>
+                <div className={`px-2 py-1 text-[9px] font-mono transition-all duration-300 border-l-2 ${
+                  isActive ? 'bg-[rgba(255,0,255,0.14)] text-[#FF00FF] border-[#FF00FF] shadow-[0_0_8px_rgba(255,0,255,0.25)] opacity-100 translate-x-0' :
+                  isPast ? 'bg-[var(--color-card)] text-[var(--color-text-muted)] border-transparent opacity-60 translate-x-0' :
+                  visible ? 'bg-[var(--color-card)] text-[var(--color-text-muted)] border-transparent opacity-100 translate-x-0' : 'bg-[var(--color-card)] border-transparent opacity-0 -translate-x-1'
+                }`}>
                   {i + 1}
                 </div>
-                <div className={`px-1 py-1 text-[9px] font-mono bg-[var(--color-card)] text-[var(--color-text-muted)] ${visible ? 'opacity-100' : 'opacity-0'}`}>
+                <div className={`px-1 py-1 text-[9px] font-mono bg-[var(--color-card)] text-[var(--color-text-muted)] transition-all duration-300 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1'}`}>
                   {step.pc}
                 </div>
-                <div className={`px-2 py-1 text-[10px] font-mono bg-[var(--color-card)] ${visible ? 'opacity-100' : 'opacity-0'}`}
+                <div className={`px-2 py-1 text-[10px] font-mono bg-[var(--color-card)] transition-all duration-300 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1'}`}
                   style={{ color: isActive ? undefined : getOpcodeColor(step.opcode) }}>
                   {step.opcode}
                 </div>
-                <div className={`px-2 py-1 text-[10px] font-mono bg-[var(--color-card)] ${visible ? 'opacity-100' : 'opacity-0'} ${
+                <div className={`px-2 py-1 text-[10px] font-mono bg-[var(--color-card)] transition-all duration-300 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1'} ${
                   step.changed ? 'text-[var(--color-text)]' : 'text-[var(--color-text-dim)]'
                 }`}>
                   {step.description}
                 </div>
-                <div className={`px-2 py-1 text-[9px] font-mono bg-[var(--color-card)] ${visible ? 'opacity-100' : 'opacity-0'} ${
+                <div className={`px-2 py-1 text-[9px] font-mono bg-[var(--color-card)] transition-all duration-300 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1'} ${
                   step.changed ? 'text-[#00D4FF]' : 'text-[var(--color-text-muted)]'
                 }`}>
                   [{step.afterStack.join(',')}]
                 </div>
-                <div className={`px-2 py-1 text-[9px] font-mono bg-[var(--color-card)] ${visible ? 'opacity-100' : 'opacity-0'} ${
+                <div className={`px-2 py-1 text-[9px] font-mono bg-[var(--color-card)] transition-all duration-300 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1'} ${
                   step.changed ? 'text-[#00FF88]' : 'text-[var(--color-text-muted)]'
                 }`}>
                   {step.liveLocals.length > 0 ? step.liveLocals.join(',') : '—'}

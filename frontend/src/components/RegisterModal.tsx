@@ -33,12 +33,16 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
     setLoading(true);
     try {
       await register(email, username, password);
+      // Confirm email is OFF (per user choice) — session is immediate
+      toast.success('Account created — signed in');
       onClose();
     } catch (err) {
-      const error = err as { response?: { data?: { message?: string } } };
-      const message = error.response?.data?.message || 'Registration failed. Try a different email.';
+      const raw = err as Error & { code?: string };
+      const message = raw.code === 'NETWORK_ERROR'
+        ? 'Network error — check your connection and try again'
+        : (raw.message || 'Registration failed. Try a different email.');
       setError(message);
-      toast.error(error.response ? message : 'Connection failed');
+      toast.error(message);
     } finally {
       setLoading(false);
     }

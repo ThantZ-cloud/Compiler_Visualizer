@@ -29,38 +29,39 @@ const StackMachineVisualizer: React.FC<StackMachineVisualizerProps> = ({ method,
   // Detect loop groups
   const loopGroups: LoopGroup[] = useMemo(() => {
     const groups: LoopGroup[] = [];
-    const pcToFirstIdx = new Map<number, number>();
+    const pcIndices = new Map<number, number[]>();
     trace.steps.forEach((step, i) => {
-      if (!pcToFirstIdx.has(step.pc)) {
-        pcToFirstIdx.set(step.pc, i);
-      }
+      const arr = pcIndices.get(step.pc);
+      if (arr) arr.push(i);
+      else pcIndices.set(step.pc, [i]);
     });
 
     // Find repeating PC sequences (loop iterations)
     for (let i = 0; i < trace.steps.length - 1; i++) {
-      const currentPC = trace.steps[i].pc;
-      const nextIdx = pcToFirstIdx.get(currentPC);
-      if (nextIdx !== undefined && nextIdx > i) {
-        const patternLen = nextIdx - i;
-        if (patternLen < 2) continue;
+      const indices = pcIndices.get(trace.steps[i].pc);
+      if (!indices) continue;
+      const nextIdx = indices.find(idx => idx > i);
+      if (nextIdx === undefined) continue;
 
-        const pattern = trace.steps.slice(i, nextIdx);
-        let iterations = 1;
-        let cursor = nextIdx;
-        while (cursor + patternLen <= trace.steps.length) {
-          const chunk = trace.steps.slice(cursor, cursor + patternLen);
-          if (chunk.every((s, j) => s.pc === pattern[j].pc)) {
-            iterations++;
-            cursor += patternLen;
-          } else break;
-        }
+      const patternLen = nextIdx - i;
+      if (patternLen < 2) continue;
 
-        if (iterations > 1) {
-          // Check if we already have a group covering this range
-          const overlaps = groups.some(g => g.startIdx <= i && g.endIdx >= nextIdx - 1);
-          if (!overlaps) {
-            groups.push({ startIdx: i, endIdx: nextIdx - 1, iterations });
-          }
+      const pattern = trace.steps.slice(i, nextIdx);
+      let iterations = 1;
+      let cursor = nextIdx;
+      while (cursor + patternLen <= trace.steps.length) {
+        const chunk = trace.steps.slice(cursor, cursor + patternLen);
+        if (chunk.every((s, j) => s.pc === pattern[j].pc)) {
+          iterations++;
+          cursor += patternLen;
+        } else break;
+      }
+
+      if (iterations > 1) {
+        // Check if we already have a group covering this range
+        const overlaps = groups.some(g => g.startIdx <= i && g.endIdx >= nextIdx - 1);
+        if (!overlaps) {
+          groups.push({ startIdx: i, endIdx: nextIdx - 1, iterations });
         }
       }
     }

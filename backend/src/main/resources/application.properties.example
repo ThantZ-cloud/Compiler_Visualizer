@@ -1,24 +1,9 @@
 # Server Configuration
 server.port=8080
 
-# Default profile: use SQLite for development
-spring.profiles.active=dev
-
-# JWT Configuration
-# REQUIRED: Set JWT_SECRET environment variable before starting the application.
-# Example (Linux/macOS): export JWT_SECRET=$(openssl rand -base64 48)
-# Example (PowerShell): $env:JWT_SECRET = [Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
-# Minimum length: 64 characters (recommended: 48 bytes / 64 base64 chars for HMAC-SHA256)
-# No fallback here: the dev profile has its own default, production must supply JWT_SECRET.
-jwt.secret=${JWT_SECRET}
-jwt.expiration=86400000
-
 # Compile pipeline
 # Timeout (seconds) for external processes (java execution, javap).
 compile.execution-timeout-seconds=10
-
-# JPA
-spring.jpa.open-in-view=false
 
 # File Upload Configuration
 spring.servlet.multipart.max-file-size=10MB

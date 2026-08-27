@@ -92,16 +92,8 @@ export interface ClassInfo {
   isPublic: boolean;
 }
 
-export interface AuthResponse {
-  token: string;
-  tokenType: string;
-  userId?: number;
-  username: string;
-  email?: string;
-}
-
 export interface SavedCode {
-  id: number;
+  id: string;
   title: string;
   sourceCode: string;
   createdAt: string;
@@ -109,7 +101,7 @@ export interface SavedCode {
 }
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
 }

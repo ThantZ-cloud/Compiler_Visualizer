@@ -1,0 +1,10 @@
+[project]
+id = "lhwxvyjzdtnvpkqypiqz"
+
+[auth]
+enabled = true
+# Confirm email OFF per user choice (user limited) — register returns session immediately
+# Set in Dashboard: Authentication → Configuration → Email Auth → Confirm email OFF
+
+[functions]
+verify_jwt = true

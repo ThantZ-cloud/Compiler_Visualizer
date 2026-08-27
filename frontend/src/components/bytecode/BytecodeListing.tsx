@@ -14,30 +14,69 @@ interface BytecodeListingProps {
 
 const BytecodeListing: React.FC<BytecodeListingProps> = ({ bytecode, isPlaying, isCompleted }) => {
   const { t } = useTranslation();
-  const [visibleMethods, setVisibleMethods] = useState<Set<number>>(new Set());
   const [hoveredInstr, setHoveredInstr] = useState<number | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [revealedMethods, setRevealedMethods] = useState<Set<number>>(new Set());
+  const [revealedInstr, setRevealedInstr] = useState<Map<number, Set<number>>>(new Map());
+  const [playActive, setPlayActive] = useState<{ mi: number; ii: number } | null>(null);
+  const playTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const entranceTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+  // Pipeline play: sequential PC highlight stepping through instructions
   useEffect(() => {
+    if (playTimerRef.current) clearTimeout(playTimerRef.current);
     if (!isPlaying) {
-      if (isCompleted) {
-        setVisibleMethods(new Set(bytecode.methods.map((_, i) => i)));
-      } else {
-        setVisibleMethods(new Set());
-      }
+      if (isCompleted) setPlayActive(null);
+      else setPlayActive(null);
       return;
     }
-    setVisibleMethods(new Set());
-    let i = 0;
-    const show = () => {
-      if (i >= bytecode.methods.length) return;
-      setVisibleMethods(prev => new Set([...prev, i]));
-      i++;
-      timerRef.current = setTimeout(show, 400);
+    // Build flat list of (mi, ii) in order
+    const flat: { mi: number; ii: number }[] = [];
+    bytecode.methods.forEach((m, mi) => m.instructions.forEach((_, ii) => flat.push({ mi, ii })));
+    let idx = 0;
+    const step = () => {
+      if (idx >= flat.length) { setPlayActive(null); return; }
+      setPlayActive(flat[idx]);
+      idx++;
+      playTimerRef.current = setTimeout(step, 180);
     };
-    timerRef.current = setTimeout(show, 200);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    playTimerRef.current = setTimeout(step, 200);
+    return () => { if (playTimerRef.current) clearTimeout(playTimerRef.current); };
   }, [isPlaying, isCompleted, bytecode]);
+
+  // Entrance animation: flat staggered reveal on bytecode change (mount + class switch)
+  useEffect(() => {
+    entranceTimersRef.current.forEach(clearTimeout);
+    entranceTimersRef.current = [];
+    setRevealedMethods(new Set());
+    setRevealedInstr(new Map());
+    if (!bytecode?.methods?.length) return;
+    const flat: { mi: number; ii: number }[] = [];
+    bytecode.methods.forEach((m, mi) => m.instructions.forEach((_, ii) => flat.push({ mi, ii })));
+    let idx = 0;
+    const revealNext = () => {
+      if (idx >= flat.length) return;
+      const { mi, ii } = flat[idx];
+      setRevealedMethods(prev => {
+        if (prev.has(mi)) return prev;
+        const next = new Set(prev);
+        next.add(mi);
+        return next;
+      });
+      setRevealedInstr(prev => {
+        const next = new Map(prev);
+        const set = new Set(next.get(mi) ?? []);
+        set.add(ii);
+        next.set(mi, set);
+        return next;
+      });
+      idx++;
+      const t = setTimeout(revealNext, 50);
+      entranceTimersRef.current.push(t);
+    };
+    const start = setTimeout(revealNext, 100);
+    entranceTimersRef.current.push(start);
+    return () => { entranceTimersRef.current.forEach(clearTimeout); entranceTimersRef.current = []; };
+  }, [bytecode]);
 
   const getOpcodeColor = (opcode: string): string => {
     if (opcode.startsWith('if') || opcode === 'goto') return '#FF3366';
@@ -79,13 +118,14 @@ const BytecodeListing: React.FC<BytecodeListingProps> = ({ bytecode, isPlaying, 
 
       {/* Methods */}
       {bytecode.methods.map((method, mi) => {
-        const visible = visibleMethods.has(mi);
+        const methodVisible = isCompleted ? true : revealedMethods.has(mi);
+        const isMethodActive = playActive?.mi === mi;
         return (
           <div
             key={mi}
-            className={`bg-[var(--color-card)] border border-[var(--color-border)] transition-all duration-500 ${
-              visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-            }`}
+            className={`bg-[var(--color-card)] border transition-all duration-500 ${
+              methodVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+            } ${isMethodActive ? 'border-[var(--color-neon)] shadow-[0_0_12px_rgba(0,255,136,0.2)]' : 'border-[var(--color-border)]'}`}
           >
             <div className="px-3 py-2 border-b border-[var(--color-border)] flex items-center gap-2">
               <span className="text-[9px] text-[#FFB000] font-bold font-display uppercase">{method.access}</span>
@@ -96,14 +136,23 @@ const BytecodeListing: React.FC<BytecodeListingProps> = ({ bytecode, isPlaying, 
             </div>
             <div className="p-2">
               {method.instructions.map((instr, ii) => {
-                const instrVisible = visibleMethods.has(mi);
+                const instrEntranceVisible = revealedInstr.get(mi)?.has(ii) ?? false;
+                const instrVisible = isCompleted ? true : instrEntranceVisible;
+                const isActive = playActive?.mi === mi && playActive?.ii === ii;
+                const isPast = playActive ? (playActive.mi > mi || (playActive.mi === mi && playActive.ii > ii)) : false;
                 return (
                   <div
                     key={ii}
-                    className={`flex items-center gap-3 text-[10px] font-mono py-0.5 px-2 transition-all duration-300 ${
+                    className={`flex items-center gap-3 text-[10px] font-mono py-0.5 px-2 transition-all duration-300 border-l-2 ${
                       instrVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1'
                     } ${
-                      hoveredInstr === ii ? 'bg-[rgba(0,255,136,0.06)]' : ''
+                      isActive
+                        ? 'bg-[rgba(0,255,136,0.14)] border-[var(--color-neon)] shadow-[0_0_10px_rgba(0,255,136,0.25)]'
+                        : isPast && isPlaying
+                          ? 'border-transparent opacity-60'
+                          : hoveredInstr === ii
+                            ? 'bg-[rgba(0,255,136,0.06)] border-transparent'
+                            : 'border-transparent'
                     }`}
                     onMouseEnter={() => setHoveredInstr(ii)}
                     onMouseLeave={() => setHoveredInstr(null)}

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Trash2, Circle, FilePlus, Pencil, X, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCompile } from '../context/CompileContext';
-import { codeAPI } from '../services/api';
+import { snippetsAPI } from '../services/snippets';
 import type { SavedCode } from '../types';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -28,19 +28,19 @@ const FileBrowser: React.FC = () => {
   } = useCompile();
 
   const [files, setFiles] = useState<SavedCode[]>([]);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Create state
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
 
   // Rename state
-  const [renamingId, setRenamingId] = useState<number | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
 
   // Delete confirmation dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingDeleteName, setPendingDeleteName] = useState('');
 
   // Mobile drawer state (panel is a static column on md+ screens)
@@ -54,8 +54,8 @@ const FileBrowser: React.FC = () => {
 
   const loadFiles = useCallback(async () => {
     try {
-      const res = await codeAPI.getSaved();
-      setFiles(res.data.data ?? []);
+      const data = await snippetsAPI.list();
+      setFiles(data);
     } catch (err) {
       console.error('Failed to load files:', err);
       toast.error(t('fileBrowser.loadFail'));
@@ -87,13 +87,13 @@ const FileBrowser: React.FC = () => {
       toast.success(t('fileBrowser.fileCreated'));
     } catch (err) {
       console.error('Failed to create file:', err);
-      toast.error(t('fileBrowser.fileCreatedFail'));
+      toast.error((err as Error).message || t('fileBrowser.fileCreatedFail'));
     }
   };
 
   // ── Delete file ──
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     const file = files.find(f => f.id === id);
     setPendingDeleteId(id);
     setPendingDeleteName(file?.title ?? '');
@@ -103,14 +103,14 @@ const FileBrowser: React.FC = () => {
   const confirmDelete = async () => {
     if (pendingDeleteId === null) return;
     try {
-      await codeAPI.delete(pendingDeleteId);
+      await snippetsAPI.remove(pendingDeleteId);
       if (currentFileId === pendingDeleteId) newFile();
       if (selectedId === pendingDeleteId) setSelectedId(null);
       loadFiles();
       toast.success(t('fileBrowser.fileDeleted'));
     } catch (err) {
       console.error('Failed to delete file:', err);
-      toast.error(t('fileBrowser.fileDeletedFail'));
+      toast.error((err as Error).message || t('fileBrowser.fileDeletedFail'));
     } finally {
       setDeleteDialogOpen(false);
       setPendingDeleteId(null);
@@ -129,20 +129,20 @@ const FileBrowser: React.FC = () => {
     setRenameValue(file.title.replace(/\.java$/i, ''));
   };
 
-  const handleRename = async (id: number) => {
+  const handleRename = async (id: string) => {
     if (!renameValue.trim()) { setRenamingId(null); return; }
     try {
       const file = files.find(f => f.id === id);
       if (!file) return;
       const newTitle = renameValue.endsWith('.java') ? renameValue : renameValue + '.java';
-      await codeAPI.update(id, newTitle, file.sourceCode);
+      await snippetsAPI.update(id, newTitle, file.sourceCode);
       if (currentFileId === id) setCurrentFileName(newTitle);
       setRenamingId(null);
       loadFiles();
       toast.success(t('fileBrowser.fileRenamed'));
     } catch (err) {
       console.error('Failed to rename file:', err);
-      toast.error(t('fileBrowser.fileRenamedFail'));
+      toast.error((err as Error).message || t('fileBrowser.fileRenamedFail'));
     }
   };
 

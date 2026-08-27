@@ -46,7 +46,7 @@ const UserMenu: React.FC = () => {
           <div className="h-px bg-[var(--color-border)]" />
           <button
             className="block w-full px-3 py-2.5 text-[11px] font-bold tracking-[0.1em] text-[var(--color-rose)] bg-transparent border-none text-left cursor-pointer transition-all font-display uppercase hover:bg-[rgba(255,51,102,0.1)] hover:border-l-2 hover:border-l-[var(--color-rose)]"
-            onClick={() => { logout(); setIsOpen(false); }}
+            onClick={async () => { await logout(); setIsOpen(false); }}
           >
             Sign Out
           </button>

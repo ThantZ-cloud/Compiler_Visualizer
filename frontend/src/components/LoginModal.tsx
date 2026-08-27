@@ -19,22 +19,25 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      await login(email, password);
-      onClose();
-    } catch (err) {
-      const error = err as { response?: { data?: { message?: string } } };
-      const message = error.response?.data?.message || 'Login failed. Check your credentials.';
-      setError(message);
-      toast.error(error.response ? message : 'Connection failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+   const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     setError('');
+     setLoading(true);
+     try {
+       await login(email, password);
+       toast.success('Signed in');
+       onClose();
+     } catch (err) {
+       const raw = err as Error & { code?: string };
+       const message = raw.code === 'NETWORK_ERROR'
+         ? 'Network error — check your connection and try again'
+         : (raw.message || 'Login failed. Check your credentials.');
+       setError(message);
+       toast.error(message);
+     } finally {
+       setLoading(false);
+     }
+   };
 
   return (
     <div

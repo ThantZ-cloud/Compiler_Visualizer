@@ -37,8 +37,8 @@ const EditorPage: React.FC = () => {
     try {
       await saveFile(currentFileName);
       toast.success(t('editor.saveOk'));
-    } catch {
-      toast.error(t('editor.saveFail'));
+    } catch (err) {
+      toast.error((err as Error).message || t('editor.saveFail'));
     } finally {
       setSaving(false);
     }
@@ -53,8 +53,8 @@ const EditorPage: React.FC = () => {
     try {
       await saveFile(title);
       toast.success(t('editor.saveOk'));
-    } catch {
-      toast.error(t('editor.saveFail'));
+    } catch (err) {
+      toast.error((err as Error).message || t('editor.saveFail'));
     } finally {
       setSaving(false);
     }

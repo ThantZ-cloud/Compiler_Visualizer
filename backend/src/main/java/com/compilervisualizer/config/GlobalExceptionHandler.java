@@ -2,6 +2,7 @@ package com.compilervisualizer.config;
 
 import com.compilervisualizer.exception.AccessDeniedException;
 import com.compilervisualizer.exception.CompilationException;
+import com.compilervisualizer.exception.ConflictException;
 import com.compilervisualizer.exception.NotFoundException;
 import com.compilervisualizer.exception.RateLimitExceededException;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(buildError(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleConflictException(ConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(buildError(HttpStatus.CONFLICT, ex.getMessage()));
     }
 
     @ExceptionHandler(CompilationException.class)

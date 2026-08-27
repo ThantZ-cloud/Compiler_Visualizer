@@ -7,7 +7,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, username: string | undefined, password: string) => Promise<void>;
+  register: (email: string, username: string, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -59,7 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser({ id: data.userId || 0, username: data.username, email: data.email || '' });
   }, []);
 
-  const register = useCallback(async (email: string, username: string | undefined, password: string) => {
+  const register = useCallback(async (email: string, username: string, password: string) => {
     const response = await authAPI.register({ email, username, password });
     const data: AuthResponse = response.data;
     localStorage.setItem('token', data.token);

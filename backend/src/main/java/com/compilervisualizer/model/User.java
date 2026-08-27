@@ -25,7 +25,7 @@ public class User {
     @TableGenerator(name = "user_gen", table = "id_generator", pkColumnName = "gen_name", pkColumnValue = "user_id", valueColumnName = "gen_value", allocationSize = 1)
     private Long id;
 
-    @Column(nullable = true, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
     @Column(nullable = false, unique = true, length = 100)

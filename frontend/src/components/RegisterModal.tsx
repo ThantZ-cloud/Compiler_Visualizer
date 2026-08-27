@@ -32,7 +32,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
 
     setLoading(true);
     try {
-      await register(email, username || undefined, password);
+      await register(email, username, password);
       onClose();
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -82,6 +82,9 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder={t('auth.usernamePlaceholder')}
+              required
+              minLength={3}
+              maxLength={50}
               className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
             />
           </div>

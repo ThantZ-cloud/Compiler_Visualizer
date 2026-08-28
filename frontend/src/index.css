@@ -491,7 +491,8 @@ a {
   .glitch-hover:hover,
   .text-glitch,
   .cursor-blink::after,
-  .pulse-ring {
+  .pulse-ring,
+  .visualize-attention {
     animation: none;
   }
 
@@ -591,4 +592,26 @@ button:active:not(:disabled) {
     rgba(0, 0, 0, 0.18) 4px
   );
   opacity: 0.6;
+}
+
+/* ── Visualize attention — bounce enlarge/small (A) ── */
+@keyframes visualize-bounce {
+  0%   { transform: scale(0.92); }
+  18%  { transform: scale(1.14); }
+  34%  { transform: scale(0.96); }
+  52%  { transform: scale(1.06); }
+  68%  { transform: scale(0.99); }
+  82%  { transform: scale(1.015); }
+  100% { transform: scale(1); }
+}
+
+.visualize-attention {
+  animation: visualize-bounce 720ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms both;
+  transform-origin: center;
+  will-change: transform;
+  position: relative;
+}
+
+.visualize-attention:hover {
+  animation-play-state: paused;
 }

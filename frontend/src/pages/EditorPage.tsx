@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -24,6 +24,10 @@ const EditorPage: React.FC = () => {
   // Save-as prompt dialog state
   const [savePromptOpen, setSavePromptOpen] = useState(false);
   const [savePromptValue, setSavePromptValue] = useState('');
+
+  // Toast throttle + deduplication for visualize hint (D)
+  const lastVisualizeToastAtRef = useRef(0);
+  const lastResultKeyRef = useRef<string | null>(null);
 
   const handleSave = useCallback(async () => {
     if (!currentFileId) {
@@ -69,6 +73,26 @@ const EditorPage: React.FC = () => {
       handleSave();
     });
   }, [handleSave]);
+
+  // Hybrid D — Sonner toast on transition to successful compilation
+  useEffect(() => {
+    if (loading) return;
+    if (!result || result.error) return;
+    const key = `${result.compilationTimeMs ?? ''}-${result.executionOutput?.slice(0, 32) ?? ''}-${(result.tokens?.length ?? 0)}`;
+    if (lastResultKeyRef.current === key) return;
+    lastResultKeyRef.current = key;
+    const now = Date.now();
+    if (now - lastVisualizeToastAtRef.current < 8000) return;
+    lastVisualizeToastAtRef.current = now;
+    toast.success(t('editor.visualizeToastTitle'), {
+      description: t('editor.visualizeToastDesc'),
+      duration: 5000,
+      action: {
+        label: t('editor.visualize'),
+        onClick: () => navigate('/visualize/lexical'),
+      },
+    });
+  }, [result, loading, t, navigate]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-[var(--color-void)]">
@@ -200,10 +224,11 @@ const EditorPage: React.FC = () => {
             )}
           </div>
 
-          {/* Visualizer button — shows after successful compilation */}
+          {/* Visualizer button — bounce enlarge/small after successful compilation */}
           {!loading && result && !result.error && (
             <button
-              className="px-4 py-2 text-xs font-bold text-[var(--color-neon)] border border-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] flex items-center gap-1.5"
+              key={`visualize-${result.compilationTimeMs ?? '0'}-${result.tokens?.length ?? 0}`}
+              className="visualize-attention px-4 py-2 text-xs font-bold text-[var(--color-neon)] border border-[var(--color-neon)] hover:bg-[var(--color-neon)] hover:text-[var(--color-void)] transition-all tracking-[0.1em] flex items-center gap-1.5 relative"
               style={{ fontFamily: 'var(--font-display)' }}
               onClick={() => navigate('/visualize/lexical')}
             >

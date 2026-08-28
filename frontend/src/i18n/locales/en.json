@@ -279,6 +279,8 @@
     "save": "SAVE",
     "saving": "SAVING...",
     "visualize": "VISUALIZE",
+    "visualizeToastTitle": "Compiled successfully",
+    "visualizeToastDesc": "Explore tokens, AST and bytecode step by step.",
     "cancel": "CANCEL",
     "saveOk": "Code saved",
     "saveFail": "Failed to save code",

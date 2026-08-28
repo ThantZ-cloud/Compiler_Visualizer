@@ -254,10 +254,11 @@
   "auth": {
     "email": "အီးမေးလ်",
     "password": "စကားဝှက်",
-    "username": "အသုံးပြုသူအမည်",
+    "username": "အမည်",
     "confirmPassword": "စကားဝှက် အတည်ပြုရန်",
-    "usernamePlaceholder": "အသုံးပြုသူအမည် ရွေးချယ်ပါ",
+    "usernamePlaceholder": "အမည်ထည့်ပါ",
     "emailPlaceholder": "အီးမေးလ် ထည့်ပါ",
+    "loginEmailPlaceholder": "အီးမေးလ်ထည့်ပါ",
     "passwordPlaceholder": "စကားဝှက် ထည့်ပါ",
     "loginUsernamePlaceholder": "အသုံးပြုသူအမည် ထည့်ပါ",
     "createPasswordPlaceholder": "စကားဝှက် ဖန်တီးပါ",

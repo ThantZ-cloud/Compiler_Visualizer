@@ -50,20 +50,42 @@ function getSuccessors(edges: CfgEdge[], blockId: number): number[] {
   return edges.filter(e => e.from === blockId).map(e => e.to);
 }
 
+// Keywords/type names that are never variables – filtered from USE/DEF sets.
+const RESERVED_WORDS = new Set([
+  'int','long','double','float','boolean','byte','short','char','String','void',
+  'if','else','for','while','do','switch','case','default','return','break','continue',
+  'try','catch','finally','throw','throws','new','this','super','System','out','println','print',
+  'true','false','null','in','out',
+]);
+
+function stripTypePrefix(s: string): string {
+  return s.replace(/^\s*(?:(?:final|static)\s+)*(?:int|long|double|float|boolean|byte|short|char|String|void)\b\s*/, '');
+}
+
 /** Extract variable names used in a statement string */
 function extractUses(stmt: string): Set<string> {
   const uses = new Set<string>();
-  // Match right-hand side of assignments and standalone expressions
-  const parts = stmt.split('=');
-  if (parts.length > 1) {
-    // RHS of assignment — extract variable references
-    const rhs = parts.slice(1).join('=');
+  // Detect post-increment/decrement as use (x++ reads x)
+  const incMatch = stmt.match(/^\s*([\w$]+)\s*(\+\+|--)/);
+  if (incMatch && !RESERVED_WORDS.has(incMatch[1])) uses.add(incMatch[1]);
+  // Find assignment '=' not part of <= >= == !=
+  const assignIdx = (() => {
+    for (let i = 0; i < stmt.length; i++) if (stmt[i] === '=') {
+      const prev = stmt[i-1] || '';
+      const next = stmt[i+1] || '';
+      if (['<','>','!','='].includes(prev) || next === '=') continue;
+      return i;
+    }
+    return -1;
+  })();
+  if (assignIdx !== -1) {
+    const rhs = stmt.slice(assignIdx + 1);
     const matches = rhs.match(/\b([a-zA-Z_]\w*)\b/g);
-    if (matches) matches.forEach(m => { if (/^[a-zA-Z_]/.test(m)) uses.add(m); });
+    if (matches) matches.forEach(m => { if (/^[a-zA-Z_]/.test(m) && !RESERVED_WORDS.has(m)) uses.add(m); });
   } else {
-    // Standalone expression (method call, etc.)
-    const matches = stmt.match(/\b([a-zA-Z_]\w*)\b/g);
-    if (matches) matches.forEach(m => { if (/^[a-zA-Z_]/.test(m)) uses.add(m); });
+    const sanitized = stmt.replace(/^for\s*\(/, '(').replace(/^for-(init|update):\s*/,'');
+    const matches = sanitized.match(/\b([a-zA-Z_]\w*)\b/g);
+    if (matches) matches.forEach(m => { if (/^[a-zA-Z_]/.test(m) && !RESERVED_WORDS.has(m)) uses.add(m); });
   }
   return uses;
 }
@@ -71,8 +93,24 @@ function extractUses(stmt: string): Set<string> {
 /** Extract variable names defined (written to) in a statement string */
 function extractDefs(stmt: string): Set<string> {
   const defs = new Set<string>();
-  const match = stmt.match(/^\s*(\w+)\s*=/);
-  if (match) defs.add(match[1]);
+  // Normalize "for-init:" / "for-update:" prefixes and strip type like "int " or "long "
+  let s = stmt.replace(/^for-(init|update):\s*/, '').trim();
+  s = stripTypePrefix(s);
+  // Post increment/decrement defines its variable (x++ writes x)
+  const incDef = s.match(/^\s*([\w$]+)\s*(\+\+|--)/);
+  if (incDef && !RESERVED_WORDS.has(incDef[1])) {
+    defs.add(incDef[1]);
+    return defs;
+  }
+  // Strip leading label "L0:" if present
+  s = s.replace(/^\s*\w+:\s*/, '');
+  const eqIdx = s.indexOf('=');
+  if (eqIdx !== -1) {
+    const lhs = s.slice(0, eqIdx).trim();
+    // LHS may be "result" or "n" or "a[0]" – capture base identifier before any bracket/dot
+    const m = lhs.match(/^\s*([\w$]+)/);
+    if (m && !RESERVED_WORDS.has(m[1])) defs.add(m[1]);
+  }
   return defs;
 }
 

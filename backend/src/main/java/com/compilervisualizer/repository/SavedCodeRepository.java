@@ -14,4 +14,8 @@ public interface SavedCodeRepository extends JpaRepository<SavedCode, Long> {
     Page<SavedCode> findByUserUsernameOrderByUpdatedAtDesc(String username, Pageable pageable);
 
     Optional<SavedCode> findByIdAndUserUsername(Long id, String username);
+
+    Page<SavedCode> findByUserEmailOrderByUpdatedAtDesc(String email, Pageable pageable);
+
+    Optional<SavedCode> findByIdAndUserEmail(Long id, String email);
 }

@@ -67,7 +67,7 @@ const InterferenceGraphStep: React.FC<Props> = ({ allocation, isPlaying, isCompl
         </div>
       </div>
 
-      {allocation.interferenceGraph.length > 0 ? (
+      {allocation.variables.length > 0 ? (
         <div className="bg-[var(--color-void)] border border-[var(--color-border)] overflow-hidden">
           <div className="flex items-center justify-between px-3 pt-2.5 pb-1 gap-2 flex-wrap">
             <div className="text-[9px] text-[#8A2BE2] font-bold font-display tracking-[0.1em] uppercase">
@@ -87,10 +87,13 @@ const InterferenceGraphStep: React.FC<Props> = ({ allocation, isPlaying, isCompl
             </div>
           </div>
           <InterferenceGraph allocation={allocation} highlightVar={highlightVar} />
+          {allocation.interferenceGraph.length === 0 && (
+            <div className="text-[9px] font-mono text-[var(--color-text-muted)] text-center pb-2">No interferences — all variables can share registers</div>
+          )}
         </div>
       ) : (
         <div className="border border-[var(--color-border)] bg-[var(--color-void)] h-[120px] flex items-center justify-center">
-          <span className="text-[10px] font-mono text-[var(--color-text-muted)]">No interferences — all variables can share registers</span>
+          <span className="text-[10px] font-mono text-[var(--color-text-muted)]">No variables to allocate</span>
         </div>
       )}
 

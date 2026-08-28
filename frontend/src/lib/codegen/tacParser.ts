@@ -14,7 +14,7 @@ import type { CodeGenerationData, TacInstruction, BasicBlockInfo, CfgMethod, Cfg
 type TokType = 'ident' | 'number' | 'string' | 'keyword' | 'op' | 'paren' | 'bracket' | 'semi' | 'comma' | 'dot' | 'eof';
 interface Tok { type: TokType; value: string; }
 
-const KEYWORDS = new Set(['int', 'if', 'else', 'for', 'return', 'void', 'String', 'System']);
+const KEYWORDS = new Set(['int', 'long', 'double', 'float', 'boolean', 'byte', 'short', 'char', 'if', 'else', 'for', 'return', 'void', 'String', 'System']);
 
 function tokenize(src: string): Tok[] {
   const toks: Tok[] = [];
@@ -293,8 +293,8 @@ function parseStatement(s: ParseState): void {
     return;
   }
 
-  // Variable declaration: int x = expr; or int x, y = 2;
-  if (t.value === 'int' || t.value === 'String' || t.value === 'void') {
+  // Variable declaration: int/long/double/... x = expr; or int x, y = 2;
+  if (['int','long','double','float','boolean','byte','short','char','String','void'].includes(t.value)) {
     void consume(s).value;
     // Handle array brackets: int[] a
     while (peek(s).value === '[') { consume(s); expect(s, ']'); }

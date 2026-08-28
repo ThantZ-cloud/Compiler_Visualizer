@@ -21,8 +21,7 @@ import java.time.LocalDateTime;
 public class SavedCode {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "saved_code_gen")
-    @TableGenerator(name = "saved_code_gen", table = "id_generator", pkColumnName = "gen_name", pkColumnValue = "saved_code_id", valueColumnName = "gen_value", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

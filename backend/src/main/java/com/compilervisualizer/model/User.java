@@ -21,8 +21,7 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "user_gen")
-    @TableGenerator(name = "user_gen", table = "id_generator", pkColumnName = "gen_name", pkColumnValue = "user_id", valueColumnName = "gen_value", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true, length = 50)

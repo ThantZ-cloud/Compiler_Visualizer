@@ -26,8 +26,9 @@ public class CodeService {
     private final SavedCodeRepository savedCodeRepository;
     private final UserRepository userRepository;
 
-    public SavedCodeResponse saveCode(String username, SaveCodeRequest request) {
-        User user = userRepository.findByUsername(username)
+    @Transactional
+    public SavedCodeResponse saveCode(String email, SaveCodeRequest request) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         SavedCode savedCode = SavedCode.builder()
@@ -41,13 +42,13 @@ public class CodeService {
     }
 
     @Transactional(readOnly = true)
-    public PaginatedResponse<SavedCodeResponse> getSavedCodes(String username, int page, int size) {
+    public PaginatedResponse<SavedCodeResponse> getSavedCodes(String email, int page, int size) {
         // Clamp page size between 1 and 100
         size = Math.max(1, Math.min(size, 100));
 
         Pageable pageable = PageRequest.of(page, size);
         Page<SavedCode> savedCodePage = savedCodeRepository
-                .findByUserUsernameOrderByUpdatedAtDesc(username, pageable);
+                .findByUserEmailOrderByUpdatedAtDesc(email, pageable);
 
         List<SavedCodeResponse> data = savedCodePage.getContent()
                 .stream()
@@ -64,14 +65,14 @@ public class CodeService {
     }
 
     @Transactional(readOnly = true)
-    public SavedCodeResponse getSavedCode(String username, Long id) {
-        SavedCode savedCode = getOwnedSavedCode(username, id);
+    public SavedCodeResponse getSavedCode(String email, Long id) {
+        SavedCode savedCode = getOwnedSavedCode(email, id);
         return mapToResponse(savedCode);
     }
 
     @Transactional
-    public SavedCodeResponse updateSavedCode(String username, Long id, SaveCodeRequest request) {
-        SavedCode savedCode = getOwnedSavedCode(username, id);
+    public SavedCodeResponse updateSavedCode(String email, Long id, SaveCodeRequest request) {
+        SavedCode savedCode = getOwnedSavedCode(email, id);
 
         savedCode.setTitle(request.getTitle());
         savedCode.setSourceCode(request.getSourceCode());
@@ -80,16 +81,16 @@ public class CodeService {
     }
 
     @Transactional
-    public void deleteSavedCode(String username, Long id) {
-        SavedCode savedCode = getOwnedSavedCode(username, id);
+    public void deleteSavedCode(String email, Long id) {
+        SavedCode savedCode = getOwnedSavedCode(email, id);
         savedCodeRepository.delete(savedCode);
     }
 
-    private SavedCode getOwnedSavedCode(String username, Long id) {
+    private SavedCode getOwnedSavedCode(String email, Long id) {
         SavedCode savedCode = savedCodeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Saved code not found"));
 
-        if (!savedCode.getUser().getUsername().equals(username)) {
+        if (!savedCode.getUser().getEmail().equals(email)) {
             throw new AccessDeniedException("Unauthorized access");
         }
         return savedCode;

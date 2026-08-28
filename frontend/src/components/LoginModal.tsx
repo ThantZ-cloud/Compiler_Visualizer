@@ -27,10 +27,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitchToRegi
       await login(email, password);
       onClose();
     } catch (err) {
-      const error = err as { response?: { data?: { message?: string } } };
-      const message = error.response?.data?.message || 'Login failed. Check your credentials.';
+      const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, string>; error?: string } } };
+      const data = axiosErr.response?.data;
+      const message = data?.message || (data?.errors ? Object.values(data.errors).join(' ') : null) || data?.error || 'Login failed. Check your credentials.';
       setError(message);
-      toast.error(error.response ? message : 'Connection failed');
+      toast.error(axiosErr.response ? message : 'Connection failed');
     } finally {
       setLoading(false);
     }

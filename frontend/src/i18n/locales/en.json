@@ -254,10 +254,11 @@
   "auth": {
     "email": "Email",
     "password": "Password",
-    "username": "Username",
+    "username": "Name",
     "confirmPassword": "Confirm Password",
-    "usernamePlaceholder": "Choose a username",
+    "usernamePlaceholder": "Enter your name",
     "emailPlaceholder": "Enter your email",
+    "loginEmailPlaceholder": "Enter your email",
     "passwordPlaceholder": "Enter your password",
     "loginUsernamePlaceholder": "Enter your username",
     "createPasswordPlaceholder": "Create a password",

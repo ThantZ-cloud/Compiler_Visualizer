@@ -137,11 +137,21 @@ const CodeGenerationPanel: React.FC = () => {
 
   const data = result?.codeGenerationData;
   const scheduling = useMemo(() => data ? computeSchedule(data.instructions) : null, [data]);
+  // TAC-derived CFG keeps liveness aligned with TacGenerator's basicBlocks.
+  // Previously used backend cfgJson (AST-based) whose block ids diverge from
+  // TAC blocks, causing empty liveNow and zero interference edges for loops.
+  const tacCfgMethod = useMemo(() => data ? buildCfgFromTac(data) : null, [data]);
   const dataflow = useMemo(() => {
+    if (tacCfgMethod) { try { return runLivenessAnalysis(tacCfgMethod as any); } catch { /* ignore */ } }
     if (result?.cfgJson) { try { const cfg = typeof result.cfgJson === 'string' ? JSON.parse(result.cfgJson) : result.cfgJson; if (cfg?.methods?.[0]) return runLivenessAnalysis(cfg.methods[0]); } catch { /* ignore */ } }
     return null;
-  }, [result?.cfgJson]);
-  const allocation = useMemo(() => dataflow && result?.cfgJson && data ? (() => { const cfg = typeof result.cfgJson === 'string' ? JSON.parse(result.cfgJson) : result.cfgJson; return cfg?.methods?.[0] ? computeRegAllocation(cfg.methods[0], data.instructions, dataflow, data.basicBlocks) : null; })() : null, [dataflow, data, result?.cfgJson]);
+  }, [tacCfgMethod, result?.cfgJson]);
+  const allocation = useMemo(() => {
+    if (!dataflow || !data) return null;
+    if (tacCfgMethod) return computeRegAllocation(tacCfgMethod as any, data.instructions, dataflow, data.basicBlocks);
+    if (result?.cfgJson) { try { const cfg = typeof result.cfgJson === 'string' ? JSON.parse(result.cfgJson) : result.cfgJson; if (cfg?.methods?.[0]) return computeRegAllocation(cfg.methods[0], data.instructions, dataflow, data.basicBlocks); } catch { /* ignore */ } }
+    return null;
+  }, [dataflow, data, tacCfgMethod, result?.cfgJson]);
 
   const hasBackend = !!data && data.instructions.length > 0;
 

@@ -16,6 +16,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
 
@@ -24,6 +25,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -35,10 +37,19 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
       await register(email, username, password);
       onClose();
     } catch (err) {
-      const error = err as { response?: { data?: { message?: string } } };
-      const message = error.response?.data?.message || 'Registration failed. Try a different email.';
-      setError(message);
-      toast.error(error.response ? message : 'Connection failed');
+      const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, string>; error?: string }; status?: number } };
+      const data = axiosErr.response?.data;
+      if (data?.errors) {
+        setFieldErrors(data.errors);
+        const first = Object.values(data.errors)[0];
+        const summary = data.message || first || 'Registration failed. Check the fields below.';
+        setError(summary);
+        toast.error(summary);
+      } else {
+        const message = data?.message || data?.error || 'Registration failed. Try a different email.';
+        setError(message);
+        toast.error(axiosErr.response ? message : 'Connection failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -85,8 +96,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
               required
               minLength={3}
               maxLength={50}
-              className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
+              aria-invalid={!!fieldErrors.username}
+              aria-describedby={fieldErrors.username ? 'register-username-error' : undefined}
+              className={`px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border text-[13px] font-mono transition-all focus:outline-none focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)] ${fieldErrors.username ? 'border-[var(--color-rose)] focus:border-[var(--color-rose)]' : 'border-[var(--color-border)] focus:border-[var(--color-neon)]'}`}
             />
+            {fieldErrors.username && <span id="register-username-error" className="text-[11px] font-mono text-[var(--color-rose)]">{fieldErrors.username}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -100,8 +114,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('auth.emailPlaceholder')}
               required
-              className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
+              aria-invalid={!!fieldErrors.email}
+              aria-describedby={fieldErrors.email ? 'register-email-error' : undefined}
+              className={`px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border text-[13px] font-mono transition-all focus:outline-none focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)] ${fieldErrors.email ? 'border-[var(--color-rose)] focus:border-[var(--color-rose)]' : 'border-[var(--color-border)] focus:border-[var(--color-neon)]'}`}
             />
+            {fieldErrors.email && <span id="register-email-error" className="text-[11px] font-mono text-[var(--color-rose)]">{fieldErrors.email}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -116,8 +133,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
               placeholder={t('auth.createPasswordPlaceholder')}
               required
               minLength={6}
-              className="px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border border-[var(--color-border)] text-[13px] font-mono transition-all focus:outline-none focus:border-[var(--color-neon)] focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)]"
+              aria-invalid={!!fieldErrors.password}
+              aria-describedby={fieldErrors.password ? 'register-password-error' : undefined}
+              className={`px-3 py-2.5 bg-[var(--color-void)] text-[var(--color-neon)] border text-[13px] font-mono transition-all focus:outline-none focus:shadow-[0_0_10px_var(--color-neon-dim)] placeholder:text-[var(--color-text-muted)] ${fieldErrors.password ? 'border-[var(--color-rose)] focus:border-[var(--color-rose)]' : 'border-[var(--color-border)] focus:border-[var(--color-neon)]'}`}
             />
+            {fieldErrors.password && <span id="register-password-error" className="text-[11px] font-mono text-[var(--color-rose)]">{fieldErrors.password}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">

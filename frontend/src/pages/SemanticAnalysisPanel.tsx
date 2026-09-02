@@ -41,7 +41,7 @@ const SemanticAnalysisPanel: React.FC = () => {
   const autoplayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const tryItJsons = useMemo(() => tryItCodes.map(c => buildSemanticTryItData(c)), [tryItCodes]);
-  const tryItErrors = useMemo(() => tryItJsons.map(j => { try { JSON.parse(j); return null; } catch (e: any) { return e?.message || 'Invalid input'; } }), [tryItJsons]);
+  const tryItErrors = useMemo(() => tryItJsons.map(j => { try { JSON.parse(j); return null; } catch (e: unknown) { return e instanceof Error ? e.message : 'Invalid input'; } }), [tryItJsons]);
   const parsedNodeCounts = useMemo(() => tryItJsons.map(j => { try { const parsed = JSON.parse(j); const count = JSON.stringify(parsed.scopeTree).split('scopeId').length - 1; return count; } catch { return 0; } }), [tryItJsons]);
   const setTryItCodeFor = (idx: number, value: string) => setTryItCodes(prev => { const n = [...prev]; n[idx] = value; return n; });
   const toggleStepTryIt = (idx: number, on: boolean) => {

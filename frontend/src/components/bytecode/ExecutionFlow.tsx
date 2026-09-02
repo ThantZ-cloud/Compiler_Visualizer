@@ -127,6 +127,7 @@ const ExecutionFlow: React.FC<ExecutionFlowProps> = ({ method, isPlaying, isComp
     };
     timerRef.current = setTimeout(show, 200);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, isCompleted, displayedSteps.length]);
 
   // For idle state, defer entrance until scrolled into view — but pipeline Play overrides this

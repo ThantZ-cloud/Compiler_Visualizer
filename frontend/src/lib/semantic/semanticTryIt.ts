@@ -92,6 +92,72 @@ export const ERRORS_TRYIT_LABELS: string[] = [
   'Clean (0 errors)',
 ];
 
+interface ScopeNode {
+  name: string;
+  kind: string;
+  scopeId: number;
+  children?: ScopeNode[];
+  type?: string;
+  returnType?: string;
+  modifiers?: string;
+}
+
+interface SymbolEntry {
+  name: string;
+  kind: string;
+  type: string;
+  scope: string;
+  modifiers: string;
+}
+
+interface TypeResolution {
+  symbol: string;
+  resolved: boolean;
+  fqn?: string;
+  type?: string;
+  kind: string;
+  returnType?: string;
+  source: string;
+}
+
+interface TypeCheck {
+  check: string;
+  result: string;
+  location: string;
+  line: number;
+  column: number;
+  variable?: string;
+  declaredType?: string;
+  initType?: string;
+  initValue?: string;
+  operator?: string;
+  leftType?: string;
+  rightType?: string;
+  method?: string;
+  receiver?: string;
+  argumentTypes?: string[];
+  symbol?: string;
+}
+
+interface SemanticError {
+  message: string;
+  line: number;
+  column: number;
+  severity: string;
+  checkId: number;
+}
+
+interface SemanticTryItResult {
+  scopeTree: ScopeNode;
+  symbols: SymbolEntry[];
+  typeResolution: TypeResolution[];
+  typeChecks: TypeCheck[];
+  errors: SemanticError[];
+  package: string;
+  imports: string[];
+  types: string[];
+}
+
 function nextId() {
   let id = 0;
   return () => id++;
@@ -101,15 +167,15 @@ function cleanCode(code: string): string {
   return code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
 }
 
-function parseParams(paramStr: string, next: () => number): any[] {
-  const out: any[] = [];
+function parseParams(paramStr: string, next: () => number): ScopeNode[] {
+  const out: ScopeNode[] = [];
   if (!paramStr.trim()) return out;
   const parts = paramStr.split(',').map(s => s.trim()).filter(Boolean);
   for (const p of parts) {
     const m = p.match(/(?:final\s+)?(?:\w+(?:<[^>]+>)?(?:\[\])?)\s+(\w+)/);
     if (m) {
       const type = p.replace(m[1], '').trim().split(/\s+/)[0] || 'int';
-      out.push({ name: m[1], kind: 'parameter', type, scopeId: next() });
+      out.push({ name: m[1], kind: 'parameter', type, scopeId: next(), children: [] });
     }
   }
   return out;
@@ -119,7 +185,7 @@ export function buildSemanticTryItData(code: string): string {
   const raw = code;
   const stripped = cleanCode(code).trim();
   const next = nextId();
-  const packageNode: any = {
+  const packageNode: ScopeNode = {
     name: '(default package)',
     kind: 'package',
     scopeId: next(),
@@ -128,21 +194,21 @@ export function buildSemanticTryItData(code: string): string {
 
   // Heuristic: if no class keyword, wrap in TryIt class → main method
   const hasClass = /\bclass\s+\w+/.test(stripped);
-  let topContainer: any;
-  let stack: any[];
+  let topContainer: ScopeNode;
+  let stack: ScopeNode[];
 
   if (hasClass) {
     const classMatch = stripped.match(/class\s+(\w+)/);
     const className = classMatch ? classMatch[1] : 'A';
-    const classNode: any = { name: className, kind: 'class', scopeId: next(), children: [] };
-    packageNode.children.push(classNode);
+    const classNode: ScopeNode = { name: className, kind: 'class', scopeId: next(), children: [] };
+    packageNode.children!.push(classNode);
     topContainer = classNode;
     stack = [classNode];
   } else {
-    const fakeClass: any = { name: 'TryIt', kind: 'class', scopeId: next(), children: [] };
-    const fakeMethod: any = { name: 'main()', kind: 'method', returnType: 'void', modifiers: '', scopeId: next(), children: [] };
-    fakeClass.children.push(fakeMethod);
-    packageNode.children.push(fakeClass);
+    const fakeClass: ScopeNode = { name: 'TryIt', kind: 'class', scopeId: next(), children: [] };
+    const fakeMethod: ScopeNode = { name: 'main()', kind: 'method', returnType: 'void', modifiers: '', scopeId: next(), children: [] };
+    fakeClass.children!.push(fakeMethod);
+    packageNode.children!.push(fakeClass);
     topContainer = fakeMethod;
     stack = [fakeMethod];
     // If code already contains a method-like signature before first {, don't double-wrap
@@ -169,7 +235,7 @@ export function buildSemanticTryItData(code: string): string {
         i++;
         continue;
       }
-      let newNode: any | null = null;
+      let newNode: ScopeNode | null = null;
       // class detection
       const clsM = lastLine.match(/class\s+(\w+)\s*$/);
       if (clsM && !hasClass) {
@@ -190,7 +256,7 @@ export function buildSemanticTryItData(code: string): string {
           if (mName !== 'class') {
             newNode = { name: `${mName}(${paramStr.trim()})`, kind: 'method', returnType: retType, modifiers: (methodM[1] || '').trim(), scopeId: next(), children: [] };
             const params = parseParams(paramStr, next);
-            for (const p of params) newNode.children.push(p);
+            for (const p of params) newNode!.children!.push(p);
           }
         } else if (simpleMethodM && !controlM) {
           // e.g. "loop()" or "run()"
@@ -199,7 +265,7 @@ export function buildSemanticTryItData(code: string): string {
             const paramStr = simpleMethodM[2] || '';
             newNode = { name: `${mName}(${paramStr.trim()})`, kind: 'method', returnType: 'void', modifiers: '', scopeId: next(), children: [] };
             const params = parseParams(paramStr, next);
-            for (const p of params) newNode.children.push(p);
+            for (const p of params) newNode!.children!.push(p);
           }
         }
         if (!newNode) {
@@ -237,7 +303,7 @@ export function buildSemanticTryItData(code: string): string {
               const vname = vm[1];
               const parent = stack[stack.length - 1];
               parent.children = parent.children || [];
-              parent.children.push({ name: vname, kind: parent.kind === 'class' ? 'field' : 'variable', type, scopeId: next() });
+              parent.children.push({ name: vname, kind: parent.kind === 'class' ? 'field' : 'variable', type, scopeId: next(), children: [] });
             }
           }
         }
@@ -259,28 +325,28 @@ export function buildSemanticTryItData(code: string): string {
         const name = m[2];
         const parent = stack[stack.length - 1] || topContainer;
         parent.children = parent.children || [];
-        parent.children.push({ name, kind: 'variable', type, scopeId: next() });
+        parent.children.push({ name, kind: 'variable', type, scopeId: next(), children: [] });
       }
     } else if (raw.trim().length > 0) {
       // Put a placeholder so tree isn't empty
       const parent = stack[stack.length - 1] || topContainer;
       parent.children = parent.children || [];
-      parent.children.push({ name: 'x', kind: 'variable', type: 'int', scopeId: next() });
+      parent.children.push({ name: 'x', kind: 'variable', type: 'int', scopeId: next(), children: [] });
     }
   }
 
-  const symbols: any[] = [];
-  function collect(n: any, path: string) {
+  const symbols: SymbolEntry[] = [];
+  function collect(n: ScopeNode, path: string) {
     const cur = path ? `${path}.${n.name}` : n.name;
     if (['variable','parameter','field','method'].includes(n.kind)) {
       symbols.push({ name: n.name, kind: n.kind, type: n.type || n.returnType || '', scope: path, modifiers: n.modifiers || '' });
     }
-    (n.children || []).forEach((c: any) => collect(c, cur));
+    n.children?.forEach((c: ScopeNode) => collect(c, cur));
   }
   collect(packageNode, '');
 
   // Build dynamic type resolutions: stdlib + local LookUp
-  const typeResolution: any[] = [];
+  const typeResolution: TypeResolution[] = [];
   const getLineCol = (src: string, idx: number) => {
     const before = src.slice(0, idx);
     const line = before.split('\n').length;
@@ -391,9 +457,9 @@ export function buildSemanticTryItData(code: string): string {
     }
   }
 
-  const typeChecks: any[] = [];
-  const errors: any[] = [];
-  const pushCheck = (c: any, failMsg?: string) => {
+  const typeChecks: TypeCheck[] = [];
+  const errors: SemanticError[] = [];
+  const pushCheck = (c: TypeCheck, failMsg?: string) => {
     const idx = typeChecks.length;
     typeChecks.push(c);
     if (c.result === 'fail' && failMsg) errors.push({ message: failMsg, line: c.line, column: c.column, severity: 'ERROR', checkId: idx });
@@ -529,7 +595,7 @@ export function buildSemanticTryItData(code: string): string {
     }
   }
 
-  const root: any = {
+  const root: SemanticTryItResult = {
     scopeTree: packageNode,
     symbols,
     typeResolution,

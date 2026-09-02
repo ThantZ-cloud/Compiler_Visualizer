@@ -111,6 +111,7 @@ const StackMachineVisualizer: React.FC<StackMachineVisualizerProps> = ({ method,
     };
     timerRef.current = setTimeout(show, 300);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, isCompleted, trace.steps.length]);
 
   useEffect(() => {

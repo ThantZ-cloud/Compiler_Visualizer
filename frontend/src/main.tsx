@@ -1,18 +1,13 @@
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { Toaster } from 'sonner'
 import './i18n'
 import './index.css'
 import { AuthProvider } from './context/AuthContext'
 import { CompileProvider } from './context/CompileContext'
-import { ThemeProvider, useTheme } from './context/ThemeContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { LanguageProvider } from './context/LanguageContext'
 import ErrorBoundary from './components/ErrorBoundary'
-
-function ThemedToaster() {
-  const { resolvedTheme } = useTheme()
-  return <Toaster position="bottom-right" theme={resolvedTheme} />
-}
+import ThemedToaster from './components/ThemedToaster'
 import Layout from './components/Layout'
 import LandingPage from './pages/LandingPage'
 import AboutPage from './pages/AboutPage'

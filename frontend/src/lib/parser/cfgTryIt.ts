@@ -115,7 +115,7 @@ function isNameToken(v: string): boolean {
   return /^[a-zA-Z][a-zA-Z0-9]*$/.test(v);
 }
 
-function tokenizeCfgInput(input: string, _kind: 'simple' | 'classic' = 'simple'): { tokens: string[]; error?: string } {
+function tokenizeCfgInput(input: string): { tokens: string[]; error?: string } {
   const raw = input.trim();
   if (!raw) return { tokens: [], error: 'Empty input' };
   const re = /\s*([a-zA-Z][a-zA-Z0-9]*|[0-9]+|\+|-|\*|\/|\(|\))\s*/g;
@@ -342,7 +342,7 @@ function generateRightmostDerivation(root: ParseNode, kind: 'simple' | 'classic'
 
 export function buildCfgTryItData(input: string, kind: 'simple' | 'classic' = 'simple'): CfgTryItData {
   const grammar = kind === 'simple' ? SIMPLE_GRAMMAR : CLASSIC_GRAMMAR;
-  const tokRes = tokenizeCfgInput(input, kind);
+  const tokRes = tokenizeCfgInput(input);
   if (tokRes.error) return { input, tokens: [], grammar, derivation: [], parseTree: null, error: tokRes.error, grammarKind: kind };
   const tokens = tokRes.tokens;
   const { tree, error } = buildParseTree(tokens, kind);

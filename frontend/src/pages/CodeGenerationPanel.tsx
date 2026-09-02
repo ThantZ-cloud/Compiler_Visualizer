@@ -80,11 +80,16 @@ const CodeGenerationPanel: React.FC = () => {
   const setTryItCode = (idx: number, code: string) => setTryItCodes(prev => { const n = [...prev]; n[idx] = code; return n; });
 
   // Per-step Try It data — each step parses its own editable code independently
-  const tryItData0 = useMemo(() => buildCodegenTryItData(tryItCodes[0]), [tryItCodes[0]]);
-  const tryItData1 = useMemo(() => buildCodegenTryItData(tryItCodes[1]), [tryItCodes[1]]);
-  const tryItData2 = useMemo(() => buildCodegenTryItData(tryItCodes[2]), [tryItCodes[2]]);
-  const tryItData3 = useMemo(() => buildCodegenTryItData(tryItCodes[3]), [tryItCodes[3]]);
-  const tryItData4 = useMemo(() => buildCodegenTryItData(tryItCodes[4]), [tryItCodes[4]]);
+  const tryItCode0 = tryItCodes[0];
+  const tryItCode1 = tryItCodes[1];
+  const tryItCode2 = tryItCodes[2];
+  const tryItCode3 = tryItCodes[3];
+  const tryItCode4 = tryItCodes[4];
+  const tryItData0 = useMemo(() => buildCodegenTryItData(tryItCode0), [tryItCode0]);
+  const tryItData1 = useMemo(() => buildCodegenTryItData(tryItCode1), [tryItCode1]);
+  const tryItData2 = useMemo(() => buildCodegenTryItData(tryItCode2), [tryItCode2]);
+  const tryItData3 = useMemo(() => buildCodegenTryItData(tryItCode3), [tryItCode3]);
+  const tryItData4 = useMemo(() => buildCodegenTryItData(tryItCode4), [tryItCode4]);
   const tryItDatas = [tryItData0, tryItData1, tryItData2, tryItData3, tryItData4] as const;
 
   const tryItScheduling1 = useMemo(() => computeSchedule(tryItData1.instructions), [tryItData1]);

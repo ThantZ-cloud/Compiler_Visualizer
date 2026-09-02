@@ -186,7 +186,7 @@ export function buildPdaTryItData(input: string): PdaTryItData {
 
     if (top === '$' && la === '$') {
       steps.push({
-        step: stepNum++,
+        step: stepNum,
         action: 'ACCEPT',
         ruleDisplay: '—',
         stack: [...stack],
@@ -208,7 +208,7 @@ export function buildPdaTryItData(input: string): PdaTryItData {
       const ruleId = LL1_TABLE[nt]?.[la] ?? null;
       if (ruleId == null) {
         steps.push({
-          step: stepNum++,
+          step: stepNum,
           action: 'ERROR',
           ruleDisplay: '—',
           stack: [...stack],
@@ -264,7 +264,7 @@ export function buildPdaTryItData(input: string): PdaTryItData {
         });
       } else {
         steps.push({
-          step: stepNum++,
+          step: stepNum,
           action: 'ERROR',
           ruleDisplay: '—',
           stack: [...stack],
@@ -280,7 +280,7 @@ export function buildPdaTryItData(input: string): PdaTryItData {
     } else if (top === '$') {
       // Stack $ but input not $ => error (should have been accept)
       steps.push({
-        step: stepNum++,
+        step: stepNum,
         action: 'ERROR',
         ruleDisplay: '—',
         stack: [...stack],

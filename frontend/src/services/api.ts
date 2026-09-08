@@ -1,6 +1,15 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const productionApiUrl = 'https://compiler-visualizer-api.onrender.com/api';
+const isLocalApiUrl = !configuredApiUrl || /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(configuredApiUrl);
+
+// Vercel builds can be created without VITE_API_URL, and an accidentally
+// inherited localhost value would make the deployed browser call itself.
+// Keep local development on port 8080 while always using Render in production.
+const API_BASE_URL = import.meta.env.PROD && isLocalApiUrl
+  ? productionApiUrl
+  : configuredApiUrl ?? 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

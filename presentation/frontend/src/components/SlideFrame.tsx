@@ -30,10 +30,10 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
     <div className="flex h-full min-h-screen flex-col bg-void text-text">
       {/* Top bar */}
       <header className="no-print flex items-center justify-between border-b border-border px-4 py-2 sm:px-6">
-        <span className="font-mono text-xs tracking-widest text-text-dim">
+        <span className="min-w-0 truncate font-mono text-xs tracking-widest text-text-dim">
           {t('deck.groupTag')}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <span className="font-mono text-xs tracking-widest text-neon">
             {t('deck.slideCounter', { cur: step + 1, total: TOTAL_SLIDES })}
           </span>
@@ -68,10 +68,10 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
       </div>
 
       {/* Stage */}
-      <main className="print-stack relative flex flex-1 items-center justify-center overflow-hidden bg-void-light p-3 sm:p-6">
+      <main className="print-stack relative flex flex-1 items-start justify-center overflow-y-auto bg-void-light p-3 sm:items-center sm:overflow-hidden sm:p-6">
         <div
           key={step}
-          className="slide-enter print-slide relative aspect-video max-h-full w-full max-w-6xl overflow-hidden border border-border bg-card shadow-sm"
+          className="slide-enter print-slide relative w-full max-w-6xl border border-border bg-card shadow-sm sm:aspect-video sm:max-h-full sm:overflow-hidden"
         >
           {children}
         </div>
@@ -82,14 +82,14 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
           aria-label={t('deck.prev')}
           onClick={onPrev}
           disabled={step === 0}
-          className="no-print absolute left-0 top-0 h-full w-12 opacity-0 disabled:hidden"
+          className="no-print absolute left-0 top-0 hidden h-full w-12 opacity-0 disabled:hidden sm:block"
         />
         <button
           type="button"
           aria-label={t('deck.next')}
           onClick={onNext}
           disabled={step === TOTAL_SLIDES - 1}
-          className="no-print absolute right-0 top-0 h-full w-12 opacity-0 disabled:hidden"
+          className="no-print absolute right-0 top-0 hidden h-full w-12 opacity-0 disabled:hidden sm:block"
         />
       </main>
 

@@ -147,8 +147,12 @@
     "conclusion": {
       "title": "CONCLUSION",
       "kicker": "// 11 — TAKEAWAY",
-      "body": "Compiler Visualizer turns a black-box javac run into an explorable pipeline: one Java file in, tokens, AST, symbol table, optimizer graphs, and bytecode out — each view labeled with its algorithm and explorable in English or Myanmar. It proves the full front end to back end flow works end to end, from editor to execution.",
-      "stats": ["1 file in", "8 phases visible", "EN + MY"]
+      "topics": [
+        "An online Java compiler with visualization — unlike the others",
+        "Write code in the browser → Compile → Visualize",
+        "Nothing to install",
+        "CS students learn compiling techniques with ease"
+      ]
     },
     "qa": {
       "title": "THANK YOU",

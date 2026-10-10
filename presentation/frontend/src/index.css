@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Educational white theme — token names kept so components need no edits.
+     Primary "neon" slot now holds academic blue. */
+  --color-void: #FFFFFF;
+  --color-void-light: #F8FAFC;
+  --color-card: #FFFFFF;
+  --color-card-hover: #F1F5F9;
+  --color-surface: #F1F5F9;
+  --color-surface-2: #E2E8F0;
+  --color-surface-3: #CBD5E1;
+  --color-border: #E2E8F0;
+  --color-border-bright: #CBD5E1;
+  --color-neon: #1D4ED8;
+  --color-neon-dim: #1D4ED822;
+  --color-neon-glow: #1D4ED833;
+  --color-cyan: #0369A1;
+  --color-cyan-dim: #0369A122;
+  --color-magenta: #9D174D;
+  --color-magenta-dim: #9D174D22;
+  --color-amber: #B45309;
+  --color-amber-dim: #B4530922;
+  --color-rose: #BE123C;
+  --color-rose-dim: #BE123C22;
+  --color-text: #0F172A;
+  --color-text-dim: #475569;
+  --color-text-muted: #64748B;
+  --font-display: 'Inter', 'Noto Sans Myanmar', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', 'Noto Sans Myanmar', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Noto Sans Myanmar', ui-monospace, monospace;
+  --font-sans: 'Inter', 'Noto Sans Myanmar', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+}
+
+html, body {
+  height: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-void);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Myanmar shaping: kill letter-spacing habits that break the script */
+[data-lang="my"] .font-display {
+  letter-spacing: 0 !important;
+}
+[data-lang="my"] .track-wide {
+  letter-spacing: 0 !important;
+}
+
+#root {
+  height: 100%;
+  min-height: 100%;
+}
+
+a { color: inherit; text-decoration: none; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb { background: var(--color-border-bright); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-neon); }
+* { scrollbar-width: thin; scrollbar-color: var(--color-border-bright) var(--color-surface); }
+
+::selection { background: var(--color-neon-dim); color: var(--color-neon); }
+
+/* Flat academic headline — replaces neon glow (unreadable on white) */
+.accent-headline {
+  color: #1E40AF;
+  font-weight: 800;
+}
+
+.card-lift { transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+.card-lift:hover { transform: translateY(-4px); box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08); }
+
+/* Slide transition */
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.slide-enter { animation: slide-in 0.35s ease both; }
+
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--color-neon);
+  outline-offset: 2px;
+}
+button { transition: transform 0.1s ease, opacity 0.1s ease; }
+button:active:not(:disabled) { transform: scale(0.97); opacity: 0.9; }
+
+@media (prefers-reduced-motion: reduce) {
+  .slide-enter { animation: none; }
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* Print: stack all slides */
+@media print {
+  .no-print { display: none !important; }
+  .print-stack { overflow: visible !important; height: auto !important; }
+  .print-slide { break-inside: avoid; min-height: 90vh; }
+}

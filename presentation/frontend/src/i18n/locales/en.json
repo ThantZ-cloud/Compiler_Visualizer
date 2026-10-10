@@ -1,0 +1,159 @@
+{
+  "deck": {
+    "prev": "PREV",
+    "next": "NEXT",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen",
+    "slideCounter": "SLIDE {{cur}} / {{total}}",
+    "groupTag": "GROUP 9 • COMPILER VISUALIZER",
+    "goToSlide": "Go to slide {{n}}",
+    "toggleLanguage": "Switch language"
+  },
+  "slides": {
+    "title": {
+      "kicker": "> javac → tokens → AST → bytecode",
+      "headline": "COMPILER VISUALIZER",
+      "sub": "Presented by Group 9",
+      "phases": ["Lexing", "Parsing", "AST", "Semantic", "CFG", "Codegen", "Bytecode", "Run"],
+      "hint": "Arrows / Space to navigate • F for fullscreen • L for language"
+    },
+    "members": {
+      "title": "PROJECT MEMBERS",
+      "kicker": "// 02 — TEAM",
+      "roles": {
+        "leader": "Leader",
+        "coLeader": "Co-Leader",
+        "member": "Member"
+      }
+    },
+    "contents": {
+      "title": "CONTENTS",
+      "kicker": "// 03 — AGENDA",
+      "items": [
+        "Introduction",
+        "Objective",
+        "Technology Stack",
+        "ER Diagram",
+        "State Diagram (how compiler works step by step)",
+        "Limitation",
+        "Future Plan",
+        "Conclusion",
+        "Thank You, Q & A"
+      ]
+    },
+    "intro": {
+      "title": "INTRODUCTION",
+      "kicker": "// 04 — PROBLEM → FIX",
+      "problemTitle": "The problem",
+      "problemBody": "Online compilers and javac alone give only output or errors. Students never see how Java code becomes tokens, trees, symbol tables, or bytecode.",
+      "basics": {
+        "whatTitle": "What is a compiler?",
+        "whatBody": "A translator: it converts human-readable source code into machine-executable form before the program runs.",
+        "whyTitle": "Why need one?",
+        "whyBody": "Speed (runs natively), portability (write once, run anywhere), safety (errors caught before running).",
+        "vsTitle": "Compiler vs Interpreter",
+        "vsBody": "Java compiles first, then runs. JavaScript runs line by line, JIT-ing hot code.",
+        "javaLabel": "Java (compiled)",
+        "javaChip": "javac Main.java → java Main",
+        "jsLabel": "JS (interpreted)",
+        "jsChip": "node app.js"
+      },
+      "fixTitle": "The fix",
+      "fixBody": "Write Java in the Monaco editor in your browser, click Compile, and explore every phase — lexing, parsing, AST, semantic analysis, CFG/optimizer, codegen, bytecode, execution — with interactive D3 and 3D views in English or Myanmar."
+    },
+    "objectives": {
+      "title": "OBJECTIVE",
+      "kicker": "// 05 — WHAT WE SET OUT TO DO",
+      "items": [
+        "Make every Java compile phase visible step by step (lexing → execution) instead of output-only.",
+        "Teach front end / optimizer / back end structure using real, runnable Java code.",
+        "Label every visualization with the algorithm that built it (e.g. Maximal-Munch, Shift-Reduce, Graph Coloring).",
+        "Let users compile once and explore anywhere across all visualize panels.",
+        "Support learning in both English and Myanmar (full i18n).",
+        "Provide interactive D3.js views (tokens, AST, symbol table, CFG) plus a 3D pipeline overview.",
+        "Enable authenticated saved-code snippets so students revisit examples anytime (JWT + database).",
+        "Make the compiling techniques course easy to understand with this project."
+      ]
+    },
+    "stack": {
+      "title": "TECHNOLOGY STACK",
+      "kicker": "// 06 — HOW IT IS BUILT",
+      "frontend": "Frontend",
+      "frontendItems": [
+        "React 19 + TypeScript + Vite",
+        "Tailwind CSS v4",
+        "Monaco editor",
+        "D3.js, Three.js",
+        "i18next (en/my)"
+      ],
+      "backend": "Backend",
+      "backendItems": [
+        "Spring Boot 3.2, Java 17",
+        "JavaParser, JavaLexer",
+        "JWT + Spring Security",
+        "javac, javap"
+      ],
+      "database": "Database",
+      "databaseItems": ["SQLite in development", "MySQL in production", "JPA"],
+      "tools": "Tools",
+      "toolsItems": ["Maven", "VS Code", "Git, GitHub", "ESLint", "Vercel (frontend)", "Render (backend)"]
+    },
+    "er": {
+      "title": "ER DIAGRAM",
+      "kicker": "// 07 — DATA MODEL",
+      "users": "users",
+      "savedCode": "saved_code",
+      "owns": "owns (1 — N)",
+      "note": "Compile results are ephemeral and never stored."
+    },
+    "state": {
+      "title": "STATE DIAGRAM",
+      "kicker": "// 08 — HOW THE COMPILER WORKS STEP BY STEP",
+      "nodes": [
+        "Write Java",
+        "Lexing",
+        "Parsing",
+        "AST",
+        "Semantic analysis",
+        "CFG / Optimizer",
+        "Codegen",
+        "Bytecode",
+        "Execution"
+      ],
+      "phases": ["FRONT END", "OPTIMIZER", "BACK END"]
+    },
+    "limitations": {
+      "title": "LIMITATION",
+      "kicker": "// 09 — HONEST LIMITS",
+      "items": [
+        "Java code only",
+        "Single file",
+        "Requires JDK on server",
+        "Error messages are raw javac output",
+        "Web app needs internet"
+      ]
+    },
+    "future": {
+      "title": "FUTURE PLAN",
+      "kicker": "// 10 — WHAT'S NEXT",
+      "items": [
+        "Multi-file project support",
+        "More visualization steps",
+        "Show error messages exactly (friendly diagnostics)",
+        "Full Myanmar coverage",
+        "Desktop & mobile application"
+      ]
+    },
+    "conclusion": {
+      "title": "CONCLUSION",
+      "kicker": "// 11 — TAKEAWAY",
+      "body": "Compiler Visualizer turns a black-box javac run into an explorable pipeline: one Java file in, tokens, AST, symbol table, optimizer graphs, and bytecode out — each view labeled with its algorithm and explorable in English or Myanmar. It proves the full front end to back end flow works end to end, from editor to execution.",
+      "stats": ["1 file in", "8 phases visible", "EN + MY"]
+    },
+    "qa": {
+      "title": "THANK YOU",
+      "sub": "Q & A — questions welcome",
+      "kicker": "// 12 — GROUP 9"
+    }
+  }
+}

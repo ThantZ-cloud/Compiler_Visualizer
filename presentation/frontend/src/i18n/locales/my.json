@@ -1,0 +1,159 @@
+{
+  "deck": {
+    "prev": "နောက်",
+    "next": "ရှေ့",
+    "fullscreen": "အပြည့်ပြရန်",
+    "exitFullscreen": "အပြည့်မှ ထွက်ရန်",
+    "slideCounter": "ဆလိုက် {{cur}} / {{total}}",
+    "groupTag": "အဖွဲ့ ၉ • COMPILER VISUALIZER",
+    "goToSlide": "ဆလိုက် {{n}} သို့ သွားရန်",
+    "toggleLanguage": "ဘာသာစကား ပြောင်းရန်"
+  },
+  "slides": {
+    "title": {
+      "kicker": "> javac → တိုကင်များ → AST → bytecode",
+      "headline": "COMPILER VISUALIZER",
+      "sub": "အဖွဲ့ ၉ မှ တင်ဆက်သည်",
+      "phases": ["Lexing", "Parsing", "AST", "Semantic", "CFG", "Codegen", "Bytecode", "Run"],
+      "hint": "ရှေ့/နောက် ကြည့်ရန် Arrows / Space • အပြည့်ပြရန် F • ဘာသာပြောင်းရန် L"
+    },
+    "members": {
+      "title": "အဖွဲ့ဝင်များ",
+      "kicker": "// ၀၂ — အဖွဲ့",
+      "roles": {
+        "leader": "ခေါင်းဆောင်",
+        "coLeader": "ဒုခေါင်းဆောင်",
+        "member": "အဖွဲ့ဝင်"
+      }
+    },
+    "contents": {
+      "title": "အကြောင်းအရာများ",
+      "kicker": "// ၀၃ — အစီအစဉ်",
+      "items": [
+        "နိဒါန်း",
+        "ရည်ရွယ်ချက်",
+        "နည်းပညာများ",
+        "ER Diagram",
+        "State Diagram (compiler အဆင့်ဆင့် အလုပ်လုပ်ပုံ)",
+        "ကန့်သတ်ချက်များ",
+        "အနာဂတ် အစီအစဉ်",
+        "နိဂုံး",
+        "ကျေးဇူးတင်ခြင်းနှင့် မေးမြန်းခြင်း"
+      ]
+    },
+    "intro": {
+      "title": "နိဒါန်း",
+      "kicker": "// ၀၄ — ပြဿနာ → ဖြေရှင်းချက်",
+      "problemTitle": "ပြဿနာ",
+      "problemBody": "Online compiler များနှင့် javac တစ်ခုတည်းက output သို့မဟုတ် error သာ ပြပေးသည်။ Java ကုဒ်က တိုကင်များ၊ သစ်ပင်များ (tree)၊ symbol table များ သို့မဟုတ် bytecode များ ဘယ်လိုဖြစ်သွားသည်ကို ကျောင်းသားများ ဘယ်တော့မှ မမြင်ရပါ။",
+      "basics": {
+        "whatTitle": "Compiler ဆိုတာဘာလဲ။",
+        "whatBody": "ဘာသာပြန်သူ ဖြစ်သည် — လူဖတ်နိုင်သော source code ကို ပရိုဂရမ် မလုပ်ဆောင်မီ စက်နားလည်သော ပုံစံသို့ ပြောင်းလဲပေးသည်။",
+        "whyTitle": "ဘာကြောင့် လိုအပ်သလဲ။",
+        "whyBody": "မြန်ဆန်မှု (native အတိုင်း run နိုင်ခြင်း)၊ သယ်ဆောင်နိုင်မှု (တစ်ခါရေး၊ နေရာတိုင်း run နိုင်ခြင်း)၊ လုံခြုံမှု (မလုပ်ဆောင်မီ error များ ဖမ်းမိခြင်း)။",
+        "vsTitle": "Compiler နှင့် Interpreter",
+        "vsBody": "Java က အရင် compile လုပ်ပြီးမှ run သည်။ JavaScript က တစ်ကြောင်းချင်း run ပြီး hot code ကို JIT လုပ်သည်။",
+        "javaLabel": "Java (compile လုပ်ပြီး)",
+        "javaChip": "javac Main.java → java Main",
+        "jsLabel": "JS (တိုက်ရိုက် run)",
+        "jsChip": "node app.js"
+      },
+      "fixTitle": "ဖြေရှင်းချက်",
+      "fixBody": "Browser ထဲက Monaco editor တွင် Java ရေး၊ Compile နှိပ်ပြီး အဆင့်တိုင်းကို လေ့လာပါ — lexing၊ parsing၊ AST၊ semantic analysis၊ CFG/optimizer၊ codegen၊ bytecode၊ execution — D3 နှင့် 3D မြင်ကွင်းများဖြင့် အင်္ဂလိပ် သို့မဟုတ် မြန်မာဘာသာဖြင့်။"
+    },
+    "objectives": {
+      "title": "ရည်ရွယ်ချက်",
+      "kicker": "// ၀၅ — ကျွန်ုပ်တို့ ရည်မှန်းချက်",
+      "items": [
+        "Java compile အဆင့်တိုင်းကို အထွက်တစ်ခုတည်း မဟုတ်ဘဲ အဆင့်ဆင့် (lexing → execution) မြင်သာအောင် ပြရန်။",
+        "အမှန်တကယ် run နိုင်သော Java ကုဒ်ဖြင့် front end / optimizer / back end ဖွဲ့စည်းပုံကို သင်ပေးရန်။",
+        "မြင်ကွင်းတိုင်းတွင် တည်ဆောက်ခဲ့သော algorithm အမည်ကို ထည့်ရန် (ဥပမာ Maximal-Munch၊ Shift-Reduce၊ Graph Coloring)။",
+        "တစ်ခါ compile လုပ်ပြီး visualize panel အားလုံးတွင် လွတ်လပ်စွာ လေ့လာနိုင်ရန်။",
+        "အင်္ဂလိပ်နှင့် မြန်မာ နှစ်ဘာသာဖြင့် သင်ယူနိုင်ရန် (i18n အပြည့်)။",
+        "D3.js မြင်ကွင်းများ (token၊ AST၊ symbol table၊ CFG) နှင့် 3D pipeline ခြုံငုံမှုကို ပေးရန်။",
+        "JWT + database ဖြင့် သိမ်းထားသော ကုဒ်နမူနာများ ပြန်ကြည့်နိုင်ရန်။",
+        "Compiling techniques ဘာသာရပ်ကို ဤပရောဂျက်ဖြင့် လွယ်ကူစွာ နားလည်နိုင်ရန်။"
+      ]
+    },
+    "stack": {
+      "title": "နည်းပညာများ",
+      "kicker": "// ၀၆ — တည်ဆောက်ပုံ",
+      "frontend": "Frontend",
+      "frontendItems": [
+        "React 19 + TypeScript + Vite",
+        "Tailwind CSS v4",
+        "Monaco editor",
+        "D3.js, Three.js",
+        "i18next (en/my)"
+      ],
+      "backend": "Backend",
+      "backendItems": [
+        "Spring Boot 3.2, Java 17",
+        "JavaParser, JavaLexer",
+        "JWT + Spring Security",
+        "javac, javap"
+      ],
+      "database": "Database",
+      "databaseItems": ["Development တွင် SQLite", "Production တွင် MySQL", "JPA"],
+      "tools": "Tools",
+      "toolsItems": ["Maven", "VS Code", "Git, GitHub", "ESLint", "Vercel (frontend)", "Render (backend)"]
+    },
+    "er": {
+      "title": "ER DIAGRAM",
+      "kicker": "// ၀၇ — ဒေတာ ပုံစံ",
+      "users": "users",
+      "savedCode": "saved_code",
+      "owns": "ပိုင်ဆိုင်သည် (1 — N)",
+      "note": "Compile ရလဒ်များသည် ယာယီသာ ဖြစ်ပြီး သိမ်းဆည်းထားခြင်း မရှိပါ။"
+    },
+    "state": {
+      "title": "STATE DIAGRAM",
+      "kicker": "// ၀၈ — COMPILER အဆင့်ဆင့် အလုပ်လုပ်ပုံ",
+      "nodes": [
+        "Java ရေးရန်",
+        "Lexing",
+        "Parsing",
+        "AST",
+        "Semantic analysis",
+        "CFG / Optimizer",
+        "Codegen",
+        "Bytecode",
+        "Execution"
+      ],
+      "phases": ["FRONT END", "OPTIMIZER", "BACK END"]
+    },
+    "limitations": {
+      "title": "ကန့်သတ်ချက်များ",
+      "kicker": "// ၀၉ — ရိုးသားသော ကန့်သတ်ချက်များ",
+      "items": [
+        "Java ကုဒ်သာ ရသည်",
+        "ဖိုင်တစ်ခုတည်း",
+        "Server တွင် JDK လိုအပ်သည်",
+        "Error message များသည် javac အတိုင်း အစိမ်းဖြစ်သည်",
+        "Web app အတွက် အင်တာနက် လိုအပ်သည်"
+      ]
+    },
+    "future": {
+      "title": "အနာဂတ် အစီအစဉ်",
+      "kicker": "// ၁၀ — နောက်ထပ်",
+      "items": [
+        "ဖိုင်အများအပြား ပရောဂျက် ထောက်ပံ့မှု",
+        "မြင်ကွင်း အဆင့်များ ပိုထည့်ရန်",
+        "Error message များကို တိတိကျကျ ရှင်းရှင်းပြရန်",
+        "မြန်မာဘာသာ အပြည့်အစုံ",
+        "Desktop နှင့် Mobile application"
+      ]
+    },
+    "conclusion": {
+      "title": "နိဂုံး",
+      "kicker": "// ၁၁ — အဓိက မှတ်ချက်",
+      "body": "Compiler Visualizer သည် အနက်ရောင် သေတ္တာလို javac လုပ်ဆောင်မှုကို လေ့လာနိုင်သော pipeline အဖြစ် ပြောင်းလဲပေးသည် — Java ဖိုင်တစ်ခု ထည့်ရုံနှင့် တိုကင်များ၊ AST၊ symbol table၊ optimizer ဂရပ်များ၊ bytecode များ ရရှိသည်။ မြင်ကွင်းတိုင်းတွင် algorithm အမည်ပါပြီး အင်္ဂလိပ် သို့မဟုတ် မြန်မာဘာသာဖြင့် လေ့လာနိုင်သည်။ Editor မှ execution အထိ front end မှ back end အထိ အပြည့်အစုံ အလုပ်လုပ်ကြောင်း သက်သေပြသည်။",
+      "stats": ["ဖိုင် ၁ ခု ထည့်", "အဆင့် ၈ ခု မြင်", "EN + MY"]
+    },
+    "qa": {
+      "title": "ကျေးဇူးတင်ပါသည်",
+      "sub": "မေးမြန်းခြင်း — မေးခွန်းများ ကြိုဆိုပါသည်",
+      "kicker": "// ၁၂ — အဖွဲ့ ၉"
+    }
+  }
+}
